@@ -1,0 +1,48 @@
+<div class="page-header">
+    <h2>산출물 조회</h2>
+    <p>수집된 자료의 산출물을 조회하고 다운로드합니다.</p>
+</div>
+
+<div class="search-bar">
+    <input type="text" ng-model="searchKeyword" placeholder="산출물명 검색...">
+    <select ng-model="searchType" style="padding:8px 12px; border:1px solid #dde0e7; border-radius:6px; font-size:13px; font-family:inherit;">
+        <option value="">전체 유형</option>
+        <option value="DATA">데이터</option>
+        <option value="REPORT">보고서</option>
+        <option value="FILE">파일</option>
+    </select>
+    <button class="btn btn-primary btn-sm" ng-click="load()">조회</button>
+</div>
+
+<div class="card">
+    <div class="card-title">산출물 목록 (총 {{outputList.length}}건)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>산출물명</th>
+                <th>유형</th>
+                <th>생성일시</th>
+                <th>크기</th>
+                <th>상태</th>
+                <th>관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="outputList.length === 0">
+                <td colspan="7" class="no-data">데이터가 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in outputList | filter:{name: searchKeyword, type: searchType}">
+                <td>{{$index + 1}}</td>
+                <td>{{item.name}}</td>
+                <td>{{item.type}}</td>
+                <td>{{item.createdAt}}</td>
+                <td>{{item.size}}</td>
+                <td><span class="status-badge" ng-class="getStatusClass(item.status)">{{item.status}}</span></td>
+                <td>
+                    <button class="btn btn-primary btn-sm">다운로드</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

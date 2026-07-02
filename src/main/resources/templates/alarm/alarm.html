@@ -1,0 +1,120 @@
+<div class="page-header">
+    <div class="page-header-title">
+        <span class="page-title-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+        </span>
+        <h2>알람 관리</h2>
+    </div>
+</div>
+
+<!-- ── 검색 영역 ── -->
+<div class="alarm-search-panel">
+    <div class="alarm-search-fields">
+
+        <div class="alarm-search-field">
+            <label>알람 아이디</label>
+            <input type="text" ng-model="searchKeyword" placeholder="알람 아이디 입력">
+        </div>
+
+        <div class="alarm-search-field">
+            <label>발생시간</label>
+            <div class="alarm-date-range">
+                <input type="date" ng-model="searchDateFrom">
+                <span class="alarm-date-sep">~</span>
+                <input type="date" ng-model="searchDateTo">
+            </div>
+        </div>
+
+        <div class="alarm-search-field">
+            <label>알람 유형</label>
+            <select ng-model="filterType">
+                <option value="">전체</option>
+                <option value="시스템">시스템</option>
+                <option value="네트워크">네트워크</option>
+                <option value="데이터">데이터</option>
+                <option value="장비">장비</option>
+            </select>
+        </div>
+
+        <div class="alarm-search-field">
+            <label>처리 상태</label>
+            <select ng-model="filterStatus">
+                <option value="">전체</option>
+                <option value="미처리">미처리</option>
+                <option value="처리중">처리중</option>
+                <option value="처리완료">처리완료</option>
+            </select>
+        </div>
+
+    </div>
+
+    <button class="btn-search-alarm" ng-click="load()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        조회
+    </button>
+</div>
+
+<!-- ── 테이블 영역 ── -->
+<div class="alarm-table-panel">
+
+    <div class="alarm-table-toolbar">
+        <span class="alarm-count-label">총 <strong>{{filteredList().length}}</strong>건</span>
+        <!-- <button class="btn-refresh-alarm" ng-click="load()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            새로고침
+        </button> -->
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:56px;">번호</th>
+                <th style="width:110px;">알람 아이디</th>
+                <th style="width:110px;">알람 유형</th>
+                <th style="width:160px;">발생시간</th>
+                <th style="width:90px;">중요도</th>
+                <th>알람 메시지</th>
+                <th style="width:130px;">처리 상태</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="filteredList().length === 0">
+                <td colspan="7" class="no-data">알람이 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in filteredList()">
+                <td>{{$index + 1}}</td>
+                <td>{{item.alarmId || item.id || '-'}}</td>
+                <td>{{item.type}}</td>
+                <td>{{item.regDt}}</td>
+                <td>
+                    <span class="status-badge" ng-class="getSeverityClass(item.severity)">
+                        {{item.severity}}
+                    </span>
+                </td>
+                <td style="text-align:left;">{{item.message || item.target || '-'}}</td>
+                <td>
+                    <span class="status-badge"
+                          ng-class="item.status === '미처리' ? 'status-high' : item.status === '처리중' ? 'status-processing' : 'status-done'">
+                        {{item.status}}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

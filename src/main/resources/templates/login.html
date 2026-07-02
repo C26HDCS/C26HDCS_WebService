@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - HDCS Web Service</title>
+    <link rel="stylesheet" th:href="@{/static/css/login.css}">
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-box">
+
+        <!-- ── 왼쪽: 배경이미지 + 로고 + 시스템명 ── -->
+        <div class="login-left">
+            <!-- 장식용 궤도 링 -->
+            <div class="deco-ring deco-ring-1"></div>
+            <div class="deco-ring deco-ring-2"></div>
+            <div class="deco-ring deco-ring-3"></div>
+            <!-- 장식용 점 -->
+            <div class="deco-dot deco-dot-1"></div>
+            <div class="deco-dot deco-dot-2"></div>
+
+            <div class="left-content">
+                <img src="/hdcs/static/images/logo.png"
+                     alt="기후에너지환경부 한강홍수통제소"
+                     class="agency-logo">
+                <h1 class="left-system-name">
+                    수자원통신위성<br>수문자료 수집 시스템
+                </h1>
+                <p class="left-desc">위성 기반 수문자료 실시간 수집·관리 플랫폼</p>
+            </div>
+
+            <div class="left-badge">
+                HDCS &nbsp;·&nbsp; Satellite Hydrological Data System
+            </div>
+        </div>
+
+        <!-- ── 오른쪽: 로그인 폼 ── -->
+        <div class="login-right">
+            <div class="login-right-inner">
+                <h2 class="right-title">로그인</h2>
+                <p class="right-subtitle">계정 정보를 입력하여 접속하세요</p>
+
+                <form id="loginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="username">아이디</label>
+                        <input type="text" id="username" name="username"
+                               placeholder="아이디를 입력하세요" autofocus required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">비밀번호</label>
+                        <input type="password" id="password" name="password"
+                               placeholder="비밀번호를 입력하세요" required>
+                    </div>
+                    <button type="submit" class="btn-login">로그인</button>
+                </form>
+
+                <div class="login-links">
+                    <a th:href="@{/register}">회원 가입</a>
+                    <span class="link-divider">|</span>
+                    <a th:href="@{/find-id}">아이디 찾기</a>
+                    <span class="link-divider">|</span>
+                    <a th:href="@{/find-password}">비밀번호 찾기</a>
+                </div>
+
+                <p class="login-footer">© 2026 HDCS Web Service. All rights reserved.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/hdcs/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('accessToken', data.accessToken);
+                window.location.href = '/hdcs/dashboard';
+            } else {
+                const errorData = await response.json();
+                alert(errorData.message || '아이디나 비밀번호가 올바르지 않습니다.');
+            }
+        } catch (error) {
+            console.error('로그인 통신 에러:', error);
+            alert('서버와 통신 중 오류가 발생했습니다.');
+        }
+    });
+</script>
+</body>
+</html>

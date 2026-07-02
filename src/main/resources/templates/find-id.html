@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이디 찾기 - HDCS Web Service</title>
+    <link rel="stylesheet" th:href="@{/static/css/login.css}">
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-box">
+
+        <!-- 왼쪽: 장식 패널 -->
+        <div class="login-left">
+            <div class="deco-ring deco-ring-1"></div>
+            <div class="deco-ring deco-ring-2"></div>
+            <div class="deco-ring deco-ring-3"></div>
+            <div class="deco-dot deco-dot-1"></div>
+            <div class="deco-dot deco-dot-2"></div>
+
+            <div class="left-content">
+                <img th:src="@{/static/images/logo.png}" alt="기후에너지환경부 한강홍수통제소" class="agency-logo">
+                <div class="left-system-name">수자원통신위성<br>수문자료 수집 시스템</div>
+                <p class="left-desc">기후에너지환경부 한강홍수통제소</p>
+            </div>
+
+            <div class="left-badge">HDCS Web Service v1.0</div>
+        </div>
+
+        <!-- 오른쪽: 아이디 찾기 폼 -->
+        <div class="login-right">
+            <div class="login-right-inner">
+
+                <div class="right-title">아이디 찾기</div>
+                <div class="right-subtitle">가입 시 등록한 이름과 이메일로 아이디를 찾습니다</div>
+
+                <div class="result-box" th:if="${foundId}">
+                    회원님의 아이디는 <strong th:text="${foundId}"></strong> 입니다.
+                </div>
+
+                <div class="alert alert-error" th:if="${errorMsg}" th:text="${errorMsg}"></div>
+
+                <form th:action="@{/find-id}" method="post" class="login-form">
+
+                    <div class="form-group">
+                        <label for="name">이름 *</label>
+                        <input type="text" id="name" name="name"
+                               placeholder="가입 시 등록한 이름" autofocus required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">이메일 *</label>
+                        <input type="email" id="email" name="email"
+                               placeholder="가입 시 등록한 이메일" required>
+                    </div>
+
+                    <button type="submit" class="btn-login">아이디 찾기</button>
+                </form>
+
+                <div class="login-links">
+                    <a th:href="@{/login}">로그인</a>
+                    <span class="link-divider">|</span>
+                    <a th:href="@{/find-password}">비밀번호 찾기</a>
+                    <span class="link-divider">|</span>
+                    <a th:href="@{/register}">회원 가입</a>
+                </div>
+
+                <p class="login-footer">© 2026 HDCS Web Service. All rights reserved.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

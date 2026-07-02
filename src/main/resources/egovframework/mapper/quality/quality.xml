@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.quality.dao.QualityDAO">
+
+    <resultMap id="qualityResultMap" type="kr.kwater.hdcs.quality.vo.QualityVO">
+        <id     column="ID"       property="id"/>
+        <result column="NAME"     property="name"/>
+        <result column="STATUS"   property="status"/>
+        <result column="PROGRESS" property="progress"/>
+        <result column="REG_DT"   property="regDt"/>
+    </resultMap>
+
+    <select id="selectQualityList" parameterType="kr.kwater.hdcs.quality.vo.QualityVO"
+            resultMap="qualityResultMap">
+        SELECT ID, NAME, STATUS, PROGRESS, REG_DT
+        FROM TB_QUALITY
+        <where>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND NAME LIKE '%' || #{searchKeyword} || '%'
+            </if>
+            <if test="searchCondition != null and searchCondition != ''">
+                AND STATUS = #{searchCondition}
+            </if>
+        </where>
+        ORDER BY ID DESC
+    </select>
+
+    <select id="selectQualityCount" parameterType="kr.kwater.hdcs.quality.vo.QualityVO"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM TB_QUALITY
+        <where>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND NAME LIKE '%' || #{searchKeyword} || '%'
+            </if>
+            <if test="searchCondition != null and searchCondition != ''">
+                AND STATUS = #{searchCondition}
+            </if>
+        </where>
+    </select>
+
+</mapper>

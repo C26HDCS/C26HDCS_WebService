@@ -1,0 +1,125 @@
+/* ============================================================
+   마이페이지 전용 스타일
+   ============================================================ */
+
+/* ── 카드: 좌우 2단 패널 ── */
+.mypage-card {
+    display: flex;
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+/* ── 각 섹션 ── */
+.mypage-section {
+    flex: 1;
+    padding: 28px 32px 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── 섹션 제목 ── */
+.mypage-section-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #dce8f5;
+    margin-bottom: 22px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    letter-spacing: 0.2px;
+}
+
+/* ── 세로 구분선 ── */
+.mypage-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+/* ── 필드 행 ── */
+.mypage-field {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* ── 라벨 ── */
+.mypage-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6a8aaa;
+    width: 110px;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+}
+
+/* ── 읽기 전용 텍스트 (아이디, 이름) ── */
+.mypage-readonly {
+    font-size: 14px;
+    color: #9ab8d4;
+    padding: 9px 0;
+    flex: 1;
+}
+
+/* ── 입력 필드 ── */
+.mypage-input {
+    flex: 1;
+    padding: 9px 13px;
+    background: #162032;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: #c8d6ea;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mypage-input::placeholder {
+    color: #2e4060;
+}
+
+.mypage-input:focus {
+    border-color: #3a7bd5;
+    box-shadow: 0 0 0 3px rgba(58,123,213,0.14);
+    background: #1a2840;
+}
+
+/* ── 버튼 영역 ── */
+.mypage-actions {
+    margin-top: auto;
+    padding-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ── 저장 / 변경 버튼 ── */
+.btn-mypage-save {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 26px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 3px 12px rgba(58,123,213,0.32);
+}
+
+.btn-mypage-save:hover {
+    background: #2a6ac4;
+    box-shadow: 0 4px 18px rgba(58,123,213,0.46);
+}
+
+.btn-mypage-save:active {
+    background: #1a5aaa;
+    transform: translateY(1px);
+}

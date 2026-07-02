@@ -1,0 +1,210 @@
+<div class="dash-root">
+
+    <!-- ── 상태 바 ── -->
+    <div class="dash-status-bar">
+
+        <div class="dash-status-left">
+            <span class="dash-section-label">시스템 상태 모니터링</span>
+            <button class="dash-total-btn">
+                전체 장비&nbsp;<strong>{{summary.totalDevices}}</strong>
+            </button>
+            <span class="dash-status-item">
+                <span class="dash-dot dot-normal"></span>
+                정상&nbsp;<strong>{{summary.normal}}</strong>
+            </span>
+            <span class="dash-status-item">
+                <span class="dash-dot dot-fault"></span>
+                장애&nbsp;<strong>{{summary.fault}}</strong>
+            </span>
+            <span class="dash-status-item">
+                <span class="dash-dot dot-warn"></span>
+                경고&nbsp;<strong>{{summary.warn}}</strong>
+            </span>
+            <span class="dash-timestamp">{{currentTime}}</span>
+        </div>
+
+        <div class="dash-status-right">
+            <span class="dash-section-label" style="border-right:none; padding-right:0;">시스템 구성도</span>
+        </div>
+
+    </div>
+
+    <!-- ── 메인 콘텐츠 ── -->
+    <div class="dash-main">
+
+        <!-- 왼쪽: 지도 + 장비 목록 -->
+        <div class="dash-left">
+
+            <!-- 지도 플레이스홀더 -->
+            <div class="dash-map-area">
+                <svg viewBox="0 0 200 300" width="140" height="210" opacity="0.07"
+                     xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                    <path d="M100 10 C80 20 60 30 50 55 C40 80 35 100 30 130
+                             C25 160 20 185 30 210 C40 235 55 255 70 270
+                             C85 285 95 295 100 295 C105 295 115 285 130 270
+                             C145 255 160 235 170 210 C180 185 175 160 170 130
+                             C165 100 160 80 150 55 C140 30 120 20 100 10Z"/>
+                </svg>
+            </div>
+
+            <!-- 장비 목록 패널 -->
+            <div class="dash-equip-panel" ng-class="{collapsed: equipPanelCollapsed}">
+
+                <div class="dash-equip-content">
+                    <div class="dash-equip-header">
+                        <span>전체 장비 리스트</span>
+                    </div>
+                    <div class="dash-equip-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>장비 ID</th>
+                                    <th>장비명</th>
+                                    <th>위치</th>
+                                    <th>상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="no-data">전체 장비 리스트가 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 토글 탭 -->
+                <div class="dash-equip-tab" ng-click="toggleEquipPanel()" title="장비 목록 접기/펼치기">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </div>
+
+            </div>
+
+            <!-- 지도 컨트롤 버튼 -->
+            <div class="dash-map-controls">
+                <!-- 확대 -->
+                <button class="dash-map-btn" title="확대">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                </button>
+                <!-- 축소 -->
+                <button class="dash-map-btn" title="축소">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                </button>
+                <div class="dash-map-btn-divider"></div>
+                <!-- 현재 위치 -->
+                <button class="dash-map-btn" title="현재 위치">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+                    </svg>
+                </button>
+                <!-- 초기화/홈 -->
+                <button class="dash-map-btn" title="전체 보기">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- 오른쪽: 시스템 구성도 -->
+        <div class="dash-right">
+            <div class="dash-diagram-wrap">
+                <svg viewBox="0 0 420 530" width="100%" style="max-width:420px; min-width:280px;"
+                     xmlns="http://www.w3.org/2000/svg">
+
+                    <!-- 연결선 -->
+                    <g stroke="rgba(90,158,245,0.4)" stroke-width="1.2" fill="none">
+                        <!-- L대역 → 방화벽#1 -->
+                        <line x1="100" y1="58" x2="100" y2="105"/>
+                        <!-- Ka대역 → 방화벽#2 -->
+                        <line x1="320" y1="58" x2="320" y2="105"/>
+                        <!-- 방화벽#1 → IPS -->
+                        <line x1="100" y1="143" x2="210" y2="190"/>
+                        <!-- 방화벽#2 → IPS -->
+                        <line x1="320" y1="143" x2="210" y2="190"/>
+                        <!-- IPS → 10Gb 스위치 L -->
+                        <line x1="190" y1="228" x2="115" y2="275"/>
+                        <!-- IPS → 10Gb 스위치 Ka -->
+                        <line x1="230" y1="228" x2="305" y2="275"/>
+                        <!-- 10Gb L → 운영관리서버 -->
+                        <line x1="150" y1="313" x2="210" y2="360"/>
+                        <!-- 10Gb Ka → 운영관리서버 -->
+                        <line x1="270" y1="313" x2="210" y2="360"/>
+                        <!-- 운영관리서버 → 4대강 -->
+                        <line x1="185" y1="398" x2="105" y2="445"/>
+                        <!-- 운영관리서버 → 수자원 -->
+                        <line x1="235" y1="398" x2="315" y2="445"/>
+                    </g>
+
+                    <!-- 박스 공통 스타일 -->
+                    <!-- Row 1: L대역 / Ka대역 -->
+                    <rect x="50"  y="20" width="100" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.5)" stroke-width="1.2"/>
+                    <text x="100" y="44" text-anchor="middle" fill="#dce8f5" font-size="13" font-family="'Open Sans','Malgun Gothic',sans-serif" font-weight="600">L 대역</text>
+
+                    <rect x="270" y="20" width="100" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.5)" stroke-width="1.2"/>
+                    <text x="320" y="44" text-anchor="middle" fill="#dce8f5" font-size="13" font-family="'Open Sans','Malgun Gothic',sans-serif" font-weight="600">Ka 대역</text>
+
+                    <!-- Row 2: 방화벽 -->
+                    <rect x="50"  y="105" width="100" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.35)" stroke-width="1.2"/>
+                    <text x="100" y="129" text-anchor="middle" fill="#ccd8ec" font-size="12" font-family="'Open Sans','Malgun Gothic',sans-serif">방화벽 #1</text>
+
+                    <rect x="270" y="105" width="100" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.35)" stroke-width="1.2"/>
+                    <text x="320" y="129" text-anchor="middle" fill="#ccd8ec" font-size="12" font-family="'Open Sans','Malgun Gothic',sans-serif">방화벽 #2</text>
+
+                    <!-- Row 3: IPS -->
+                    <rect x="160" y="190" width="100" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.35)" stroke-width="1.2"/>
+                    <text x="210" y="214" text-anchor="middle" fill="#ccd8ec" font-size="12" font-family="'Open Sans','Malgun Gothic',sans-serif">IPS</text>
+
+                    <!-- Row 4: 10Gb 스위치 -->
+                    <rect x="45"  y="275" width="140" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.35)" stroke-width="1.2"/>
+                    <text x="115" y="299" text-anchor="middle" fill="#ccd8ec" font-size="11.5" font-family="'Open Sans','Malgun Gothic',sans-serif">10Gb 광 스위치</text>
+
+                    <rect x="235" y="275" width="140" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.35)" stroke-width="1.2"/>
+                    <text x="305" y="299" text-anchor="middle" fill="#ccd8ec" font-size="11.5" font-family="'Open Sans','Malgun Gothic',sans-serif">10Gb 광 스위치</text>
+
+                    <!-- Row 5: 운영관리서버 -->
+                    <rect x="155" y="360" width="110" height="38" rx="5"
+                          fill="#19273c" stroke="rgba(90,158,245,0.35)" stroke-width="1.2"/>
+                    <text x="210" y="384" text-anchor="middle" fill="#ccd8ec" font-size="12" font-family="'Open Sans','Malgun Gothic',sans-serif">운영관리서버</text>
+
+                    <!-- Row 6: 최하단 -->
+                    <rect x="20"  y="445" width="170" height="38" rx="5"
+                          fill="#162032" stroke="rgba(90,158,245,0.3)" stroke-width="1.2"/>
+                    <text x="105" y="469" text-anchor="middle" fill="#aac4dc" font-size="11.5" font-family="'Open Sans','Malgun Gothic',sans-serif">4대강 홍수통제소</text>
+
+                    <rect x="230" y="445" width="170" height="38" rx="5"
+                          fill="#162032" stroke="rgba(90,158,245,0.3)" stroke-width="1.2"/>
+                    <text x="315" y="469" text-anchor="middle" fill="#aac4dc" font-size="11.5" font-family="'Open Sans','Malgun Gothic',sans-serif">수자원위성센터</text>
+
+                </svg>
+            </div>
+        </div>
+
+    </div>
+</div>

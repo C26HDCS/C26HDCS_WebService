@@ -1,0 +1,275 @@
+/* ============================================================
+   대시보드 전용 스타일
+   ============================================================ */
+
+.dash-root {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── 상태 바 ── */
+.dash-status-bar {
+    display: flex;
+    align-items: center;
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+
+.dash-status-left,
+.dash-status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    height: 52px;
+}
+
+.dash-status-left {
+    flex: 2.8;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.dash-status-right {
+    flex: 1;
+}
+
+.dash-section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #dce8f5;
+    white-space: nowrap;
+    padding-right: 4px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    margin-right: 4px;
+}
+
+.dash-total-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 28px;
+    padding: 0 14px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.dash-status-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: #ccd8ec;
+}
+
+.dash-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dot-normal { background: #2ecc71; box-shadow: 0 0 6px rgba(46,204,113,0.6); }
+.dot-fault  { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
+.dot-warn   { background: #f39c12; box-shadow: 0 0 6px rgba(243,156,18,0.6); }
+
+.dash-timestamp {
+    font-size: 12px;
+    color: #6a8aaa;
+    margin-left: auto;
+    white-space: nowrap;
+    font-family: 'Courier New', monospace;
+}
+
+/* ── 메인 영역 ── */
+.dash-main {
+    display: flex;
+    gap: 12px;
+    height: 680px;
+    min-height: 0;
+}
+
+/* ── 왼쪽: 지도 영역 ── */
+.dash-left {
+    flex: 2.8;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* 지도 플레이스홀더 */
+.dash-map-area {
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 45% 35%, rgba(30,60,100,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse at 65% 65%, rgba(20,45,80,0.25) 0%, transparent 45%),
+        linear-gradient(180deg, #0d1822 0%, #111e2e 40%, #0e1a28 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.06);
+    font-size: 80px;
+    user-select: none;
+}
+
+/* ── 장비 목록 패널 (지도 좌측 오버레이) ── */
+.dash-equip-panel {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 430px;
+    z-index: 10;
+    display: flex;
+    flex-direction: row;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-equip-panel.collapsed {
+    transform: translateX(-236px);
+}
+
+.dash-equip-content {
+    flex: 1;
+    background: rgba(12, 20, 34, 0.92);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.dash-equip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+.dash-equip-header span {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #dce8f5;
+    letter-spacing: 0.3px;
+}
+
+.dash-equip-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.dash-equip-body::-webkit-scrollbar { width: 4px; }
+.dash-equip-body::-webkit-scrollbar-track { background: transparent; }
+.dash-equip-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* 장비 패널 내부 테이블 */
+.dash-equip-body .data-table thead th {
+    background: #162032;
+    padding: 8px 10px;
+    font-size: 11px;
+    text-align: center;
+}
+.dash-equip-body .data-table tbody td {
+    padding: 8px 10px;
+    font-size: 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+/* 패널 토글 탭 */
+.dash-equip-tab {
+    width: 28px;
+    background: rgba(22, 37, 58, 0.96);
+    border-right: 1px solid rgba(58,123,213,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #5a9ef5;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.dash-equip-tab:hover { background: rgba(58,123,213,0.2); }
+
+.dash-equip-tab svg {
+    transition: transform 0.28s ease;
+}
+.dash-equip-panel.collapsed .dash-equip-tab svg {
+    transform: rotate(180deg);
+}
+
+/* 지도 컨트롤 버튼 */
+.dash-map-controls {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 5;
+}
+
+.dash-map-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(22, 32, 50, 0.88);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 7px;
+    color: #c8d8ec;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+}
+.dash-map-btn:hover {
+    background: rgba(58,123,213,0.3);
+    color: #fff;
+    border-color: rgba(58,123,213,0.5);
+}
+.dash-map-btn-divider {
+    height: 8px;
+}
+
+/* ── 오른쪽: 시스템 구성도 ── */
+.dash-right {
+    flex: 1;
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-diagram-wrap {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.dash-diagram-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+.dash-diagram-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }

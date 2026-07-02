@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>샘플 상세</title>
+    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>샘플 상세</h1>
+    </header>
+
+    <table class="detail-table">
+        <tr>
+            <th>ID</th>
+            <td th:text="${sample.id}"></td>
+        </tr>
+        <tr>
+            <th>이름</th>
+            <td th:text="${sample.name}"></td>
+        </tr>
+        <tr>
+            <th>설명</th>
+            <td th:text="${sample.description}"></td>
+        </tr>
+        <tr>
+            <th>사용여부</th>
+            <td th:text="${sample.useYn == 'Y' ? '사용' : '미사용'}"></td>
+        </tr>
+        <tr>
+            <th>등록일시</th>
+            <td th:text="${sample.regDt}"></td>
+        </tr>
+        <tr>
+            <th>수정일시</th>
+            <td th:text="${sample.mdfcnDt}"></td>
+        </tr>
+    </table>
+
+    <div class="btn-group">
+        <a th:href="@{/sample/modify/{id}(id=${sample.id})}" class="btn btn-primary">수정</a>
+        <form th:action="@{/sample/delete/{id}(id=${sample.id})}" method="post"
+              style="display:inline"
+              onsubmit="return confirm('삭제하시겠습니까?')">
+            <button type="submit" class="btn btn-delete">삭제</button>
+        </form>
+        <a th:href="@{/sample/list}" class="btn btn-secondary">목록</a>
+    </div>
+</div>
+</body>
+</html>

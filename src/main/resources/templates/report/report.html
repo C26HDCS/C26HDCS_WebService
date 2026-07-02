@@ -1,0 +1,218 @@
+<div class="page-header">
+    <div class="page-header-title">
+        <span class="page-title-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+                <line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+        </span>
+        <h2>리포트 관리</h2>
+    </div>
+</div>
+
+<!-- ── 리포트 생성 영역 ── -->
+<div class="report-gen-panel">
+
+    <div class="report-gen-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        리포트 생성
+    </div>
+
+    <div class="report-gen-body">
+
+        <div class="report-gen-group">
+            <span class="report-gen-label">기간 선택</span>
+            <div class="date-range">
+                <input type="date" class="report-date-input" ng-model="gen.dateFrom">
+                <span class="date-sep">~</span>
+                <input type="date" class="report-date-input" ng-model="gen.dateTo">
+            </div>
+        </div>
+
+        <div class="report-gen-divider"></div>
+
+        <div class="report-gen-group">
+            <span class="report-gen-label">데이터 유형</span>
+            <div class="report-check-group">
+                <label class="report-check-item">
+                    <input type="checkbox" ng-model="gen.typeLog" class="report-chk"> 로그
+                </label>
+                <label class="report-check-item">
+                    <input type="checkbox" ng-model="gen.typeEvent" class="report-chk"> 이벤트
+                </label>
+                <label class="report-check-item">
+                    <input type="checkbox" ng-model="gen.typeAlarm" class="report-chk"> 알람
+                </label>
+                <label class="report-check-item">
+                    <input type="checkbox" ng-model="gen.typeData" class="report-chk"> 수신데이터
+                </label>
+            </div>
+        </div>
+
+        <div class="report-gen-divider"></div>
+
+        <div class="report-gen-group">
+            <span class="report-gen-label">파일 형식</span>
+            <div class="report-check-group">
+                <label class="report-check-item">
+                    <input type="radio" name="genFormat" value="PDF" ng-model="gen.format" class="report-chk"> PDF
+                </label>
+                <label class="report-check-item">
+                    <input type="radio" name="genFormat" value="WORD" ng-model="gen.format" class="report-chk"> Word
+                </label>
+            </div>
+        </div>
+
+        <div class="report-gen-divider"></div>
+
+        <div class="report-gen-group">
+            <span class="report-gen-label">생성 방식</span>
+            <div class="report-check-group">
+                <label class="report-check-item">
+                    <input type="radio" name="genMethod" value="MANUAL" ng-model="gen.method" class="report-chk"> 수동
+                </label>
+                <label class="report-check-item">
+                    <input type="radio" name="genMethod" value="AUTO" ng-model="gen.method" class="report-chk"> 자동
+                </label>
+            </div>
+        </div>
+
+        <div class="report-gen-actions">
+            <button class="btn-report-reset" ng-click="resetGen()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 .49-4.9"/>
+                </svg>
+                초기화
+            </button>
+            <button class="btn-report-generate" ng-click="generateReport()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                리포트 생성
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── 검색 영역 ── -->
+<div class="user-search-panel">
+    <div class="user-search-fields">
+
+        <div class="user-search-field">
+            <label>리포트 ID</label>
+            <input type="text" ng-model="searchKeyword" placeholder="리포트 ID 입력">
+        </div>
+
+        <div class="user-search-field">
+            <label>생성일시</label>
+            <div class="date-range">
+                <input type="date" ng-model="searchDateFrom">
+                <span class="date-sep">~</span>
+                <input type="date" ng-model="searchDateTo">
+            </div>
+        </div>
+
+        <div class="user-search-field">
+            <label>파일형식</label>
+            <select ng-model="searchFormat">
+                <option value="">전체</option>
+                <option value="PDF">PDF</option>
+                <option value="WORD">Word</option>
+            </select>
+        </div>
+
+        <div class="user-search-field">
+            <label>생성방식</label>
+            <select ng-model="searchMethod">
+                <option value="">전체</option>
+                <option value="AUTO">자동</option>
+                <option value="MANUAL">수동</option>
+            </select>
+        </div>
+
+    </div>
+
+    <button class="btn-search-user" ng-click="load()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        조회
+    </button>
+</div>
+
+<!-- ── 테이블 영역 ── -->
+<div class="user-table-panel">
+
+    <div class="user-table-toolbar">
+        <span class="user-count-label">총 <strong>{{reportList.length}}</strong>건</span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:56px;">번호</th>
+                <th style="width:110px;">리포트 ID</th>
+                <th>리포트명</th>
+                <th style="width:130px;">조회기간</th>
+                <th style="width:150px;">생성일시</th>
+                <th style="width:80px;">파일형식</th>
+                <th style="width:90px;">생성방식</th>
+                <th style="width:100px;">다운로드</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="reportList.length === 0">
+                <td colspan="8" class="no-data">데이터가 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in reportList">
+                <td>{{$index + 1}}</td>
+                <td>{{item.reportId}}</td>
+                <td style="text-align:left;">{{item.reportName}}</td>
+                <td>{{item.period}}</td>
+                <td>{{item.createdAt}}</td>
+                <td>{{item.format}}</td>
+                <td>
+                    <span class="status-badge"
+                          ng-class="item.method === 'AUTO' ? 'status-done' : 'status-wait'">
+                        {{item.method === 'AUTO' ? '자동' : '수동'}}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-report-download">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        다운로드
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

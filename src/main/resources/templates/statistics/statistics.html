@@ -1,0 +1,85 @@
+<div class="page-header">
+    <h2>통계</h2>
+    <p>자료 수집 및 배포 현황에 대한 통계를 확인합니다.</p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <span class="stat-label">금일 수집 건수</span>
+        <span class="stat-value">{{stats.todayCollect}}</span>
+        <span class="stat-badge badge-blue">건</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">금일 배포 건수</span>
+        <span class="stat-value">{{stats.todayDistribute}}</span>
+        <span class="stat-badge badge-green">건</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">월간 누적 수집</span>
+        <span class="stat-value">{{stats.monthCollect}}</span>
+        <span class="stat-badge badge-blue">건</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">월간 누적 배포</span>
+        <span class="stat-value">{{stats.monthDistribute}}</span>
+        <span class="stat-badge badge-green">건</span>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+    <div class="card">
+        <div class="card-title">수집 유형별 현황</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>유형</th>
+                    <th>건수</th>
+                    <th>비율</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-if="collectStats.length === 0">
+                    <td colspan="3" class="no-data">데이터가 없습니다.</td>
+                </tr>
+                <tr ng-repeat="item in collectStats">
+                    <td>{{item.type}}</td>
+                    <td>{{item.count}}</td>
+                    <td>
+                        <div class="progress-bar-wrap" style="display:inline-block; width:80px; vertical-align:middle;">
+                            <div class="progress-bar-fill" ng-style="{width: item.ratio + '%'}"></div>
+                        </div>
+                        <small style="color:#888; margin-left:6px;">{{item.ratio}}%</small>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-title">배포 결과 현황</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>결과</th>
+                    <th>건수</th>
+                    <th>비율</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-if="distributeStats.length === 0">
+                    <td colspan="3" class="no-data">데이터가 없습니다.</td>
+                </tr>
+                <tr ng-repeat="item in distributeStats">
+                    <td><span class="status-badge" ng-class="getStatusClass(item.result)">{{item.result}}</span></td>
+                    <td>{{item.count}}</td>
+                    <td>
+                        <div class="progress-bar-wrap" style="display:inline-block; width:80px; vertical-align:middle;">
+                            <div class="progress-bar-fill" ng-style="{width: item.ratio + '%'}"></div>
+                        </div>
+                        <small style="color:#888; margin-left:6px;">{{item.ratio}}%</small>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Check</title>
+    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+</head>
+<body>
+<div class="container">
+    <h1>Health Check</h1>
+    <p>Status: <strong th:text="${status}">UP</strong></p>
+    <a th:href="@{/}">홈으로</a>
+</div>
+</body>
+</html>

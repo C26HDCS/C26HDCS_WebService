@@ -1,0 +1,215 @@
+/* ============================================================
+   리포트 관리 전용 스타일
+   ============================================================ */
+
+/* ── 리포트 생성 패널 ── */
+.report-gen-panel {
+    background: #162032;
+    border: 1px solid rgba(58,123,213,0.22);
+    border-left: 3px solid #3a7bd5;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+/* 패널 헤더 */
+.report-gen-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #5a9ef5;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    background: rgba(58,123,213,0.06);
+}
+
+/* 패널 바디: 가로 한 줄 배치 */
+.report-gen-body {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* 각 그룹 */
+.report-gen-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 20px;
+}
+
+.report-gen-group:first-child { padding-left: 0; }
+
+/* 세로 구분선 */
+.report-gen-divider {
+    width: 1px;
+    height: 48px;
+    background: rgba(255,255,255,0.08);
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* 그룹 라벨 */
+.report-gen-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #6a8aaa;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* 날짜 input */
+.report-date-input {
+    height: 34px;
+    padding: 0 10px;
+    background: #111e30;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 7px;
+    color: #dce8f5;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    color-scheme: dark;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 148px;
+}
+.report-date-input:focus {
+    border-color: #3a7bd5;
+    box-shadow: 0 0 0 3px rgba(58,123,213,0.14);
+}
+
+/* 체크박스/라디오 그룹 */
+.report-check-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 34px;
+}
+
+.report-check-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #ccd8ec;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.report-chk {
+    width: 14px;
+    height: 14px;
+    accent-color: #3a7bd5;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* 버튼 영역 */
+.report-gen-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-left: 16px;
+}
+
+/* 초기화 버튼 */
+.btn-report-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 16px;
+    background: rgba(255,255,255,0.05);
+    color: #8aa8c4;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-report-reset:hover {
+    background: rgba(255,255,255,0.1);
+    color: #dce8f5;
+}
+
+/* 리포트 생성 버튼 */
+.btn-report-generate {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 20px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(58,123,213,0.35);
+}
+.btn-report-generate:hover {
+    background: #2a6ac4;
+    box-shadow: 0 4px 16px rgba(58,123,213,0.5);
+}
+.btn-report-generate:active {
+    background: #1a5aaa;
+    transform: translateY(1px);
+}
+
+/* ── 테이블 내 다운로드 버튼 ── */
+.btn-report-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 12px;
+    background: rgba(46,204,113,0.1);
+    color: #2ecc71;
+    border: 1px solid rgba(46,204,113,0.25);
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-report-download:hover {
+    background: rgba(46,204,113,0.22);
+    color: #fff;
+}
+
+/* ── 테이블 스타일 오버라이드 ── */
+.user-table-panel .data-table thead th {
+    background: #19273c;
+    padding: 12px 16px;
+    text-align: center;
+}
+.user-table-panel .data-table tbody td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.user-table-panel .data-table tbody tr:last-child td { border-bottom: none; }
+.user-table-panel .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+.user-table-panel .status-badge {
+    display: inline-block !important;
+    min-width: 50px !important;
+    text-align: center;
+}

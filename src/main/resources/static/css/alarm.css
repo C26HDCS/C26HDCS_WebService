@@ -1,0 +1,173 @@
+/* ============================================================
+   알람 관리 페이지 전용 스타일
+   ============================================================ */
+
+/* ── 검색 패널 ── */
+.alarm-search-panel {
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.alarm-search-fields {
+    display: flex;
+    gap: 22px;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.alarm-search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.alarm-search-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8aa8c4;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.alarm-search-field input[type="text"],
+.alarm-search-field input[type="date"],
+.alarm-search-field select {
+    height: 36px;
+    padding: 0 12px;
+    background: #111e30;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 7px;
+    color: #dce8f5;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.alarm-search-field input[type="text"] { width: 210px; }
+.alarm-search-field input[type="date"] { width: 210px; color-scheme: dark; }
+.alarm-search-field select             { width: 210px; padding-right: 28px; }
+
+.alarm-search-field input:focus,
+.alarm-search-field select:focus {
+    border-color: #3a7bd5;
+    box-shadow: 0 0 0 3px rgba(58,123,213,0.14);
+}
+
+.alarm-search-field input::placeholder { color: #2e4060; }
+.alarm-search-field select option { background: #1c2b40; }
+
+.alarm-date-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.alarm-date-sep { color: #3a5070; font-size: 13px; }
+
+.btn-search-alarm {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 20px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(58,123,213,0.3);
+    flex-shrink: 0;
+}
+.btn-search-alarm:hover {
+    background: #2a6ac4;
+    box-shadow: 0 4px 14px rgba(58,123,213,0.45);
+}
+
+/* ── 테이블 패널 ── */
+.alarm-table-panel {
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.alarm-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.alarm-count-label {
+    font-size: 13px;
+    color: #8aa8c4;
+}
+.alarm-count-label strong {
+    color: #dce8f5;
+    font-weight: 600;
+}
+
+.btn-refresh-alarm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 16px;
+    background: rgba(58,123,213,0.16);
+    color: #5a9ef5;
+    border: 1px solid rgba(58,123,213,0.35);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn-refresh-alarm:hover {
+    background: rgba(58,123,213,0.32);
+    color: #fff;
+    border-color: #3a7bd5;
+}
+
+/* ── 테이블 내부 ── */
+.alarm-table-panel .data-table {
+    width: 100%;
+}
+.alarm-table-panel .data-table thead th {
+    background: #19273c;
+    padding: 12px 16px;
+    text-align: center;
+}
+.alarm-table-panel .data-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+}
+.alarm-table-panel .data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.alarm-table-panel .data-table tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+}
+.alarm-table-panel .status-badge {
+    display: inline-block !important;
+    min-width: 70px !important;
+    text-align: center;
+    box-sizing: border-box;
+}

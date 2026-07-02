@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.alarm.dao.AlarmDAO">
+
+    <resultMap id="alarmResultMap" type="kr.kwater.hdcs.alarm.vo.AlarmVO">
+        <id     column="ID"       property="id"/>
+        <result column="TYPE"     property="type"/>
+        <result column="TARGET"   property="target"/>
+        <result column="SEVERITY" property="severity"/>
+        <result column="STATUS"   property="status"/>
+        <result column="REG_DT"   property="regDt"/>
+    </resultMap>
+
+    <select id="selectAlarmList" parameterType="kr.kwater.hdcs.alarm.vo.AlarmVO"
+            resultMap="alarmResultMap">
+        SELECT ID, TYPE, TARGET, SEVERITY, STATUS, REG_DT
+        FROM TB_ALARM
+        <where>
+            <if test="searchCondition != null and searchCondition != ''">
+                AND STATUS = #{searchCondition}
+            </if>
+        </where>
+        ORDER BY ID DESC
+    </select>
+
+    <select id="selectAlarmCount" parameterType="kr.kwater.hdcs.alarm.vo.AlarmVO"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM TB_ALARM
+        <where>
+            <if test="searchCondition != null and searchCondition != ''">
+                AND STATUS = #{searchCondition}
+            </if>
+        </where>
+    </select>
+
+</mapper>

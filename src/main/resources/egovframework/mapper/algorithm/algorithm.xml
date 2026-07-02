@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.algorithm.dao.AlgorithmDAO">
+
+    <resultMap id="algorithmResultMap" type="kr.kwater.hdcs.algorithm.vo.AlgorithmVO">
+        <id     column="ID"      property="id"/>
+        <result column="NAME"    property="name"/>
+        <result column="TYPE"    property="type"/>
+        <result column="ENABLED" property="enabled"
+                javaType="boolean" typeHandler="org.apache.ibatis.type.BooleanTypeHandler"/>
+        <result column="REG_DT"  property="regDt"/>
+    </resultMap>
+
+    <select id="selectAlgorithmList" parameterType="kr.kwater.hdcs.algorithm.vo.AlgorithmVO"
+            resultMap="algorithmResultMap">
+        SELECT ID, NAME, TYPE,
+               CASE WHEN ENABLED = 'Y' THEN TRUE ELSE FALSE END AS ENABLED,
+               REG_DT
+        FROM TB_ALGORITHM
+        ORDER BY ID ASC
+    </select>
+
+    <update id="updateAlgorithmEnabled" parameterType="kr.kwater.hdcs.algorithm.vo.AlgorithmVO">
+        UPDATE TB_ALGORITHM
+        SET ENABLED = CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END
+        WHERE ID = #{id}
+    </update>
+
+</mapper>

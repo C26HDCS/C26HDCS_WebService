@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- eGovFramework 공통 프로퍼티 서비스 -->
+    <bean name="propertiesService"
+          class="org.egovframe.rte.fdl.property.impl.EgovPropertyServiceImpl"
+          destroy-method="destroy">
+        <property name="properties">
+            <map>
+                <!-- 페이징 설정 -->
+                <entry key="pageUnit" value="10"/>
+                <entry key="pageSize" value="10"/>
+                <!-- 업로드 설정 -->
+                <entry key="uploadPath" value="/upload"/>
+                <entry key="uploadMaxSize" value="10485760"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- eGovFramework 메시지 소스 -->
+    <bean id="messageSource"
+          class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>classpath:/egovframework/message/message-common</value>
+            </list>
+        </property>
+        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="cacheSeconds" value="60"/>
+    </bean>
+
+    <!-- eGovFramework LeaveaTrace (EgovAbstractServiceImpl 필수 빈) -->
+    <bean name="leaveaTrace"
+          class="org.egovframe.rte.fdl.cmmn.trace.LeaveaTrace">
+        <property name="traceHandlerServices">
+            <list>
+                <bean class="org.egovframe.rte.fdl.cmmn.trace.manager.DefaultTraceHandleManager">
+                    <property name="patterns">
+                        <list>
+                            <value>*</value>
+                        </list>
+                    </property>
+                    <property name="handlers">
+                        <list>
+                            <bean class="org.egovframe.rte.fdl.cmmn.trace.handler.DefaultTraceHandler"/>
+                        </list>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+</beans>

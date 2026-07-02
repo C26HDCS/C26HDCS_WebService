@@ -1,0 +1,460 @@
+/* ============================================================
+   사용자 관리 페이지 전용 스타일
+   ============================================================ */
+
+/* ── 페이지 헤더 아이콘 타이틀 ── */
+.page-header-title {
+    display: flex;
+    align-items: center;
+}
+.page-title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    /* color: #5a9ef5; */
+    flex-shrink: 0;
+}
+
+/* ── 검색 패널 ── */
+.user-search-panel {
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.user-search-fields {
+    display: flex;
+    gap: 22px;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.user-search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-search-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8aa8c4;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.user-search-field input[type="text"],
+.user-search-field input[type="date"],
+.user-search-field select {
+    height: 36px;
+    padding: 0 12px;
+    background: #111e30;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 7px;
+    color: #dce8f5;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.user-search-field input[type="text"] { width: 210px; }
+.user-search-field input[type="date"] { width: 210px; color-scheme: dark; }
+.user-search-field select            { width: 210px; padding-right: 28px; }
+
+.user-search-field input:focus,
+.user-search-field select:focus {
+    border-color: #3a7bd5;
+    box-shadow: 0 0 0 3px rgba(58,123,213,0.14);
+}
+
+.user-search-field input::placeholder { color: #2e4060; }
+.user-search-field select option { background: #1c2b40; }
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.date-sep { color: #3a5070; font-size: 13px; }
+
+.btn-search-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 20px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(58,123,213,0.3);
+    flex-shrink: 0;
+}
+.btn-search-user:hover {
+    background: #2a6ac4;
+    box-shadow: 0 4px 14px rgba(58,123,213,0.45);
+}
+
+/* ── 테이블 패널 ── */
+.user-table-panel {
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.user-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.user-count-label {
+    font-size: 13px;
+    color: #8aa8c4;
+}
+.user-count-label strong {
+    color: #dce8f5;
+    font-weight: 600;
+}
+
+.btn-register-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 16px;
+    background: rgba(58,123,213,0.16);
+    color: #5a9ef5;
+    border: 1px solid rgba(58,123,213,0.35);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn-register-user:hover {
+    background: rgba(58,123,213,0.32);
+    color: #fff;
+    border-color: #3a7bd5;
+}
+
+/* ── 테이블 내부 ── */
+.user-table-panel .data-table {
+    width: 100%;
+}
+.user-table-panel .data-table thead th {
+    background: #19273c;
+    padding: 12px 16px;
+    text-align: center;
+}
+.user-table-panel .data-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+}
+.user-table-panel .data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.user-table-panel .data-table tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+}
+.user-table-panel .status-badge {
+    display: inline-block !important;
+    min-width: 70px !important;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* ── 기능 버튼 ── */
+.action-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+.btn-action-edit {
+    background: rgba(58,123,213,0.14);
+    color: #5a9ef5;
+    border: 1px solid rgba(58,123,213,0.28);
+}
+.btn-action-edit:hover {
+    background: rgba(58,123,213,0.3);
+    color: #fff;
+}
+.btn-action-delete {
+    background: rgba(231,76,60,0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.25);
+}
+.btn-action-delete:hover {
+    background: rgba(231,76,60,0.25);
+    color: #fff;
+}
+
+/* ============================================================
+   사용자 등록 모달
+   ============================================================ */
+
+.user-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.user-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    width: 460px;
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 헤더 */
+.user-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.user-modal-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #dce8f5;
+    display: flex;
+    align-items: center;
+}
+
+.user-modal-close {
+    width: 30px;
+    height: 30px;
+    background: none;
+    border: none;
+    color: #6a8aaa;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+}
+.user-modal-close:hover {
+    background: rgba(255,255,255,0.07);
+    color: #dce8f5;
+}
+
+/* 폼 본문 */
+.user-modal-body {
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.user-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-modal-field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8aa8c4;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.user-modal-field input[type="text"],
+.user-modal-field input[type="password"],
+.user-modal-field input[type="email"],
+.user-modal-field select {
+    height: 38px;
+    padding: 0 13px;
+    background: #111e30;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 7px;
+    color: #dce8f5;
+    font-size: 13.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.user-modal-field input:focus,
+.user-modal-field select:focus {
+    border-color: #3a7bd5;
+    box-shadow: 0 0 0 3px rgba(58,123,213,0.14);
+}
+
+.user-modal-field input::placeholder { color: #2e4060; }
+.user-modal-field select option { background: #1c2b40; }
+
+.user-modal-readonly {
+    display: block;
+    height: 38px;
+    line-height: 38px;
+    padding: 0 13px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 7px;
+    color: #9ab8d4;
+    font-size: 13.5px;
+}
+
+/* 푸터 버튼 영역 */
+.user-modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 14px 22px 18px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.btn-modal-cancel {
+    height: 36px;
+    padding: 0 20px;
+    background: rgba(255,255,255,0.05);
+    color: #8aa8c4;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-modal-cancel:hover {
+    background: rgba(255,255,255,0.1);
+    color: #dce8f5;
+}
+
+.btn-modal-submit {
+    height: 36px;
+    padding: 0 24px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(58,123,213,0.3);
+}
+.btn-modal-submit:hover {
+    background: #2a6ac4;
+    box-shadow: 0 4px 14px rgba(58,123,213,0.45);
+}
+
+/* ── 삭제 확인 모달 ── */
+.user-modal-confirm { width: 400px; }
+
+.user-modal-title-danger { color: #e74c3c !important; }
+
+.user-modal-confirm-body {
+    padding: 28px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+}
+
+.user-modal-confirm-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e74c3c;
+    flex-shrink: 0;
+}
+
+.user-modal-confirm-text {
+    font-size: 13.5px;
+    color: #9ab8d4;
+    line-height: 1.7;
+}
+
+.user-modal-confirm-target {
+    display: inline-block;
+    padding: 6px 20px;
+    background: rgba(231,76,60,0.08);
+    border: 1px solid rgba(231,76,60,0.22);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e74c3c;
+    letter-spacing: 0.3px;
+}
+
+.btn-modal-delete {
+    height: 36px;
+    padding: 0 24px;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(231,76,60,0.3);
+}
+.btn-modal-delete:hover {
+    background: #c0392b;
+    box-shadow: 0 4px 14px rgba(231,76,60,0.45);
+}

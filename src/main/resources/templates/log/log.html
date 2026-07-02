@@ -1,0 +1,99 @@
+<div class="page-header">
+    <div class="page-header-title">
+        <span class="page-title-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+        </span>
+        <h2>로그 및 이벤트 관리</h2>
+    </div>
+</div>
+
+<!-- ── 검색 영역 ── -->
+<div class="log-search-panel">
+    <div class="log-search-fields">
+
+        <div class="log-search-field">
+            <label>이력유형</label>
+            <select ng-model="filterLevel">
+                <option value="">전체</option>
+                <option value="LOG">로그</option>
+                <option value="EVENT">이벤트</option>
+            </select>
+        </div>
+
+        <div class="log-search-field">
+            <label>발생일시</label>
+            <div class="log-date-range">
+                <input type="date" ng-model="searchDateFrom">
+                <span class="log-date-sep">~</span>
+                <input type="date" ng-model="searchDateTo">
+            </div>
+        </div>
+
+        <div class="log-search-field">
+            <label>이력내용</label>
+            <input type="text" ng-model="searchKeyword" placeholder="이력 내용 입력">
+        </div>
+
+    </div>
+
+    <button class="btn-search-log" ng-click="load()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        조회
+    </button>
+</div>
+
+<!-- ── 테이블 영역 ── -->
+<div class="log-table-panel">
+
+    <div class="log-table-toolbar">
+        <span class="log-count-label">총 <strong>{{filteredList().length}}</strong>건</span>
+        <!-- <button class="btn-refresh-log" ng-click="load()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            새로고침
+        </button> -->
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:56px;">번호</th>
+                <th style="width:100px;">이력아이디</th>
+                <th style="width:100px;">이력유형</th>
+                <th>이력내용</th>
+                <th style="width:160px;">발생일시</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="filteredList().length === 0">
+                <td colspan="5" class="no-data">로그가 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in filteredList()">
+                <td>{{$index + 1}}</td>
+                <td>{{item.logId}}</td>
+                <td>
+                    <span ng-class="getTypeClass(item.type)">{{item.type}}</span>
+                </td>
+                <td style="text-align:left;">{{item.message}}</td>
+                <td>{{item.regDt}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

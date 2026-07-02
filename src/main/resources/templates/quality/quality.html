@@ -1,0 +1,42 @@
+<div class="page-header">
+    <h2>자료 수집/배포 처리 상태</h2>
+    <p>자료 수집/배포 처리 작업의 현재 상태를 확인합니다.</p>
+</div>
+
+<div class="card">
+    <div class="card-title">처리 작업 목록</div>
+
+    <div class="search-bar">
+        <input type="text" ng-model="searchKeyword" placeholder="작업명 검색...">
+        <button class="btn btn-primary btn-sm" ng-click="load()">새로고침</button>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>작업명</th>
+                <th>상태</th>
+                <th>진행률</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="statusList.length === 0">
+                <td colspan="4" class="no-data">데이터가 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in statusList | filter:{name: searchKeyword}">
+                <td>{{$index + 1}}</td>
+                <td>{{item.name}}</td>
+                <td>
+                    <span class="status-badge" ng-class="getStatusClass(item.status)">{{item.status}}</span>
+                </td>
+                <td style="width:200px;">
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" ng-style="{width: item.progress + '%'}"></div>
+                    </div>
+                    <small style="color:#888;">{{item.progress}}%</small>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

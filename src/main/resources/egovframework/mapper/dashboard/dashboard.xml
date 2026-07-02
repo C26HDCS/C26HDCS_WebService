@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.dashboard.dao.DashboardDAO">
+
+    <select id="selectActiveAlgorithmCount" resultType="int">
+        SELECT COUNT(*) FROM TB_ALGORITHM WHERE ENABLED = 'Y'
+    </select>
+
+    <select id="selectPendingAlarmCount" resultType="int">
+        SELECT COUNT(*) FROM TB_ALARM WHERE STATUS = '미처리'
+    </select>
+
+    <select id="selectTotalQualityCount" resultType="int">
+        SELECT COUNT(*) FROM TB_QUALITY
+    </select>
+
+</mapper>

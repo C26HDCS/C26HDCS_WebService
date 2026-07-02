@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.log.dao.LogDAO">
+
+    <resultMap id="logResultMap" type="kr.kwater.hdcs.log.vo.LogVO">
+        <id     column="ID"      property="id"/>
+        <result column="LEVEL"   property="level"/>
+        <result column="MESSAGE" property="message"/>
+        <result column="REG_DT"  property="regDt"/>
+    </resultMap>
+
+    <select id="selectLogList" parameterType="kr.kwater.hdcs.log.vo.LogVO"
+            resultMap="logResultMap">
+        SELECT ID, LEVEL, MESSAGE, REG_DT
+        FROM TB_LOG
+        <where>
+            <if test="searchCondition != null and searchCondition != ''">
+                AND LEVEL = #{searchCondition}
+            </if>
+        </where>
+        ORDER BY ID DESC
+    </select>
+
+    <select id="selectLogCount" parameterType="kr.kwater.hdcs.log.vo.LogVO"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM TB_LOG
+        <where>
+            <if test="searchCondition != null and searchCondition != ''">
+                AND LEVEL = #{searchCondition}
+            </if>
+        </where>
+    </select>
+
+</mapper>

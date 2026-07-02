@@ -1,0 +1,50 @@
+<div class="page-header">
+    <h2>이력 관리</h2>
+    <p>자료 수집 및 배포 처리 이력을 조회합니다.</p>
+</div>
+
+<div class="search-bar">
+    <select ng-model="searchCategory" style="padding:8px 12px; border:1px solid #dde0e7; border-radius:6px; font-size:13px; font-family:inherit;">
+        <option value="">전체 분류</option>
+        <option value="COLLECT">수집</option>
+        <option value="DISTRIBUTE">배포</option>
+        <option value="FTP">FTP</option>
+        <option value="USER">사용자</option>
+    </select>
+    <input type="text" ng-model="searchStartDate" placeholder="시작일 (YYYY-MM-DD)" style="max-width:160px;">
+    <input type="text" ng-model="searchEndDate"   placeholder="종료일 (YYYY-MM-DD)" style="max-width:160px;">
+    <button class="btn btn-primary btn-sm" ng-click="load()">조회</button>
+</div>
+
+<div class="card">
+    <div class="card-title">이력 목록</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>분류</th>
+                <th>작업명</th>
+                <th>처리자</th>
+                <th>처리일시</th>
+                <th>결과</th>
+                <th>비고</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="historyList.length === 0">
+                <td colspan="7" class="no-data">데이터가 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in historyList">
+                <td>{{$index + 1}}</td>
+                <td>{{item.category}}</td>
+                <td>{{item.taskName}}</td>
+                <td>{{item.operator}}</td>
+                <td>{{item.processedAt}}</td>
+                <td>
+                    <span class="status-badge" ng-class="getResultClass(item.result)">{{item.result}}</span>
+                </td>
+                <td>{{item.remark || '-'}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,104 @@
+/* ============================================================
+   저장장치 관리 전용 스타일
+   ============================================================ */
+
+/* ── 2단 레이아웃 래퍼 ── */
+.storage-wrap {
+    display: flex;
+    gap: 12px;
+    height: 560px;
+    min-height: 480px;
+}
+
+/* ── 공통 패널 ── */
+.storage-left,
+.storage-right {
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.storage-left  { flex: 0 0 56%; }
+.storage-right { flex: 1; }
+
+/* ── 패널 타이틀 바 ── */
+.storage-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+    font-weight: 700;
+    color: #dce8f5;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.storage-folder-name {
+    color: #5a9ef5;
+    font-weight: 600;
+}
+
+/* ── 왼쪽: 장치 목록 스크롤 영역 ── */
+.storage-device-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.storage-device-area::-webkit-scrollbar { width: 4px; }
+.storage-device-area::-webkit-scrollbar-track { background: transparent; }
+.storage-device-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ── 오른쪽: 파일 테이블 스크롤 영역 ── */
+.storage-file-area {
+    flex: 1;
+    overflow: auto;
+}
+
+.storage-file-area::-webkit-scrollbar { width: 4px; height: 4px; }
+.storage-file-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* 체크박스 */
+.storage-chk {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #3a7bd5;
+}
+
+/* ── 오른쪽 하단 푸터 ── */
+.storage-right-footer {
+    padding: 10px 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+/* ── 삭제하기 버튼 ── */
+.btn-storage-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 22px;
+    background: rgba(231,76,60,0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.28);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-storage-delete:hover {
+    background: rgba(231,76,60,0.22);
+    border-color: rgba(231,76,60,0.5);
+}

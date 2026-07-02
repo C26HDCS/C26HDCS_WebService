@@ -1,0 +1,23 @@
+# 기본: 텍스트 파일은 LF로 정규화
+* text=auto eol=lf
+
+# Java / 소스코드
+*.java    text eol=lf encoding=utf-8
+*.xml     text eol=lf encoding=utf-8
+*.yml     text eol=lf encoding=utf-8
+*.yaml    text eol=lf encoding=utf-8
+*.properties text eol=lf encoding=utf-8
+*.sql     text eol=lf encoding=utf-8
+*.html    text eol=lf encoding=utf-8
+*.css     text eol=lf encoding=utf-8
+*.js      text eol=lf encoding=utf-8
+*.json    text eol=lf encoding=utf-8
+*.md      text eol=lf encoding=utf-8
+
+# 바이너리
+*.jar     binary
+*.class   binary
+*.png     binary
+*.jpg     binary
+*.gif     binary
+*.ico     binary

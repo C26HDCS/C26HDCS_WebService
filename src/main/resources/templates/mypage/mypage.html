@@ -1,0 +1,68 @@
+<div class="page-header">
+    <div class="page-header-title">
+        <span class="page-title-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </span>
+        <h2>마이페이지</h2>
+    </div>
+</div>
+
+<div class="mypage-card">
+
+    <!-- 왼쪽: 계정 정보 -->
+    <div class="mypage-section">
+        <div class="mypage-section-title">계정 정보</div>
+
+        <div class="mypage-field">
+            <label class="mypage-label">아이디</label>
+            <span class="mypage-readonly">-</span>
+        </div>
+        <div class="mypage-field">
+            <label class="mypage-label">이름</label>
+            <span class="mypage-readonly">-</span>
+        </div>
+        <div class="mypage-field">
+            <label class="mypage-label">이메일</label>
+            <input type="email" class="mypage-input" ng-model="profile.email"
+                   placeholder="이메일 입력">
+        </div>
+
+        <div class="mypage-actions">
+            <button class="btn-mypage-save" ng-click="saveProfile()">정보 저장</button>
+        </div>
+    </div>
+
+    <!-- 세로 구분선 -->
+    <div class="mypage-divider"></div>
+
+    <!-- 오른쪽: 비밀번호 변경 -->
+    <div class="mypage-section">
+        <div class="mypage-section-title">비밀번호 변경</div>
+
+        <div class="mypage-field">
+            <label class="mypage-label">현재 비밀번호</label>
+            <input type="password" class="mypage-input" ng-model="pw.current"
+                   placeholder="현재 비밀번호 입력">
+        </div>
+        <div class="mypage-field">
+            <label class="mypage-label">새 비밀번호</label>
+            <input type="password" class="mypage-input" ng-model="pw.newPw"
+                   placeholder="새 비밀번호 입력">
+        </div>
+        <div class="mypage-field">
+            <label class="mypage-label">새 비밀번호 확인</label>
+            <input type="password" class="mypage-input" ng-model="pw.confirm"
+                   placeholder="새 비밀번호 재입력">
+        </div>
+
+        <div class="mypage-actions">
+            <button class="btn-mypage-save" ng-click="changePassword()">비밀번호 변경</button>
+        </div>
+    </div>
+
+</div>

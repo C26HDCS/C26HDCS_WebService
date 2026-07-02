@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" ng-app="qosApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDCS Web Service</title>
+    <base th:href="@{/}">
+    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+    <link rel="stylesheet" th:href="@{/static/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/static/css/user.css}">
+    <link rel="stylesheet" th:href="@{/static/css/alarm.css}">
+    <link rel="stylesheet" th:href="@{/static/css/log.css}">
+    <link rel="stylesheet" th:href="@{/static/css/storage.css}">
+    <link rel="stylesheet" th:href="@{/static/css/mypage.css}">
+    <link rel="stylesheet" th:href="@{/static/css/report.css}">
+</head>
+<body ng-controller="AppCtrl">
+
+<div class="layout-wrapper">
+
+    <header class="top-header">
+        <div class="header-left">
+            <img src="/hdcs/static/images/logo.png" alt="기후에너지환경부 한강홍수통제소" class="header-logo">
+            <span class="system-name">수자원통신위성 수문자료 수집 시스템</span>
+        </div>
+        <div class="header-right">          
+            <div class="notification-wrap">
+                <button type="button" class="icon-btn" aria-label="알림">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <span class="notification-dot"></span> 
+            </div>
+
+            <div class="user-info">
+                <button type="button" class="icon-btn btn-profile" onclick="goToMyPage()" title="마이페이지" aria-label="마이페이지">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                    </svg>
+                </button>
+                <span class="user-name" th:text="${#authentication?.name == 'anonymousUser' ? 'admin' : #authentication?.name}">admin</span>
+            </div>
+
+            <button type="button" class="icon-btn btn-logout" onclick="logout()" title="로그아웃" aria-label="로그아웃">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>               
+        </div>     
+    </header>
+
+    <div class="page-body">
+
+    <nav class="sidebar">
+
+        <ul class="sidebar-menu">
+            <li ng-class="{active: isActive('/dashboard')}">
+                <a href="dashboard">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">GUI 대시보드</span>
+                </a>
+            </li>
+            <li ng-class="{active: isActive('/config')}">
+                <a href="config">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="6" x2="20" y2="6"/><circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">환경설정관리</span>
+                </a>
+            </li>
+            <li ng-class="{active: isActive('/storage')}">
+                <a href="storage">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">저장장치관리</span>
+                </a>
+            </li>
+            <li ng-class="{active: isActive('/log')}">
+                <a href="log">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">로그및이벤트관리</span>
+                </a>
+            </li>
+            <li ng-class="{active: isActive('/alarm')}">
+                <a href="alarm">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">알람관리</span>
+                </a>
+            </li>
+            <li ng-class="{active: isActive('/user')}">
+                <a href="user">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">사용자관리</span>
+                </a>
+            </li>
+            <li ng-class="{active: isActive('/report')}">
+                <a href="report">
+                    <span class="menu-icon-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">리포트관리</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <span class="sidebar-version">v1.0.0</span>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <main class="content-area">
+            <ng-view></ng-view>
+        </main>
+
+        <footer class="bottom-footer">
+            <p>© 2026 HDCS Web Service. All rights reserved.</p>
+        </footer>
+    </div>
+
+    </div><!-- /.page-body -->
+</div>
+
+<script th:src="@{/webjars/angularjs/1.8.2/angular.min.js}"></script>
+<script th:src="@{/webjars/angularjs/1.8.2/angular-route.min.js}"></script>
+
+<script th:inline="javascript">
+    var ctx = /*[[${#request.getContextPath()}]]*/ '';
+</script>
+
+<script th:src="@{/static/js/app.js}"></script>
+
+<script th:src="@{/static/js/common/http.factory.js}"></script>
+<script th:src="@{/static/js/common/placeholder.controllers.js}"></script>
+
+<script th:src="@{/static/js/dashboard/dashboard.controller.js}"></script>
+<script th:src="@{/static/js/output/output.controller.js}"></script>
+<script th:src="@{/static/js/distribution/distribution.controller.js}"></script>
+<script th:src="@{/static/js/ftp/ftp.controller.js}"></script>
+<script th:src="@{/static/js/user/user.controller.js}"></script>
+<script th:src="@{/static/js/mypage/mypage.controller.js}"></script>
+<script th:src="@{/static/js/log/log.controller.js}"></script>
+<script th:src="@{/static/js/alarm/alarm.controller.js}"></script>
+<script th:src="@{/static/js/history/history.controller.js}"></script>
+<script th:src="@{/static/js/statistics/statistics.controller.js}"></script>
+<script th:src="@{/static/js/intro/intro.controller.js}"></script>
+
+<script>
+    function goToMyPage() {
+        window.location.href = ctx + '/mypage';
+    }
+
+    function logout() {
+        localStorage.removeItem('accessToken');
+        alert('로그아웃 되었습니다.');
+        window.location.href = ctx + '/login';
+    }
+</script>
+
+</body>
+</html>

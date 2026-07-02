@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_DIR" value="logs"/>
+
+    <!-- 콘솔 출력: UTF-8 강제 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일 출력: UTF-8 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/hdcs-web-service.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/hdcs-web-service.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 패키지별 로그 레벨 -->
+    <logger name="kr.kwater.hdcs"   level="DEBUG"/>
+    <logger name="egovframework"   level="DEBUG"/>
+    <logger name="org.egovframe"   level="DEBUG"/>
+    <logger name="org.mybatis"     level="DEBUG"/>
+    <logger name="org.apache.ibatis" level="DEBUG"/>
+    <logger name="org.springframework" level="WARN"/>
+
+    <!-- 기본 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- 운영 프로파일: 콘솔 제거, 레벨 상향 -->
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>

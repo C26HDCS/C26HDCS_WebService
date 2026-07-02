@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>샘플 목록</title>
+    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>샘플 목록</h1>
+        <a th:href="@{/}" class="btn-home">홈</a>
+    </header>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+    <!-- 검색 영역 -->
+    <form th:action="@{/sample/list}" method="get" class="search-form">
+        <select name="searchCondition">
+            <option value="name">이름</option>
+            <option value="desc">설명</option>
+        </select>
+        <input type="text" name="searchKeyword" placeholder="검색어를 입력하세요">
+        <button type="submit" class="btn btn-search">검색</button>
+        <a th:href="@{/sample/register}" class="btn btn-primary">등록</a>
+    </form>
+
+    <!-- 목록 테이블 -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>이름</th>
+                <th>설명</th>
+                <th>사용여부</th>
+                <th>등록일시</th>
+                <th>관리</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(sampleList)}">
+                <td colspan="6" class="no-data">데이터가 없습니다.</td>
+            </tr>
+            <tr th:each="item, stat : ${sampleList}">
+                <td th:text="${stat.count}"></td>
+                <td>
+                    <a th:href="@{/sample/detail/{id}(id=${item.id})}"
+                       th:text="${item.name}"></a>
+                </td>
+                <td th:text="${item.description}"></td>
+                <td th:text="${item.useYn == 'Y' ? '사용' : '미사용'}"></td>
+                <td th:text="${item.regDt}"></td>
+                <td>
+                    <a th:href="@{/sample/modify/{id}(id=${item.id})}" class="btn btn-sm btn-edit">수정</a>
+                    <form th:action="@{/sample/delete/{id}(id=${item.id})}" method="post"
+                          style="display:inline"
+                          onsubmit="return confirm('삭제하시겠습니까?')">
+                        <button type="submit" class="btn btn-sm btn-delete">삭제</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이징 (eGovFramework PaginationInfo 기반) -->
+    <div class="pagination" th:if="${paginationInfo != null}">
+        <span th:text="'총 ' + ${paginationInfo.totalRecordCount} + '건'"></span>
+    </div>
+</div>
+<script th:src="@{/static/js/common.js}"></script>
+</body>
+</html>

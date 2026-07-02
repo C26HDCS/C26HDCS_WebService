@@ -1,0 +1,111 @@
+<div class="page-header">
+    <div class="page-header-title">
+        <span class="page-title-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6"/><circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+                <line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+                <line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+            </svg>
+        </span>
+        <h2>환경설정 관리</h2>
+    </div>
+</div>
+
+<!-- ── 검색 영역 ── -->
+<div class="log-search-panel">
+    <div class="log-search-fields">
+        <div class="log-search-field">
+            <label>설정아이디</label>
+            <input type="text" ng-model="searchKeyword" placeholder="아이디 입력">
+        </div>
+
+        <div class="log-search-field">
+            <label>시스템명</label>
+            <input type="text" ng-model="searchKeyword" placeholder="시스템명 입력">
+        </div>
+
+        <div class="log-search-field">
+            <label>시스템 유형</label>
+            <select ng-model="filterLevel">
+                <option value="">전체</option>
+                <option value="L">L대역</option>
+                <option value="Ka">Ka대역</option>
+            </select>
+        </div>
+
+        <div class="user-search-field">
+            <label>사용여부</label>
+            <select ng-model="searchActive">
+                <option value="">전체</option>
+                <option value="true">사용</option>
+                <option value="false">미사용</option>
+            </select>
+        </div>
+
+    </div>
+
+    <button class="btn-search-log" ng-click="load()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        조회
+    </button>
+</div>
+
+<!-- ── 테이블 영역 ── -->
+<div class="log-table-panel">
+
+    <div class="log-table-toolbar">
+        <span class="log-count-label">총 <strong>{{filteredList().length}}</strong>건</span>
+        <!-- <button class="btn-refresh-log" ng-click="load()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            새로고침
+        </button> -->
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:56px;">번호</th>
+                <th style="width:100px;">설정아이디</th>
+                <th style="width:100px;">시스템명</th>
+                <th style="width:100px;">시스템유형</th>
+                <th>IP주소</th>
+                <th>설명</th>
+                <th style="width:120px;">사용여부</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="filteredList().length === 0">
+                <td colspan="5" class="no-data">환경설정이 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in filteredList()">
+                <td>{{$index + 1}}</td>
+                <td>{{item.configId}}</td>
+                <td>{{item.configNm}}</td>
+                <td>
+                    <span ng-class="getTypeClass(item.type)">{{item.type}}</span>
+                </td>
+                <td style="text-align:left;">{{item.ip}}</td>
+                <td style="text-align:left;">{{item.text}}</td>
+                <td>
+                    <span class="status-badge"
+                          ng-class="item.active ? 'status-done' : 'status-wait'">
+                        {{item.active ? '사용' : '미사용'}}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

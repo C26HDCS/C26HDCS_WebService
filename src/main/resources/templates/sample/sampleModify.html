@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>샘플 수정</title>
+    <link rel="stylesheet" th:href="@{/static/css/common.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>샘플 수정</h1>
+    </header>
+
+    <form th:action="@{/sample/modify}" method="post" th:object="${sample}">
+        <input type="hidden" th:field="*{id}">
+        <table class="form-table">
+            <tr>
+                <th>ID</th>
+                <td th:text="*{id}" class="readonly-field"></td>
+            </tr>
+            <tr>
+                <th><label for="name">이름 <span class="required">*</span></label></th>
+                <td>
+                    <input type="text" id="name" th:field="*{name}"
+                           placeholder="이름을 입력하세요" maxlength="100">
+                    <span class="error" th:if="${#fields.hasErrors('name')}"
+                          th:errors="*{name}"></span>
+                </td>
+            </tr>
+            <tr>
+                <th><label for="description">설명</label></th>
+                <td>
+                    <textarea id="description" th:field="*{description}"
+                              rows="4" maxlength="500"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>사용여부</th>
+                <td>
+                    <label><input type="radio" th:field="*{useYn}" value="Y"> 사용</label>
+                    <label><input type="radio" th:field="*{useYn}" value="N"> 미사용</label>
+                </td>
+            </tr>
+        </table>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">저장</button>
+            <a th:href="@{/sample/detail/{id}(id=*{id})}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</div>
+<script th:src="@{/static/js/common.js}"></script>
+</body>
+</html>

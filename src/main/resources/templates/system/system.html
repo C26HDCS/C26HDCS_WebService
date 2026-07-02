@@ -1,0 +1,32 @@
+<div class="page-header">
+    <h2>시스템 기본 정보</h2>
+    <p>서버 및 애플리케이션 기본 정보를 확인합니다.</p>
+</div>
+
+<div class="card">
+    <div class="card-title">애플리케이션 정보</div>
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <td style="width:200px; font-weight:600; color:#555;">애플리케이션명</td>
+                <td>{{sysInfo.appName}}</td>
+            </tr>
+            <tr>
+                <td style="font-weight:600; color:#555;">버전</td>
+                <td>{{sysInfo.version}}</td>
+            </tr>
+            <tr>
+                <td style="font-weight:600; color:#555;">Java 버전</td>
+                <td>{{sysInfo.javaVersion}}</td>
+            </tr>
+            <tr>
+                <td style="font-weight:600; color:#555;">운영체제</td>
+                <td>{{sysInfo.osName}}</td>
+            </tr>
+            <tr>
+                <td style="font-weight:600; color:#555;">데이터베이스</td>
+                <td>{{sysInfo.dbType}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

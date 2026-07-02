@@ -1,0 +1,139 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /hdcs
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: hdcs-web-service
+
+  # PostgreSQL (실제 DB 연결 시 아래 주석 해제 후 H2 설정 주석처리)
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://localhost:5432/qosdb
+#    username: qos_user
+#    password: qos_password
+#    hikari:
+#      maximum-pool-size: 10
+#      minimum-idle: 5
+#      connection-timeout: 30000
+#      idle-timeout: 600000
+#      max-lifetime: 1800000
+#      pool-name: QosHikariPool
+
+  # H2 인메모리 DB (임시 - PostgreSQL 연결 전까지 영구 파일 모드로 사용)
+  datasource:
+    driver-class-name: org.h2.Driver
+    # url: jdbc:h2:file:./localdb/hdcsdb;MODE=PostgreSQL;NON_KEYWORDS=VALUE
+    url: jdbc:h2:file:D:/dev/HDCS_Web_Service/localdb/hdcsdb;MODE=PostgreSQL;NON_KEYWORDS=VALUE
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # SQL 초기화 (재시작 시 데이터 날아가는 것 방지)
+  sql:
+    init:
+      # schema-locations: classpath:sql/schema.sql
+      # data-locations: classpath:sql/data.sql
+      mode: never
+      encoding: UTF-8
+
+  # ── Spring Security (SSO 연동 시 아래 주석 해제 후 값 입력) ──
+  # security:
+  #   oauth2:
+  #     client:
+  #       registration:
+  #         keycloak:
+  #           client-id: qos-client
+  #           client-secret: your-client-secret
+  #           scope: openid,profile,email
+  #           authorization-grant-type: authorization_code
+  #           redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  #       provider:
+  #         keycloak:
+  #           issuer-uri: http://localhost:8180/realms/qos
+
+  # Thymeleaf
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+  # MVC
+  mvc:
+    view:
+      prefix: /templates/
+      suffix: .html
+
+# MyBatis
+mybatis:
+  mapper-locations: classpath:egovframework/mapper/**/*.xml
+  type-aliases-package: kr.kwater.hdcs
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+    cache-enabled: true
+    lazy-loading-enabled: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    root: INFO
+    kr.kwater.hdcs: DEBUG
+    egovframework: DEBUG
+    org.springframework: WARN
+    org.mybatis: DEBUG
+    org.apache.ibatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/hdcs-external-web-service.log
+
+# JWT 설정 
+jwt:
+  # 토큰 암호화 및 검증에 사용할 비밀키 (32바이트 이상의 임의의 긴 문자열)
+  secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXNlY3JldC1rZXktZm9yLWt3YXRlci1kY2RzLWV4dGVybmFsLXNlcnZpY2U=
+
+---
+# 운영 환경 프로파일
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/qosdb
+#    username: qos_user
+#    password: qos_password
+
+#  sql:
+#    init:
+#      mode: never
+
+logging:
+  level:
+    root: WARN
+    kr.kwater.hdcs: INFO

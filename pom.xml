@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>kr.kwater.hdcs</groupId>
+    <artifactId>hdcs-external-web-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>HDCS Web Service</name>
+    <description>HDCS Web Service based on Spring Boot 2.7 + eGovFramework 4.2</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <org.egovframe.rte.version>4.2.0</org.egovframe.rte.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <!-- eGovFramework Maven Repository -->
+    <repositories>
+        <repository>
+            <id>egov-repository</id>
+            <name>eGovFramework Repository</name>
+            <url>https://maven.egovframe.go.kr/maven/</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+
+        <!-- ============================== -->
+        <!--  Spring Security             -->
+        <!-- ============================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- SSO OAuth2 Client (application.yml에서 provider 설정 후 활성화) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
+        <!-- ============================== -->
+        <!--  AngularJS WebJar             -->
+        <!-- ============================== -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>angularjs</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+
+        <!-- ============================== -->
+        <!--  Spring Boot Core             -->
+        <!-- ============================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ============================== -->
+        <!--  eGovFramework 4.2            -->
+        <!-- ============================== -->
+
+        <!-- MVC 컴포넌트 (fdl.cmmn 포함 전이 의존성) -->
+        <dependency>
+            <groupId>org.egovframe.rte</groupId>
+            <artifactId>org.egovframe.rte.ptl.mvc</artifactId>
+            <version>${org.egovframe.rte.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- 데이터 접근 컴포넌트 (MyBatis) -->
+        <dependency>
+            <groupId>org.egovframe.rte</groupId>
+            <artifactId>org.egovframe.rte.psl.dataaccess</artifactId>
+            <version>${org.egovframe.rte.version}</version>
+        </dependency>
+
+        <!-- ID 채번 서비스 -->
+        <dependency>
+            <groupId>org.egovframe.rte</groupId>
+            <artifactId>org.egovframe.rte.fdl.idgnr</artifactId>
+            <version>${org.egovframe.rte.version}</version>
+        </dependency>
+
+        <!-- 프로퍼티 서비스 -->
+        <dependency>
+            <groupId>org.egovframe.rte</groupId>
+            <artifactId>org.egovframe.rte.fdl.property</artifactId>
+            <version>${org.egovframe.rte.version}</version>
+        </dependency>
+
+        <!-- ============================== -->
+        <!--  Database / MyBatis           -->
+        <!-- ============================== -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+        <!-- H2 (임시 인메모리 DB - PostgreSQL 연결 전까지 사용) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- HikariCP (Spring Boot 기본 포함) -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
+        <!-- ============================== -->
+        <!--  Utility                      -->
+        <!-- ============================== -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.15.1</version>
+        </dependency>
+
+        <!-- ============================== -->
+        <!--  Test                         -->
+        <!-- ============================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- jwt  -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <finalName>hdcs-web-service</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8</jvmArguments>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <argLine>-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <!-- 텍스트 리소스: @variable@ 치환 허용 (폰트·이미지 제외) -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.ttf</exclude>
+                    <exclude>**/*.woff</exclude>
+                    <exclude>**/*.woff2</exclude>
+                    <exclude>**/*.eot</exclude>
+                    <exclude>**/*.png</exclude>
+                    <exclude>**/*.jpg</exclude>
+                    <exclude>**/*.jpeg</exclude>
+                    <exclude>**/*.gif</exclude>
+                    <exclude>**/*.ico</exclude>
+                    <exclude>**/*.svg</exclude>
+                </excludes>
+            </resource>
+            <!-- 바이너리 리소스: 필터링 없이 그대로 복사 -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*.ttf</include>
+                    <include>**/*.woff</include>
+                    <include>**/*.woff2</include>
+                    <include>**/*.eot</include>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.jpeg</include>
+                    <include>**/*.gif</include>
+                    <include>**/*.ico</include>
+                    <include>**/*.svg</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+</project>
