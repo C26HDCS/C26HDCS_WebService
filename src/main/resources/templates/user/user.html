@@ -93,7 +93,9 @@
             <tr ng-if="userList.length === 0">
                 <td colspan="7" class="no-data">데이터가 없습니다.</td>
             </tr>
-            <tr ng-repeat="item in userList | filter:searchKeyword">
+            <tr ng-repeat="item in userList | filter:searchKeyword"
+                class="user-row-clickable"
+                ng-click="openDetailModal(item)">
                 <td>{{$index + 1}}</td>
                 <td>{{item.userId}}</td>
                 <td>{{item.name}}</td>
@@ -112,7 +114,7 @@
                 </td>
                 <td>
                     <div class="action-cell">
-                        <button class="btn-action btn-action-edit" ng-click="openEditModal(item)">
+                        <button class="btn-action btn-action-edit" ng-click="$event.stopPropagation(); openEditModal(item)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11"
                                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -121,7 +123,7 @@
                             </svg>
                             수정
                         </button>
-                        <button class="btn-action btn-action-delete" ng-click="openDeleteModal(item)">
+                        <button class="btn-action btn-action-delete" ng-click="$event.stopPropagation(); openDeleteModal(item)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11"
                                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -137,6 +139,93 @@
         </tbody>
     </table>
 
+</div>
+
+<!-- ── 사용자 상세 모달 ── -->
+<div class="user-modal-overlay" ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
+
+<div class="user-modal user-detail-modal" ng-show="showDetailModal">
+    <div class="user-modal-header">
+        <span class="user-modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            사용자 상세 정보
+        </span>
+        <button class="user-modal-close" ng-click="closeDetailModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="user-detail-body">
+
+        <!-- 아바타 영역 -->
+        <div class="user-detail-avatar">
+            <div class="user-detail-avatar-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div class="user-detail-avatar-name">{{detailUser.userName || '-'}}</div>
+            <div class="user-detail-avatar-id">@{{detailUser.userId}}</div>
+        </div>
+
+        <!-- 정보 항목 -->
+        <div class="user-detail-rows">
+            <div class="user-detail-row">
+                <span class="user-detail-label">아이디</span>
+                <span class="user-detail-value">{{detailUser.userId || '-'}}</span>
+            </div>
+            <div class="user-detail-row">
+                <span class="user-detail-label">이름</span>
+                <span class="user-detail-value">{{detailUser.userName || '-'}}</span>
+            </div>
+            <div class="user-detail-row">
+                <span class="user-detail-label">이메일</span>
+                <span class="user-detail-value">{{detailUser.email || '-'}}</span>
+            </div>
+            <div class="user-detail-row">
+                <span class="user-detail-label">권한</span>
+                <span class="user-detail-value">
+                    <span class="status-badge"
+                          ng-class="detailUser.role === 'ADMIN' ? 'status-high' : 'status-wait'">
+                        {{detailUser.role === 'ADMIN' ? '관리자' : '일반 사용자'}}
+                    </span>
+                </span>
+            </div>
+            <div class="user-detail-row">
+                <span class="user-detail-label">상태</span>
+                <span class="user-detail-value">
+                    <span class="status-badge"
+                          ng-class="detailUser.active ? 'status-done' : 'status-wait'">
+                        {{detailUser.active ? '활성' : '비활성'}}
+                    </span>
+                </span>
+            </div>
+            <div class="user-detail-row">
+                <span class="user-detail-label">가입일시</span>
+                <span class="user-detail-value">{{detailUser.createdAt || detailUser.lastLogin || '-'}}</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="user-modal-footer">
+        <button class="btn-modal-cancel" ng-click="closeDetailModal()">닫기</button>
+        <button class="btn-modal-submit" ng-click="closeDetailModal(); openEditModal(detailUser)">
+            수정하기
+        </button>
+    </div>
 </div>
 
 <!-- ── 사용자 등록 모달 ── -->

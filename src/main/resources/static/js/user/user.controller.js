@@ -14,6 +14,20 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.load();
 
+    /* ── 사용자 상세 모달 ── */
+    $scope.showDetailModal = false;
+    $scope.detailUser = {};
+
+    $scope.openDetailModal = function (item) {
+        $scope.detailUser = angular.copy(item);
+        $scope.showDetailModal = true;
+    };
+
+    $scope.closeDetailModal = function () {
+        $scope.showDetailModal = false;
+        $scope.detailUser = {};
+    };
+
     /* ── 사용자 등록 모달 ── */
     $scope.showRegisterModal = false;
     $scope.newUser = {};
