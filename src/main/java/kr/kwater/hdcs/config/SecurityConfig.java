@@ -37,9 +37,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 1. 누구나 접근 가능한 URL (인증 불필요)
                 .antMatchers(
-                    "/", "/index", "/error", 
+                    "/", "/index", "/error",
                     "/api/login", "/login", "/logout",
                     "/register", "/find-id", "/find-password",
+                    "/api/public/**",
                     "/static/**", "/webjars/**",
                     "/h2-console/**",
                     "/api/dashboard/**",
