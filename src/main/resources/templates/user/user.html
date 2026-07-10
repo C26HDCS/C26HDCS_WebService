@@ -254,22 +254,58 @@
     </div>
 
     <div class="user-modal-body">
+
+        <!-- 아이디 + 중복확인 -->
         <div class="user-modal-field">
             <label>사용자 아이디 *</label>
-            <input type="text" ng-model="newUser.userId" placeholder="아이디 입력">
+            <div class="user-modal-input-row">
+                <input type="text" ng-model="newUser.userId"
+                       ng-change="onUserIdChange()"
+                       placeholder="영문과 숫자만 가능"
+                       ng-class="{'input-error': registerErrors.userId}"
+                       autocomplete="off">
+                <button class="btn-check-dup"
+                        ng-click="checkDuplicate()"
+                        ng-disabled="!!registerErrors.userId || !newUser.userId">
+                    중복확인
+                </button>
+            </div>
+            <span class="field-msg field-error"   ng-show="registerErrors.userId">{{registerErrors.userId}}</span>
+            <span class="field-msg field-success" ng-show="idChecked && idAvailable && !registerErrors.userId">사용 가능한 아이디입니다.</span>
         </div>
+
+        <!-- 비밀번호 -->
         <div class="user-modal-field">
             <label>비밀번호 *</label>
-            <input type="password" ng-model="newUser.password" placeholder="비밀번호 입력">
+            <input type="password" ng-model="newUser.password"
+                   ng-change="validatePassword()"
+                   placeholder="영문+숫자+특수문자 8자 이상"
+                   ng-class="{'input-error': registerErrors.password}"
+                   autocomplete="new-password">
+            <span class="field-msg field-error" ng-show="registerErrors.password">{{registerErrors.password}}</span>
         </div>
+
+        <!-- 이름 -->
         <div class="user-modal-field">
             <label>이름 *</label>
-            <input type="text" ng-model="newUser.name" placeholder="이름 입력">
+            <input type="text" ng-model="newUser.name"
+                   ng-change="validateName()"
+                   placeholder="이름 입력"
+                   ng-class="{'input-error': registerErrors.name}">
+            <span class="field-msg field-error" ng-show="registerErrors.name">{{registerErrors.name}}</span>
         </div>
+
+        <!-- 이메일 -->
         <div class="user-modal-field">
             <label>이메일 *</label>
-            <input type="email" ng-model="newUser.email" placeholder="이메일 입력">
+            <input type="text" ng-model="newUser.email"
+                   ng-change="validateEmail()"
+                   placeholder="예: test@test.com"
+                   ng-class="{'input-error': registerErrors.email}">
+            <span class="field-msg field-error" ng-show="registerErrors.email">{{registerErrors.email}}</span>
         </div>
+
+        <!-- 권한 -->
         <div class="user-modal-field">
             <label>권한 *</label>
             <select ng-model="newUser.role">
@@ -277,7 +313,9 @@
                 <option value="ADMIN">관리자</option>
                 <option value="USER">일반사용자</option>
             </select>
+            <span class="field-msg field-error" ng-show="registerErrors.role">{{registerErrors.role}}</span>
         </div>
+
     </div>
 
     <div class="user-modal-footer">

@@ -347,6 +347,55 @@
 .user-modal-field input::placeholder { color: #2e4060; }
 .user-modal-field select option { background: #1c2b40; }
 
+/* ── 인풋 + 버튼 가로 행 ── */
+.user-modal-input-row {
+    display: flex;
+    gap: 8px;
+}
+.user-modal-input-row input { flex: 1; }
+
+/* ── 입력 오류 상태 ── */
+.user-modal-field input.input-error,
+.user-modal-field select.input-error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231,76,60,0.12) !important;
+}
+
+/* ── 필드 하단 메시지 ── */
+.field-msg {
+    display: block;
+    font-size: 11.5px;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+.field-error   { color: #e74c3c; }
+.field-success { color: #2ecc71; }
+
+/* ── 중복확인 버튼 ── */
+.btn-check-dup {
+    height: 38px;
+    padding: 0 14px;
+    background: rgba(58,123,213,0.12);
+    color: #5a9ef5;
+    border: 1px solid rgba(58,123,213,0.3);
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-check-dup:hover:not(:disabled) {
+    background: rgba(58,123,213,0.26);
+    color: #fff;
+}
+.btn-check-dup:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
 .user-modal-readonly {
     display: block;
     height: 38px;
