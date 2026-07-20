@@ -26,9 +26,12 @@
         <div class="user-search-field">
             <label>가입일시</label>
             <div class="date-range">
-                <input type="date" ng-model="searchDateFrom">
+                <input type="date" ng-model="searchDateFrom"
+                       max="{{today}}">
                 <span class="date-sep">~</span>
-                <input type="date" ng-model="searchDateTo">
+                <input type="date" ng-model="searchDateTo"
+                       ng-attr-min="{{toDateStr(searchDateFrom) || undefined}}"
+                       max="{{today}}">
             </div>
         </div>
 
@@ -52,7 +55,7 @@
 
     </div>
 
-    <button class="btn-search-user" ng-click="load()">
+    <button class="btn-search-user" ng-click="applySearch()">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round">
@@ -66,7 +69,7 @@
 <div class="user-table-panel">
 
     <div class="user-table-toolbar">
-        <span class="user-count-label">총 <strong>{{userList.length}}</strong>명</span>
+        <span class="user-count-label">총 <strong>{{filteredList.length}}</strong>명</span>
         <button class="btn-register-user" ng-click="openRegisterModal()">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2.5"
@@ -90,10 +93,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-if="userList.length === 0">
-                <td colspan="7" class="no-data">데이터가 없습니다.</td>
+            <tr ng-if="filteredList.length === 0">
+                <td colspan="7" class="no-data">검색된 사용자가 없습니다.</td>
             </tr>
-            <tr ng-repeat="item in userList | filter:searchKeyword"
+            <tr ng-repeat="item in filteredList"
                 class="user-row-clickable"
                 ng-click="openDetailModal(item)">
                 <td>{{$index + 1}}</td>

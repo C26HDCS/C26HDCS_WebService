@@ -3,14 +3,65 @@
 qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.userList      = [];
-    $scope.searchKeyword = '';
-    $scope.searchRole    = '';
+    $scope.filteredList  = [];
+    $scope.searchKeyword  = '';
+    $scope.searchRole     = '';
+    $scope.searchActive   = '';
+    $scope.searchDateFrom = '';
+    $scope.searchDateTo   = '';
+
+    // Date 객체 또는 문자열을 'YYYY-MM-DD' 문자열로 변환
+    // (AngularJS ng-model은 type="date" 값을 Date 객체로 저장함)
+    function toDateStr(v) {
+        if (!v) return '';
+        if (typeof v === 'string') return v.substring(0, 10);
+        return v.getFullYear() + '-' +
+            String(v.getMonth() + 1).padStart(2, '0') + '-' +
+            String(v.getDate()).padStart(2, '0');
+    }
+    $scope.toDateStr = toDateStr; // 템플릿에서 ng-attr-min 바인딩용
+
+    // 오늘 날짜 (YYYY-MM-DD) — max date 제한용
+    $scope.today = toDateStr(new Date());
+
+    $scope.applySearch = function () {
+        var fromStr = toDateStr($scope.searchDateFrom);
+        var toStr   = toDateStr($scope.searchDateTo);
+
+        // 날짜 역전 유효성 검사
+        if (fromStr && toStr && fromStr > toStr) {
+            alert('시작일은 종료일보다 클 수 없습니다.');
+            return;
+        }
+
+        $scope.filteredList = $scope.userList.filter(function (item) {
+            // 사용자 아이디 (부분 일치, 대소문자 무시)
+            if ($scope.searchKeyword) {
+                if ((item.userId || '').toLowerCase().indexOf($scope.searchKeyword.toLowerCase()) === -1) {
+                    return false;
+                }
+            }
+            // 권한
+            if ($scope.searchRole && (item.role || '').trim() !== $scope.searchRole) {
+                return false;
+            }
+            // 상태
+            if ($scope.searchActive !== '') {
+                if (item.active !== ($scope.searchActive === 'true')) return false;
+            }
+            // 가입일시 범위 — 모두 'YYYY-MM-DD' 문자열로 비교
+            var itemDate = item.createdAt ? item.createdAt.substring(0, 10) : '';
+            if (fromStr && itemDate < fromStr) return false;
+            if (toStr   && itemDate > toStr)   return false;
+            return true;
+        });
+    };
 
     $scope.load = function () {
         $http.get(ctx + '/api/user/list')
             .then(function (res) {
-                console.log('[목록 로드]', res.data.map(function(u){ return {userId:u.userId, role:u.role}; }));
                 $scope.userList = res.data;
+                $scope.applySearch();
                 if ($scope.showDetailModal && $scope.detailUser.userId) {
                     var fresh = res.data.find(function (u) {
                         return u.userId === $scope.detailUser.userId;
@@ -18,7 +69,7 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
                     if (fresh) { $scope.detailUser = angular.copy(fresh); }
                 }
             })
-            .catch(function () { $scope.userList = []; });
+            .catch(function () { $scope.userList = []; $scope.filteredList = []; });
     };
 
     $scope.load();
