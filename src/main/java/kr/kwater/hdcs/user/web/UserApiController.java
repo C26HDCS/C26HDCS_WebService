@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,10 +46,14 @@ public class UserApiController {
         return ResponseEntity.ok(Map.of("message", "등록되었습니다."));
     }
 
+    @Transactional
     @PutMapping("/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable String userId, @RequestBody UserCreateDTO dto) {
         dto.setUserId(userId);
-        userDAO.updateUserInfo(dto);
+        int updated = userDAO.updateUserInfo(dto);
+        if (updated == 0) {
+            return ResponseEntity.badRequest().body(Map.of("message", "사용자를 찾을 수 없습니다. (userId=" + userId + ", 업데이트 0행)"));
+        }
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             userDAO.updateUserPassword(userId, passwordEncoder.encode(dto.getPassword()));
         }
