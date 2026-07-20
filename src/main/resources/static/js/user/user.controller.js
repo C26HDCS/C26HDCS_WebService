@@ -8,8 +8,17 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.load = function () {
         $http.get(ctx + '/api/user/list')
-            .then(function (res) { $scope.userList = res.data; })
-            .catch(function ()   { $scope.userList = []; });
+            .then(function (res) {
+                console.log('[목록 로드]', res.data.map(function(u){ return {userId:u.userId, role:u.role}; }));
+                $scope.userList = res.data;
+                if ($scope.showDetailModal && $scope.detailUser.userId) {
+                    var fresh = res.data.find(function (u) {
+                        return u.userId === $scope.detailUser.userId;
+                    });
+                    if (fresh) { $scope.detailUser = angular.copy(fresh); }
+                }
+            })
+            .catch(function () { $scope.userList = []; });
     };
 
     $scope.load();
@@ -164,7 +173,8 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
 
     /* ── 사용자 수정 모달 ── */
     $scope.showEditModal = false;
-    $scope.editUser = {};
+    $scope.editUser      = {};
+    $scope.editErrors    = {};
 
     $scope.openEditModal = function (item) {
         $scope.editUser = {
@@ -174,27 +184,98 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
             role:     item.role,
             password: ''
         };
+        $scope.editErrors = {};
         $scope.showEditModal = true;
     };
 
     $scope.closeEditModal = function () {
         $scope.showEditModal = false;
-        $scope.editUser = {};
+        $scope.editUser   = {};
+        $scope.editErrors = {};
+    };
+
+    $scope.validateEditName = function () {
+        var v = ($scope.editUser.name || '').trim();
+        if (!v) { $scope.editErrors.name = '이름을 입력해 주세요.'; }
+        else if (!NAME_RE.test(v)) { $scope.editErrors.name = '이름에 특수문자를 사용할 수 없습니다.'; }
+        else { $scope.editErrors.name = null; }
+    };
+
+    $scope.validateEditEmail = function () {
+        var v = ($scope.editUser.email || '').trim();
+        if (!v) { $scope.editErrors.email = '이메일을 입력해 주세요.'; }
+        else if (!EMAIL_RE.test(v)) { $scope.editErrors.email = '올바른 이메일 형식이 아닙니다. (예: test@naver.com)'; }
+        else { $scope.editErrors.email = null; }
+    };
+
+    $scope.validateEditPassword = function () {
+        var v = $scope.editUser.password || '';
+        if (!v) { $scope.editErrors.password = null; return; }
+        if (v.length < 8) { $scope.editErrors.password = '비밀번호는 8자 이상이어야 합니다.'; }
+        else if (!PW_RE.test(v)) { $scope.editErrors.password = '영문, 숫자, 특수문자를 모두 포함해야 합니다.'; }
+        else { $scope.editErrors.password = null; }
     };
 
     $scope.updateUser = function () {
-        if (!$scope.editUser.name || !$scope.editUser.role) {
-            alert('필수 항목을 모두 입력해 주세요.');
+        // 이름: 비어있지 않고 특수문자 없어야 함
+        $scope.validateEditName();
+
+        // 이메일: 비어있는지만 체크 (기존 DB 값 형식은 허용, 형식 검증은 타이핑 시에만)
+        var emailVal = ($scope.editUser.email || '').trim();
+        if (!emailVal) {
+            $scope.editErrors.email = '이메일을 입력해 주세요.';
+        } else {
+            $scope.editErrors.email = null;
+        }
+
+        // 비밀번호: 입력했을 때만 형식 검증
+        $scope.validateEditPassword();
+
+        if (!$scope.editUser.role) {
+            $scope.editErrors.role = '권한을 선택해 주세요.';
+        } else {
+            $scope.editErrors.role = null;
+        }
+
+        if ($scope.editErrors.name || $scope.editErrors.email ||
+            $scope.editErrors.password || $scope.editErrors.role) {
+            var errList = [];
+            if ($scope.editErrors.name)     errList.push('이름: ' + $scope.editErrors.name);
+            if ($scope.editErrors.email)    errList.push('이메일: ' + $scope.editErrors.email);
+            if ($scope.editErrors.password) errList.push('비밀번호: ' + $scope.editErrors.password);
+            if ($scope.editErrors.role)     errList.push('권한: ' + $scope.editErrors.role);
+            console.warn('[수정 검증 실패]', errList, $scope.editUser);
+            alert('[수정 오류]\n' + errList.join('\n'));
             return;
         }
-        $http.put(ctx + '/api/user/' + $scope.editUser.userId, $scope.editUser)
-            .then(function () {
+
+        var editSnapshot = angular.copy($scope.editUser);
+        console.log('[수정 요청]', JSON.stringify(editSnapshot));
+        $http.put(ctx + '/api/user/' + editSnapshot.userId, editSnapshot)
+            .then(function (res) {
+                console.log('[수정 성공]', res.data);
+                // UI 즉시 반영 (load() 응답 전에도 보이도록)
+                var idx = $scope.userList.findIndex(function (u) {
+                    return u.userId === editSnapshot.userId;
+                });
+                if (idx !== -1) {
+                    $scope.userList[idx].name  = editSnapshot.name;
+                    $scope.userList[idx].email = editSnapshot.email;
+                    $scope.userList[idx].role  = editSnapshot.role;
+                    if ($scope.detailUser.userId === editSnapshot.userId) {
+                        $scope.detailUser.name  = editSnapshot.name;
+                        $scope.detailUser.email = editSnapshot.email;
+                        $scope.detailUser.role  = editSnapshot.role;
+                    }
+                }
                 $scope.closeEditModal();
                 $scope.load();
             })
-            .catch(function () {
-                $scope.closeEditModal();
-                $scope.load();
+            .catch(function (err) {
+                var msg = (err.data && err.data.message) ? err.data.message : '수정 중 오류가 발생했습니다.';
+                console.error('[수정 실패]', err.status, msg);
+                alert('수정 오류: ' + msg);
+                $scope.editErrors.general = msg;
             });
     };
 

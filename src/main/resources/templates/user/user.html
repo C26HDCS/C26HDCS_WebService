@@ -176,7 +176,7 @@
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
             </div>
-            <div class="user-detail-avatar-name">{{detailUser.userName || '-'}}</div>
+            <div class="user-detail-avatar-name">{{detailUser.name || '-'}}</div>
             <div class="user-detail-avatar-id">@{{detailUser.userId}}</div>
         </div>
 
@@ -188,7 +188,7 @@
             </div>
             <div class="user-detail-row">
                 <span class="user-detail-label">이름</span>
-                <span class="user-detail-value">{{detailUser.userName || '-'}}</span>
+                <span class="user-detail-value">{{detailUser.name || '-'}}</span>
             </div>
             <div class="user-detail-row">
                 <span class="user-detail-label">이메일</span>
@@ -222,7 +222,7 @@
 
     <div class="user-modal-footer">
         <button class="btn-modal-cancel" ng-click="closeDetailModal()">닫기</button>
-        <button class="btn-modal-submit" ng-click="closeDetailModal(); openEditModal(detailUser)">
+        <button class="btn-modal-submit" ng-click="openEditModal(detailUser); closeDetailModal()">
             수정하기
         </button>
     </div>
@@ -354,23 +354,38 @@
         </div>
         <div class="user-modal-field">
             <label>비밀번호</label>
-            <input type="password" ng-model="editUser.password" placeholder="변경할 비밀번호 입력 (미입력 시 유지)">
+            <input type="password" ng-model="editUser.password"
+                   ng-change="validateEditPassword()"
+                   ng-class="{'input-error': editErrors.password}"
+                   placeholder="변경할 비밀번호 입력 (미입력 시 유지)">
+            <span class="field-msg field-error" ng-show="editErrors.password">{{editErrors.password}}</span>
         </div>
         <div class="user-modal-field">
             <label>이름 *</label>
-            <input type="text" ng-model="editUser.name" placeholder="이름 입력">
+            <input type="text" ng-model="editUser.name"
+                   ng-change="validateEditName()"
+                   ng-class="{'input-error': editErrors.name}"
+                   placeholder="이름 입력">
+            <span class="field-msg field-error" ng-show="editErrors.name">{{editErrors.name}}</span>
         </div>
         <div class="user-modal-field">
             <label>이메일 *</label>
-            <input type="email" ng-model="editUser.email" placeholder="이메일 입력">
+            <input type="text" ng-model="editUser.email"
+                   ng-change="validateEditEmail()"
+                   ng-class="{'input-error': editErrors.email}"
+                   placeholder="이메일 입력">
+            <span class="field-msg field-error" ng-show="editErrors.email">{{editErrors.email}}</span>
         </div>
         <div class="user-modal-field">
             <label>권한 *</label>
-            <select ng-model="editUser.role">
+            <select ng-model="editUser.role" ng-class="{'input-error': editErrors.role}"
+                    ng-change="editErrors.role = null">
                 <option value="ADMIN">관리자</option>
                 <option value="USER">일반사용자</option>
             </select>
+            <span class="field-msg field-error" ng-show="editErrors.role">{{editErrors.role}}</span>
         </div>
+        <span class="field-msg field-error" ng-show="editErrors.general" style="display:block; margin-top:4px;">{{editErrors.general}}</span>
     </div>
 
     <div class="user-modal-footer">
