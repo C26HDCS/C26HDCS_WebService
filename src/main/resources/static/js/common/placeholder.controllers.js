@@ -1,7 +1,6 @@
 'use strict';
 
 qosApp.controller('ConfigCtrl',  ['$scope', function ($scope) {}]);
-qosApp.controller('StorageCtrl', ['$scope', function ($scope) {}]);
 qosApp.controller('ReportCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.reportList = [];
     $scope.searchKeyword = '';

@@ -1,64 +1,470 @@
-<div class="page-header">
-    <div class="page-header-title">
-        <span class="page-title-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-            </svg>
-        </span>
-        <h2>저장장치 관리</h2>
-    </div>
-</div>
+<div class="storage-page">
+    <div class="storage-topbar">
+        <div class="storage-title-wrap">
+            <span class="page-title-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+            </span>
+            <h2>저장장치 관리</h2>
+        </div>
 
-<div class="storage-wrap">
-
-    <!-- ── 왼쪽: 저장장치별 저장공간 ── -->
-    <div class="storage-left">
-        <div class="storage-panel-title">저장장치별 저장공간</div>
-        <div class="storage-device-area">
-            <div class="no-data" style="padding: 40px 0;">사용된 저장장치가 없습니다.</div>
+        <div class="storage-path-bar">
+            <span class="storage-path-label">현재 경로</span>
+            <span class="storage-path-value" title="{{currentPath || selectedDevice.path}}">
+                {{currentPath || selectedDevice.path || '-'}}
+            </span>
+            <button type="button"
+                    class="storage-nav-btn"
+                    ng-click="goBack()"
+                    ng-disabled="!canGoBack()"
+                    title="상위 폴더로 이동">
+                상위
+            </button>
+            <button type="button" class="storage-refresh-btn" ng-click="loadDevices()" title="저장장치 새로고침">
+                새로고침
+            </button>
         </div>
     </div>
 
-    <!-- ── 오른쪽: 폴더 파일 목록 ── -->
-    <div class="storage-right">
-        <div class="storage-panel-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-            폴더명:&nbsp;<span class="storage-folder-name">-</span>
-        </div>
+    <div class="alert alert-error storage-alert" ng-show="errorMessage">{{errorMessage}}</div>
 
-        <div class="storage-file-area">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width:44px;">
-                            <input type="checkbox" class="storage-chk">
-                        </th>
-                        <th>파일명</th>
-                        <th style="width:90px;">파일종류</th>
-                        <th style="width:80px;">용량</th>
-                        <th style="width:150px;">저장경로</th>
-                        <th style="width:110px;">생성일시</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="6" class="no-data">폴더가 없습니다.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="storage-workbench">
+        <section class="storage-panel storage-device-panel">
+            <div class="storage-panel-title">
+                <span class="storage-panel-heading">저장장치</span>
+                <span class="storage-panel-count">{{devices.length}}개</span>
+            </div>
 
-        <div class="storage-right-footer">
-            <button class="btn-storage-delete">삭제하기</button>
-        </div>
+            <div class="storage-device-area">
+                <div class="no-data" ng-show="loadingDevices">저장장치 정보를 조회 중입니다.</div>
+                <div class="no-data" ng-show="!loadingDevices && devices.length === 0">사용 가능한 저장장치가 없습니다.</div>
+
+                <button type="button"
+                        class="storage-device-card"
+                        ng-repeat="device in devices"
+                        ng-class="{active: isSelected(device)}"
+                        ng-click="selectDevice(device)">
+                    <div class="storage-device-head">
+                        <div>
+                            <div class="storage-device-name">{{device.name}}</div>
+                            <div class="storage-device-path">{{device.path}}</div>
+                        </div>
+                        <span class="storage-status-badge storage-status-{{device.status}}">
+                            {{statusLabel(device.status)}}
+                        </span>
+                    </div>
+
+                    <div class="storage-progress-wrap">
+                        <div class="storage-progress-fill storage-progress-{{device.status}}"
+                             ng-style="{'width': device.usagePercent + '%'}"></div>
+                    </div>
+
+                    <div class="storage-device-stats">
+                        <span>사용 {{device.usedText}}</span>
+                        <span>여유 {{device.usableText}}</span>
+                        <strong>{{device.usagePercent}}%</strong>
+                    </div>
+                    <div class="storage-device-total">전체 {{device.totalText}}</div>
+                </button>
+            </div>
+        </section>
+
+        <section class="storage-panel storage-file-panel">
+            <div class="storage-panel-title storage-file-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="storage-panel-heading">파일 목록</span>
+                <span class="storage-selected-count">선택 {{selectedFileCount()}}개</span>
+                <button class="btn-storage-delete"
+                        ng-click="deleteSelectedFiles()"
+                        ng-disabled="selectedFileCount() === 0 || deletingFiles">
+                    {{deletingFiles ? '삭제 중' : '삭제하기'}}
+                </button>
+            </div>
+
+            <div class="storage-file-area">
+                <table class="data-table storage-compact-table">
+                    <thead>
+                        <tr>
+                            <th style="width:42px;">
+                                <input type="checkbox"
+                                       class="storage-chk"
+                                       ng-click="toggleAllFiles($event)"
+                                       ng-checked="isAllSelected()"
+                                       ng-disabled="!hasSelectableFiles() || loadingFiles || deletingFiles">
+                            </th>
+                            <th>파일명</th>
+                            <th style="width:86px;">종류</th>
+                            <th style="width:86px;">용량</th>
+                            <th style="width:124px;">수정일시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-show="loadingFiles">
+                            <td colspan="5" class="no-data">폴더 목록을 조회 중입니다.</td>
+                        </tr>
+                        <tr ng-show="!loadingFiles && files.length === 0">
+                            <td colspan="5" class="no-data">폴더 또는 파일이 없습니다.</td>
+                        </tr>
+                        <tr ng-repeat="file in files"
+                            ng-show="!loadingFiles"
+                            ng-click="openFolder(file)"
+                            ng-class="{'storage-folder-row': file.directory}">
+                            <td>
+                                <input type="checkbox"
+                                       class="storage-chk"
+                                       ng-model="selectedFiles[file.path]"
+                                       ng-disabled="file.directory || deletingFiles"
+                                       ng-click="$event.stopPropagation()">
+                            </td>
+                            <td class="storage-name-cell" title="{{file.path}}">
+                                <span class="storage-file-kind">{{file.directory ? '[폴더]' : '[파일]'}}</span>
+                                {{file.name}}
+                            </td>
+                            <td>{{file.type}}</td>
+                            <td>{{file.sizeText}}</td>
+                            <td>{{file.modifiedAt}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="storage-panel storage-policy-panel">
+            <div class="storage-panel-title">
+                <span class="storage-panel-heading">삭제 정책</span>
+                <button type="button" class="storage-refresh-btn" ng-click="loadDeleteTargets(); loadRetentionPolicies();" title="정책 새로고침">
+                    새로고침
+                </button>
+            </div>
+
+            <div class="storage-tabs">
+                <button type="button"
+                        ng-class="{active: policyTab === 'deleteTargets'}"
+                        ng-click="setPolicyTab('deleteTargets')">
+                    삭제 대상
+                </button>
+                <button type="button"
+                        ng-class="{active: policyTab === 'retentionPolicies'}"
+                        ng-click="setPolicyTab('retentionPolicies')">
+                    보관 기간
+                </button>
+            </div>
+
+            <div class="storage-policy-body" ng-show="policyTab === 'deleteTargets'">
+                <div class="storage-policy-tools">
+                    <strong>삭제 대상 기준</strong>
+                    <button type="button"
+                            class="storage-save-btn"
+                            ng-click="openNewDeleteTarget()"
+                            ng-disabled="showingNewDeleteTarget">
+                        추가
+                    </button>
+                </div>
+
+                <div class="storage-create-form" ng-show="showingNewDeleteTarget">
+                    <div class="storage-edit-form-head">
+                        <strong>삭제 대상 기준 추가</strong>
+                        <button type="button" class="storage-mini-btn" ng-click="cancelNewDeleteTarget()">닫기</button>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>기준명</span>
+                            <input type="text" ng-model="newDeleteTarget.targetName" placeholder="예: 로그 파일">
+                        </label>
+                        <label>
+                            <span>기준 경로</span>
+                            <input type="text" ng-model="newDeleteTarget.basePath" placeholder="예: D:\deleteTest">
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>삭제 방식</span>
+                            <select ng-model="newDeleteTarget.deleteMode">
+                                <option value="AUTO">자동</option>
+                                <option value="MANUAL">수동</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>대상 유형</span>
+                            <select ng-model="newDeleteTarget.targetType">
+                                <option value="RULE">분류기준</option>
+                                <option value="FILE">파일</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>패턴</span>
+                            <input type="text" ng-model="newDeleteTarget.filePattern" placeholder="예: *.log">
+                        </label>
+                        <label>
+                            <span>확장자</span>
+                            <input type="text" ng-model="newDeleteTarget.fileExtension" placeholder="예: log">
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>경과일</span>
+                            <input type="number" min="0" ng-model="newDeleteTarget.minAgeDays">
+                        </label>
+                        <label>
+                            <span>최소 크기</span>
+                            <input type="number" min="0" ng-model="newDeleteTarget.minSizeBytes">
+                        </label>
+                    </div>
+                    <label>
+                        <span>설명</span>
+                        <input type="text" ng-model="newDeleteTarget.description">
+                    </label>
+                    <label class="storage-edit-check">
+                        <input type="checkbox" class="storage-chk" ng-model="newDeleteTarget.enabled">
+                        <span>사용</span>
+                    </label>
+                    <div class="storage-edit-actions">
+                        <button type="button"
+                                class="storage-save-btn"
+                                ng-click="createDeleteTarget()"
+                                ng-disabled="creatingDeleteTarget">
+                            {{creatingDeleteTarget ? '추가 중' : '추가'}}
+                        </button>
+                    </div>
+                </div>
+
+                <table class="data-table storage-compact-table">
+                    <thead>
+                        <tr>
+                            <th style="width:70px;">방식</th>
+                            <th style="width:84px;">유형</th>
+                            <th>기준명</th>
+                            <th style="width:130px;">조건</th>
+                            <th style="width:92px;">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-show="loadingDeleteTargets">
+                            <td colspan="5" class="no-data">삭제 대상 기준을 조회 중입니다.</td>
+                        </tr>
+                        <tr ng-show="!loadingDeleteTargets && deleteTargets.length === 0">
+                            <td colspan="5" class="no-data">등록된 삭제 대상 기준이 없습니다.</td>
+                        </tr>
+                        <tr ng-repeat="target in deleteTargets"
+                            ng-show="!loadingDeleteTargets"
+                            ng-class="{'storage-editing-row': isEditingDeleteTarget(target)}">
+                            <td>
+                                <span class="storage-target-badge"
+                                      ng-class="{'manual': target.deleteMode === 'MANUAL', 'auto': target.deleteMode === 'AUTO'}">
+                                    {{deleteModeLabel(target.deleteMode)}}
+                                </span>
+                            </td>
+                            <td>{{targetTypeLabel(target.targetType)}}</td>
+                            <td class="storage-name-cell" title="{{target.basePath}}">
+                                <strong>{{target.targetName}}</strong>
+                                <span>{{target.basePath}}</span>
+                            </td>
+                            <td>{{targetConditionText(target)}}</td>
+                            <td>
+                                <div class="storage-row-actions">
+                                    <button type="button"
+                                            class="storage-mini-btn"
+                                            ng-click="startEditDeleteTarget(target)">
+                                        수정
+                                    </button>
+                                    <button type="button"
+                                            class="storage-delete-mini-btn"
+                                            ng-click="deleteDeleteTarget(target)"
+                                            ng-disabled="deletingDeleteTargetId === target.id">
+                                        {{deletingDeleteTargetId === target.id ? '삭제 중' : '삭제'}}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="storage-edit-form" ng-show="editingDeleteTarget">
+                    <div class="storage-edit-form-head">
+                        <strong>삭제 대상 기준 수정</strong>
+                        <button type="button" class="storage-mini-btn" ng-click="cancelEditDeleteTarget()">닫기</button>
+                    </div>
+
+                    <label>
+                        <span>기준명</span>
+                        <input type="text" ng-model="editingDeleteTarget.targetName">
+                    </label>
+                    <label>
+                        <span>기준 경로</span>
+                        <input type="text" ng-model="editingDeleteTarget.basePath">
+                    </label>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>삭제 방식</span>
+                            <select ng-model="editingDeleteTarget.deleteMode">
+                                <option value="AUTO">자동</option>
+                                <option value="MANUAL">수동</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span>대상 유형</span>
+                            <select ng-model="editingDeleteTarget.targetType">
+                                <option value="RULE">분류기준</option>
+                                <option value="FILE">파일</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>패턴</span>
+                            <input type="text" ng-model="editingDeleteTarget.filePattern">
+                        </label>
+                        <label>
+                            <span>확장자</span>
+                            <input type="text" ng-model="editingDeleteTarget.fileExtension">
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>경과일</span>
+                            <input type="number" min="0" ng-model="editingDeleteTarget.minAgeDays">
+                        </label>
+                        <label>
+                            <span>최소 크기</span>
+                            <input type="number" min="0" ng-model="editingDeleteTarget.minSizeBytes">
+                        </label>
+                    </div>
+                    <label class="storage-edit-check">
+                        <input type="checkbox" class="storage-chk" ng-model="editingDeleteTarget.enabled">
+                        <span>사용</span>
+                    </label>
+                    <label>
+                        <span>설명</span>
+                        <input type="text" ng-model="editingDeleteTarget.description">
+                    </label>
+
+                    <div class="storage-edit-actions">
+                        <button type="button"
+                                class="storage-save-btn"
+                                ng-click="saveDeleteTarget()"
+                                ng-disabled="savingDeleteTargetId === editingDeleteTarget.id">
+                            {{savingDeleteTargetId === editingDeleteTarget.id ? '저장 중' : '저장'}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="storage-policy-body" ng-show="policyTab === 'retentionPolicies'">
+                <div class="storage-policy-tools">
+                    <strong>보관 기간 정책</strong>
+                    <button type="button"
+                            class="storage-save-btn"
+                            ng-click="openNewRetentionPolicy()"
+                            ng-disabled="showingNewRetentionPolicy">
+                        추가
+                    </button>
+                </div>
+
+                <div class="storage-create-form" ng-show="showingNewRetentionPolicy">
+                    <div class="storage-edit-form-head">
+                        <strong>보관 기간 정책 추가</strong>
+                        <button type="button" class="storage-mini-btn" ng-click="cancelNewRetentionPolicy()">닫기</button>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>파일종류</span>
+                            <input type="text" ng-model="newRetentionPolicy.fileTypeName" placeholder="예: 압축 파일">
+                        </label>
+                        <label>
+                            <span>확장자</span>
+                            <input type="text" ng-model="newRetentionPolicy.fileExtension" placeholder="예: zip">
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>보관일</span>
+                            <input type="number" min="1" max="3650" ng-model="newRetentionPolicy.retentionDays">
+                        </label>
+                        <label class="storage-edit-check">
+                            <input type="checkbox" class="storage-chk" ng-model="newRetentionPolicy.enabled">
+                            <span>사용</span>
+                        </label>
+                    </div>
+                    <label>
+                        <span>설명</span>
+                        <input type="text" ng-model="newRetentionPolicy.description">
+                    </label>
+                    <div class="storage-edit-actions">
+                        <button type="button"
+                                class="storage-save-btn"
+                                ng-click="createRetentionPolicy()"
+                                ng-disabled="creatingRetentionPolicy">
+                            {{creatingRetentionPolicy ? '추가 중' : '추가'}}
+                        </button>
+                    </div>
+                </div>
+
+                <table class="data-table storage-compact-table">
+                    <thead>
+                        <tr>
+                            <th>파일종류</th>
+                            <th style="width:70px;">확장자</th>
+                            <th style="width:86px;">보관일</th>
+                            <th style="width:52px;">사용</th>
+                            <th style="width:92px;">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-show="loadingRetentionPolicies">
+                            <td colspan="5" class="no-data">보관 기간을 조회 중입니다.</td>
+                        </tr>
+                        <tr ng-show="!loadingRetentionPolicies && retentionPolicies.length === 0">
+                            <td colspan="5" class="no-data">등록된 보관 기간이 없습니다.</td>
+                        </tr>
+                        <tr ng-repeat="policy in retentionPolicies" ng-show="!loadingRetentionPolicies">
+                            <td class="storage-name-cell" title="{{policy.description}}">
+                                <strong>{{policy.fileTypeName}}</strong>
+                                <span>{{policy.description || '-'}}</span>
+                            </td>
+                            <td>{{policy.fileExtension}}</td>
+                            <td>
+                                <input type="number"
+                                       class="storage-policy-input"
+                                       min="1"
+                                       max="3650"
+                                       ng-model="policy.retentionDays">
+                            </td>
+                            <td>
+                                <input type="checkbox"
+                                       class="storage-chk"
+                                       ng-model="policy.enabled">
+                            </td>
+                            <td>
+                                <div class="storage-row-actions">
+                                    <button type="button"
+                                            class="storage-save-btn"
+                                            ng-click="saveRetentionPolicy(policy)"
+                                            ng-disabled="savingRetentionPolicyId === policy.id">
+                                        {{savingRetentionPolicyId === policy.id ? '저장 중' : '저장'}}
+                                    </button>
+                                    <button type="button"
+                                            class="storage-delete-mini-btn"
+                                            ng-click="deleteRetentionPolicy(policy)"
+                                            ng-disabled="deletingRetentionPolicyId === policy.id">
+                                        {{deletingRetentionPolicyId === policy.id ? '삭제 중' : '삭제'}}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-
 </div>

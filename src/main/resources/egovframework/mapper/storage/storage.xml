@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.storage.dao.StorageDAO">
+
+    <resultMap id="deleteTargetResultMap" type="kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO">
+        <id     column="ID"              property="id"/>
+        <result column="TARGET_NAME"     property="targetName"/>
+        <result column="DELETE_MODE"     property="deleteMode"/>
+        <result column="TARGET_TYPE"     property="targetType"/>
+        <result column="BASE_PATH"       property="basePath"/>
+        <result column="FILE_PATTERN"    property="filePattern"/>
+        <result column="FILE_EXTENSION"  property="fileExtension"/>
+        <result column="MIN_AGE_DAYS"    property="minAgeDays"/>
+        <result column="MIN_SIZE_BYTES"  property="minSizeBytes"/>
+        <result column="ENABLED"         property="enabled"
+                javaType="boolean" typeHandler="org.apache.ibatis.type.BooleanTypeHandler"/>
+        <result column="DESCRIPTION"     property="description"/>
+        <result column="REG_DT"          property="regDt"/>
+    </resultMap>
+
+    <resultMap id="retentionPolicyResultMap" type="kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO">
+        <id     column="ID"              property="id"/>
+        <result column="FILE_TYPE_NAME"  property="fileTypeName"/>
+        <result column="FILE_EXTENSION"  property="fileExtension"/>
+        <result column="RETENTION_DAYS"  property="retentionDays"/>
+        <result column="ENABLED"         property="enabled"
+                javaType="boolean" typeHandler="org.apache.ibatis.type.BooleanTypeHandler"/>
+        <result column="DESCRIPTION"     property="description"/>
+        <result column="REG_DT"          property="regDt"/>
+        <result column="UPD_DT"          property="updDt"/>
+    </resultMap>
+
+    <select id="selectDeleteTargetList" resultMap="deleteTargetResultMap">
+        SELECT ID,
+               TARGET_NAME,
+               DELETE_MODE,
+               TARGET_TYPE,
+               BASE_PATH,
+               FILE_PATTERN,
+               FILE_EXTENSION,
+               MIN_AGE_DAYS,
+               MIN_SIZE_BYTES,
+               CASE WHEN ENABLED = 'Y' THEN TRUE ELSE FALSE END AS ENABLED,
+               DESCRIPTION,
+               REG_DT
+        FROM TB_STORAGE_DELETE_TARGET
+        ORDER BY DELETE_MODE ASC, TARGET_TYPE ASC, ID ASC
+    </select>
+
+    <insert id="insertDeleteTarget"
+            parameterType="kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="ID">
+        INSERT INTO TB_STORAGE_DELETE_TARGET (
+            TARGET_NAME,
+            DELETE_MODE,
+            TARGET_TYPE,
+            BASE_PATH,
+            FILE_PATTERN,
+            FILE_EXTENSION,
+            MIN_AGE_DAYS,
+            MIN_SIZE_BYTES,
+            ENABLED,
+            DESCRIPTION
+        ) VALUES (
+            #{targetName},
+            #{deleteMode},
+            #{targetType},
+            #{basePath},
+            #{filePattern},
+            #{fileExtension},
+            #{minAgeDays},
+            #{minSizeBytes},
+            CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END,
+            #{description}
+        )
+    </insert>
+
+    <update id="updateDeleteTarget" parameterType="kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO">
+        UPDATE TB_STORAGE_DELETE_TARGET
+        SET TARGET_NAME = #{targetName},
+            DELETE_MODE = #{deleteMode},
+            TARGET_TYPE = #{targetType},
+            BASE_PATH = #{basePath},
+            FILE_PATTERN = #{filePattern},
+            FILE_EXTENSION = #{fileExtension},
+            MIN_AGE_DAYS = #{minAgeDays},
+            MIN_SIZE_BYTES = #{minSizeBytes},
+            ENABLED = CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END,
+            DESCRIPTION = #{description}
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="deleteDeleteTarget" parameterType="long">
+        DELETE FROM TB_STORAGE_DELETE_TARGET
+        WHERE ID = #{id}
+    </delete>
+
+    <select id="selectRetentionPolicyList" resultMap="retentionPolicyResultMap">
+        SELECT ID,
+               FILE_TYPE_NAME,
+               FILE_EXTENSION,
+               RETENTION_DAYS,
+               CASE WHEN ENABLED = 'Y' THEN TRUE ELSE FALSE END AS ENABLED,
+               DESCRIPTION,
+               REG_DT,
+               UPD_DT
+        FROM TB_STORAGE_RETENTION_POLICY
+        ORDER BY FILE_EXTENSION ASC, ID ASC
+    </select>
+
+    <insert id="insertRetentionPolicy"
+            parameterType="kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="ID">
+        INSERT INTO TB_STORAGE_RETENTION_POLICY (
+            FILE_TYPE_NAME,
+            FILE_EXTENSION,
+            RETENTION_DAYS,
+            ENABLED,
+            DESCRIPTION
+        ) VALUES (
+            #{fileTypeName},
+            #{fileExtension},
+            #{retentionDays},
+            CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END,
+            #{description}
+        )
+    </insert>
+
+    <update id="updateRetentionPolicy" parameterType="kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO">
+        UPDATE TB_STORAGE_RETENTION_POLICY
+        SET RETENTION_DAYS = #{retentionDays},
+            ENABLED = CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END,
+            UPD_DT = CURRENT_TIMESTAMP
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="deleteRetentionPolicy" parameterType="long">
+        DELETE FROM TB_STORAGE_RETENTION_POLICY
+        WHERE ID = #{id}
+    </delete>
+
+</mapper>
