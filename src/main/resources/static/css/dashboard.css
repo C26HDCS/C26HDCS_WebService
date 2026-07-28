@@ -140,7 +140,8 @@
 }
 
 .dash-equip-panel.collapsed {
-    transform: translateX(-236px);
+    /* transform: translateX(-236px); */
+    transform: translateX(-401px);
 }
 
 .dash-equip-content {
@@ -192,6 +193,17 @@
     text-align: center;
     border-bottom: 1px solid rgba(255,255,255,0.04);
 }
+
+.dash-equip-body .data-table tbody .no-data {
+    color: #4a6078;
+    font-size: 12px;
+    padding: 18px 0;
+}
+
+/* 장비 상태 뱃지 */
+.status-normal { color: #2ecc71; font-weight: 600; }
+.status-warn   { color: #f39c12; font-weight: 600; }
+.status-fault  { color: #e74c3c; font-weight: 600; }
 
 /* 패널 토글 탭 */
 .dash-equip-tab {

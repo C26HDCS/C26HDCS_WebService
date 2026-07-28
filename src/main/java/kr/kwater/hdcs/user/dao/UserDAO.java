@@ -22,7 +22,7 @@ public interface UserDAO {
             "       email AS email, " +
             "       phone_number AS phoneNumber, " +
             "       use_yn AS useYn, " +
-            "       role_type AS roleType, " +
+            "       TRIM(role_type) AS roleType, " +
             "       created_at AS createdAt " +
             "FROM public.tb_user " +
             "WHERE user_id = #{userId} AND use_yn = 'Y'")
@@ -31,7 +31,7 @@ public interface UserDAO {
     @Select("SELECT user_id AS userId, " +
             "       user_name AS name, " +
             "       email AS email, " +
-            "       role_type AS role, " +
+            "       TRIM(role_type) AS role, " +
             "       CASE WHEN use_yn = 'Y' THEN true ELSE false END AS active, " +
             "       TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') AS createdAt " +
             "FROM public.tb_user " +
@@ -47,7 +47,7 @@ public interface UserDAO {
     @Update("UPDATE public.tb_user " +
             "SET user_name = #{name}, email = #{email}, role_type = #{role} " +
             "WHERE user_id = #{userId}")
-    void updateUserInfo(UserCreateDTO dto);
+    int updateUserInfo(UserCreateDTO dto);
 
     @Update("UPDATE public.tb_user SET \"password\" = #{password} WHERE user_id = #{userId}")
     void updateUserPassword(@Param("userId") String userId, @Param("password") String password);

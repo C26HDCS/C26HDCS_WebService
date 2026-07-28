@@ -88,6 +88,11 @@
     background: #1a2840;
 }
 
+.mypage-input.mypage-input-error {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231,76,60,0.14);
+}
+
 /* ── 버튼 영역 ── */
 .mypage-actions {
     margin-top: auto;

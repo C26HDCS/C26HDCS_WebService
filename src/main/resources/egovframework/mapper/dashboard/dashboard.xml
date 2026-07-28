@@ -16,4 +16,29 @@
         SELECT COUNT(*) FROM TB_QUALITY
     </select>
 
+    <select id="selectTotalDeviceCount" resultType="int">
+        SELECT COUNT(*) FROM public.tb_device
+    </select>
+
+    <select id="selectNormalCount" resultType="int">
+        SELECT COUNT(*) FROM public.tb_device WHERE TRIM(device_status) = 'NORMAL'
+    </select>
+
+    <select id="selectFaultCount" resultType="int">
+        SELECT COUNT(*) FROM public.tb_device WHERE TRIM(device_status) = 'ERROR'
+    </select>
+
+    <select id="selectWarnCount" resultType="int">
+        SELECT COUNT(*) FROM public.tb_device WHERE TRIM(device_status) = 'WARNING'
+    </select>
+
+    <select id="selectAllDevices" resultType="kr.kwater.hdcs.dashboard.vo.DeviceVO">
+        SELECT device_id     AS deviceId,
+               device_name   AS deviceName,
+               ip_address    AS ipAddress,
+               TRIM(device_status) AS deviceStatus
+        FROM public.tb_device
+        ORDER BY device_id
+    </select>
+
 </mapper>

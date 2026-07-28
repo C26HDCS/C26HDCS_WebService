@@ -65,8 +65,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr ng-if="devices.length === 0">
                                     <td colspan="4" class="no-data">전체 장비 리스트가 없습니다.</td>
+                                </tr>
+                                <tr ng-repeat="d in devices track by d.deviceId">
+                                    <td>{{d.deviceId}}</td>
+                                    <td>{{d.deviceName}}</td>
+                                    <td>{{d.ipAddress}}</td>
+                                    <td>
+                                        <span ng-class="{
+                                            'status-normal':  d.deviceStatus === 'NORMAL',
+                                            'status-warn':    d.deviceStatus === 'WARNING',
+                                            'status-fault':   d.deviceStatus === 'ERROR'
+                                        }">{{statusLabel(d.deviceStatus)}}</span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
