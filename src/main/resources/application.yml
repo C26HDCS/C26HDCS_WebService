@@ -29,7 +29,7 @@ spring:
   datasource:
     driver-class-name: org.h2.Driver
     # url: jdbc:h2:file:./localdb/hdcsdb;MODE=PostgreSQL;NON_KEYWORDS=VALUE
-    url: jdbc:h2:file:D:/dev/HDCS_Web_Service/localdb/hdcsdb;MODE=PostgreSQL;NON_KEYWORDS=VALUE
+    url: jdbc:h2:file:D:\Project\C26HDCS_WebService\localdb\hdcsdb;MODE=PostgreSQL;NON_KEYWORDS=VALUE
     username: sa
     password:
 
@@ -112,7 +112,7 @@ logging:
   file:
     name: logs/hdcs-external-web-service.log
 
-# JWT 설정 
+# JWT 설정
 jwt:
   # 토큰 암호화 및 검증에 사용할 비밀키 (32바이트 이상의 임의의 긴 문자열)
   secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXNlY3JldC1rZXktZm9yLWt3YXRlci1kY2RzLWV4dGVybmFsLXNlcnZpY2U=
