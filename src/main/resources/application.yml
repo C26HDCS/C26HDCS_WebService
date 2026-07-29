@@ -82,7 +82,7 @@ logging:
   file:
     name: logs/hdcs-external-web-service.log
 
-# JWT 설정 
+# JWT 설정
 jwt:
   # 토큰 암호화 및 검증에 사용할 비밀키 (32바이트 이상의 임의의 긴 문자열)
   secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXNlY3JldC1rZXktZm9yLWt3YXRlci1kY2RzLWV4dGVybmFsLXNlcnZpY2U=
