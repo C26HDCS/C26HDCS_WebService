@@ -227,6 +227,146 @@
     transform: rotate(180deg);
 }
 
+/* ── 장비 행 hover ── */
+.device-row {
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.device-row:hover {
+    background: rgba(58,123,213,0.12);
+}
+
+/* ── 장비 상세 모달 ── */
+.dev-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 900;
+}
+
+.dev-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 901;
+    width: 400px;
+    background: #1c2b40;
+    border: 1px solid rgba(90,158,245,0.2);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    overflow: hidden;
+}
+
+.dev-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    background: #162032;
+}
+
+.dev-modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #dce8f5;
+    letter-spacing: 0.2px;
+}
+
+.dev-modal-close {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #6a8aaa;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+.dev-modal-close:hover {
+    background: rgba(255,255,255,0.07);
+    color: #dce8f5;
+}
+
+.dev-modal-body {
+    padding: 20px 22px;
+}
+
+.dev-modal-status-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    letter-spacing: 0.3px;
+}
+.dev-badge-normal { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.35); }
+.dev-badge-warn   { background: rgba(243,156,18,0.15);  color: #f39c12; border: 1px solid rgba(243,156,18,0.35); }
+.dev-badge-fault  { background: rgba(231,76,60,0.15);   color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
+
+.dev-modal-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dev-modal-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dev-modal-label {
+    width: 80px;
+    flex-shrink: 0;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #6a8aaa;
+    letter-spacing: 0.2px;
+}
+
+.dev-modal-value {
+    flex: 1;
+    font-size: 13px;
+    color: #c8d6ea;
+    background: #162032;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.dev-modal-value.mono {
+    font-family: 'Consolas', 'D2Coding', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.5px;
+}
+
+.dev-modal-footer {
+    padding: 14px 22px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.dev-modal-btn {
+    padding: 8px 22px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.dev-modal-btn:hover { background: #2a6ac4; }
+
 /* 지도 컨트롤 버튼 */
 .dash-map-controls {
     position: absolute;

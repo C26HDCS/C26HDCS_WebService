@@ -6,6 +6,8 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
     $scope.devices  = [];
     $scope.currentTime = '';
     $scope.equipPanelCollapsed = false;
+    $scope.selectedDevice = null;
+    $scope.deviceModalOpen = false;
 
     $scope.toggleEquipPanel = function () {
         $scope.equipPanelCollapsed = !$scope.equipPanelCollapsed;
@@ -16,6 +18,16 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         if (status === 'WARNING') return '경고';
         if (status === 'ERROR')   return '장애';
         return status || '-';
+    };
+
+    $scope.openDeviceDetail = function (device) {
+        $scope.selectedDevice = device;
+        $scope.deviceModalOpen = true;
+    };
+
+    $scope.closeDeviceModal = function () {
+        $scope.deviceModalOpen = false;
+        $scope.selectedDevice = null;
     };
 
     function pad(n) { return n < 10 ? '0' + n : n; }

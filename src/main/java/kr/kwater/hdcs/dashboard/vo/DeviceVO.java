@@ -8,6 +8,8 @@ import lombok.Setter;
 public class DeviceVO {
     private String deviceId;
     private String deviceName;
+    private String deviceType;
     private String ipAddress;
     private String deviceStatus;
+    private String createdAt;
 }

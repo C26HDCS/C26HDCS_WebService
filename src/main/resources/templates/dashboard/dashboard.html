@@ -68,7 +68,9 @@
                                 <tr ng-if="devices.length === 0">
                                     <td colspan="4" class="no-data">전체 장비 리스트가 없습니다.</td>
                                 </tr>
-                                <tr ng-repeat="d in devices track by d.deviceId">
+                                <tr ng-repeat="d in devices track by d.deviceId"
+                                    class="device-row"
+                                    ng-click="openDeviceDetail(d)">
                                     <td>{{d.deviceId}}</td>
                                     <td>{{d.deviceName}}</td>
                                     <td>{{d.ipAddress}}</td>
@@ -219,4 +221,55 @@
         </div>
 
     </div>
+</div>
+
+<!-- ── 장비 상세 모달 ── -->
+<div class="dev-modal-overlay" ng-if="deviceModalOpen" ng-click="closeDeviceModal()"></div>
+<div class="dev-modal" ng-if="deviceModalOpen">
+
+    <div class="dev-modal-header">
+        <span class="dev-modal-title">장비 상세 정보</span>
+        <button class="dev-modal-close" ng-click="closeDeviceModal()" title="닫기">&#x2715;</button>
+    </div>
+
+    <div class="dev-modal-body">
+
+        <div class="dev-modal-status-badge"
+             ng-class="{
+                 'dev-badge-normal':  selectedDevice.deviceStatus === 'NORMAL',
+                 'dev-badge-warn':    selectedDevice.deviceStatus === 'WARNING',
+                 'dev-badge-fault':   selectedDevice.deviceStatus === 'ERROR'
+             }">
+            {{statusLabel(selectedDevice.deviceStatus)}}
+        </div>
+
+        <div class="dev-modal-grid">
+            <div class="dev-modal-row">
+                <span class="dev-modal-label">장비 ID</span>
+                <span class="dev-modal-value">{{selectedDevice.deviceId}}</span>
+            </div>
+            <div class="dev-modal-row">
+                <span class="dev-modal-label">장비명</span>
+                <span class="dev-modal-value">{{selectedDevice.deviceName}}</span>
+            </div>
+            <div class="dev-modal-row">
+                <span class="dev-modal-label">장비 유형</span>
+                <span class="dev-modal-value">{{selectedDevice.deviceType || '-'}}</span>
+            </div>
+            <div class="dev-modal-row">
+                <span class="dev-modal-label">IP 주소</span>
+                <span class="dev-modal-value mono">{{selectedDevice.ipAddress || '-'}}</span>
+            </div>
+            <div class="dev-modal-row">
+                <span class="dev-modal-label">등록일시</span>
+                <span class="dev-modal-value">{{selectedDevice.createdAt || '-'}}</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="dev-modal-footer">
+        <button class="dev-modal-btn" ng-click="closeDeviceModal()">닫기</button>
+    </div>
+
 </div>
