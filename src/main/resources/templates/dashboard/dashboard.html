@@ -62,11 +62,13 @@
                                     <th>장비명</th>
                                     <th>위치</th>
                                     <th>상태</th>
+                                    <th>최근 수신<br>일시</th>
+                                    <th>수신 상태</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-if="devices.length === 0">
-                                    <td colspan="4" class="no-data">전체 장비 리스트가 없습니다.</td>
+                                    <td colspan="6" class="no-data">전체 장비 리스트가 없습니다.</td>
                                 </tr>
                                 <tr ng-repeat="d in devices track by d.deviceId"
                                     class="device-row"
@@ -80,6 +82,17 @@
                                             'status-warn':    d.deviceStatus === 'WARNING',
                                             'status-fault':   d.deviceStatus === 'ERROR'
                                         }">{{statusLabel(d.deviceStatus)}}</span>
+                                    </td>
+                                    <td class="recv-time">{{d.latestReceivedAt || '-'}}</td>
+                                    <td>
+                                        <span ng-if="d.latestReceivedStatus"
+                                              class="recv-badge"
+                                              ng-class="{
+                                                  'recv-success': d.latestReceivedStatus === 'NORMAL'  || d.latestReceivedStatus === 'SUCCESS',
+                                                  'recv-warn':    d.latestReceivedStatus === 'WARNING',
+                                                  'recv-error':   d.latestReceivedStatus === 'ERROR'   || d.latestReceivedStatus === 'FAILED' || d.latestReceivedStatus === 'FAIL'
+                                              }">{{historyStatusLabel(d.latestReceivedStatus)}}</span>
+                                        <span ng-if="!d.latestReceivedStatus">-</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -264,6 +277,40 @@
                 <span class="dev-modal-label">등록일시</span>
                 <span class="dev-modal-value">{{selectedDevice.createdAt || '-'}}</span>
             </div>
+        </div>
+
+        <!-- 구분선 + 수신 이력 -->
+        <hr class="dev-modal-divider">
+
+        <div class="dev-modal-history-title">최근 데이터 수신 및 처리 이력</div>
+
+        <div class="dev-modal-history-wrap">
+            <table class="dev-modal-history-table">
+                <thead>
+                    <tr>
+                        <th>수신 시간</th>
+                        <th>데이터 내용 (Payload)</th>
+                        <th>상태</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-if="deviceHistory.length === 0">
+                        <td colspan="3" class="dev-history-empty">수신 이력이 없습니다.</td>
+                    </tr>
+                    <tr ng-repeat="h in deviceHistory track by $index">
+                        <td class="dev-history-time">{{h.receivedAt}}</td>
+                        <td class="dev-history-payload">{{h.dataPayload || '-'}}</td>
+                        <td>
+                            <span class="recv-badge"
+                                  ng-class="{
+                                      'recv-success': h.receivedStatus === 'NORMAL' || h.receivedStatus === 'SUCCESS',
+                                      'recv-warn':    h.receivedStatus === 'WARNING',
+                                      'recv-error':   h.receivedStatus === 'ERROR'  || h.receivedStatus === 'FAILED' || h.receivedStatus === 'FAIL'
+                                  }">{{historyStatusLabel(h.receivedStatus)}}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
     </div>

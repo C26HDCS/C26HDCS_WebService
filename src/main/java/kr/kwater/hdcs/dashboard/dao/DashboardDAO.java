@@ -3,7 +3,9 @@
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO;
 import kr.kwater.hdcs.dashboard.vo.DeviceVO;
 
 @Mapper
@@ -24,4 +26,6 @@ public interface DashboardDAO {
     int selectWarnCount();
 
     List<DeviceVO> selectAllDevices();
+
+    List<DeviceStatusHistoryVO> selectDeviceHistory(@Param("deviceId") String deviceId);
 }

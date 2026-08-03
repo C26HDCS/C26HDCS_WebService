@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.dashboard.dao.DataReceiveDAO">
+
+    <!-- 장비 유형 조회 (L대역 DCS / Ka대역 분기용) -->
+    <select id="selectDeviceType" resultType="String">
+        SELECT TRIM(device_type)
+        FROM public.tb_device
+        WHERE device_id = CAST(#{deviceId} AS BIGINT)
+    </select>
+
+    <!-- L대역 DCS 수신 데이터 최신 5건 -->
+    <select id="selectDcsData" resultType="kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO">
+        SELECT TO_CHAR(received_at, 'YYYY-MM-DD HH24:MI') AS receivedAt,
+               data_payload                                AS dataPayload,
+               TRIM(received_status)                      AS receivedStatus
+        FROM public.tb_dcs_data
+        WHERE device_id = CAST(#{deviceId} AS BIGINT)
+        ORDER BY received_at DESC
+        LIMIT 5
+    </select>
+
+    <!-- Ka대역 수신 데이터 최신 5건 -->
+    <select id="selectKaData" resultType="kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO">
+        SELECT TO_CHAR(received_at, 'YYYY-MM-DD HH24:MI') AS receivedAt,
+               file_name                                   AS dataPayload,
+               TRIM(receive_status)                       AS receivedStatus
+        FROM public.tb_ka_data
+        WHERE device_id = CAST(#{deviceId} AS BIGINT)
+        ORDER BY received_at DESC
+        LIMIT 5
+    </select>
+
+</mapper>

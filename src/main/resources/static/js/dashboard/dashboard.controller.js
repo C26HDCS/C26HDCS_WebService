@@ -3,10 +3,11 @@
 qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($scope, $http, $interval) {
 
     $scope.summary = { totalDevices: 0, normal: 0, fault: 0, warn: 0 };
-    $scope.devices  = [];
-    $scope.currentTime = '';
+    $scope.devices       = [];
+    $scope.deviceHistory = [];
+    $scope.currentTime   = '';
     $scope.equipPanelCollapsed = false;
-    $scope.selectedDevice = null;
+    $scope.selectedDevice  = null;
     $scope.deviceModalOpen = false;
 
     $scope.toggleEquipPanel = function () {
@@ -20,14 +21,28 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         return status || '-';
     };
 
+    $scope.historyStatusLabel = function (status) {
+        if (status === 'NORMAL'  || status === 'SUCCESS') return '성공';
+        if (status === 'WARNING')                         return '경고';
+        if (status === 'ERROR'   || status === 'FAILED' || status === 'FAIL') return '오류';
+        return status || '-';
+    };
+
     $scope.openDeviceDetail = function (device) {
-        $scope.selectedDevice = device;
+        $scope.selectedDevice  = device;
+        $scope.deviceHistory   = [];
         $scope.deviceModalOpen = true;
+        $http.get(ctx + '/api/dashboard/devices/' + device.deviceId + '/data', {
+            params: { deviceType: device.deviceType }
+        })
+            .then(function (res) { $scope.deviceHistory = res.data; })
+            .catch(function ()   { $scope.deviceHistory = []; });
     };
 
     $scope.closeDeviceModal = function () {
         $scope.deviceModalOpen = false;
-        $scope.selectedDevice = null;
+        $scope.selectedDevice  = null;
+        $scope.deviceHistory   = [];
     };
 
     function pad(n) { return n < 10 ? '0' + n : n; }

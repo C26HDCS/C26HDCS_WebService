@@ -4,11 +4,47 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.userList      = [];
     $scope.filteredList  = [];
+    $scope.pagedList     = [];
     $scope.searchKeyword  = '';
     $scope.searchRole     = '';
     $scope.searchActive   = '';
     $scope.searchDateFrom = '';
     $scope.searchDateTo   = '';
+
+    var PAGE_SIZE = 10;
+    $scope.pageSize   = PAGE_SIZE;
+    $scope.currentPage = 1;
+    $scope.totalPages  = 0;
+    $scope.pageNums    = [];
+
+    function updatePaging() {
+        var total = $scope.filteredList.length;
+        $scope.totalPages = Math.ceil(total / PAGE_SIZE);
+        if ($scope.currentPage < 1) $scope.currentPage = 1;
+        if ($scope.totalPages > 0 && $scope.currentPage > $scope.totalPages) {
+            $scope.currentPage = $scope.totalPages;
+        }
+        var start = ($scope.currentPage - 1) * PAGE_SIZE;
+        $scope.pagedList = $scope.filteredList.slice(start, start + PAGE_SIZE);
+
+        // 현재 페이지 기준 최대 5개 번호 생성
+        var half = 2;
+        var from = Math.max(1, $scope.currentPage - half);
+        var to   = Math.min($scope.totalPages, $scope.currentPage + half);
+        if (to - from < 4) {
+            if (from === 1) to = Math.min($scope.totalPages, from + 4);
+            else            from = Math.max(1, to - 4);
+        }
+        var pages = [];
+        for (var i = from; i <= to; i++) pages.push(i);
+        $scope.pageNums = pages;
+    }
+
+    $scope.goToPage = function (n) {
+        if (n < 1 || n > $scope.totalPages || n === $scope.currentPage) return;
+        $scope.currentPage = n;
+        updatePaging();
+    };
 
     // Date 객체 또는 문자열을 'YYYY-MM-DD' 문자열로 변환
     // (AngularJS ng-model은 type="date" 값을 Date 객체로 저장함)
@@ -55,6 +91,8 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
             if (toStr   && itemDate > toStr)   return false;
             return true;
         });
+        $scope.currentPage = 1;
+        updatePaging();
     };
 
     $scope.load = function () {
@@ -320,6 +358,7 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
                     }
                 }
                 $scope.closeEditModal();
+                $scope.showUpdateSuccessModal = true;
                 $scope.load();
             })
             .catch(function (err) {
@@ -330,12 +369,19 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
             });
     };
 
+    /* ── 수정 완료 알림 모달 ── */
+    $scope.showUpdateSuccessModal = false;
+
+    $scope.closeUpdateSuccessModal = function () {
+        $scope.showUpdateSuccessModal = false;
+    };
+
     /* ── 사용자 삭제 확인 모달 ── */
     $scope.showDeleteModal = false;
     $scope.deleteUser = {};
 
     $scope.openDeleteModal = function (item) {
-        $scope.deleteUser = { userId: item.userId };
+        $scope.deleteUser = { userId: item.userId, name: item.name };
         $scope.showDeleteModal = true;
     };
 

@@ -183,13 +183,15 @@
 /* 장비 패널 내부 테이블 */
 .dash-equip-body .data-table thead th {
     background: #162032;
-    padding: 8px 10px;
+    padding: 8px 6px;
     font-size: 11px;
     text-align: center;
+    vertical-align: middle;
+    line-height: 1.4;
 }
 .dash-equip-body .data-table tbody td {
-    padding: 8px 10px;
-    font-size: 12px;
+    padding: 6px 4px;
+    font-size: 11px;
     text-align: center;
     border-bottom: 1px solid rgba(255,255,255,0.04);
 }
@@ -250,7 +252,10 @@
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 901;
-    width: 400px;
+    width: 620px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     background: #1c2b40;
     border: 1px solid rgba(90,158,245,0.2);
     border-radius: 10px;
@@ -295,6 +300,8 @@
 
 .dev-modal-body {
     padding: 20px 22px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .dev-modal-status-badge {
@@ -366,6 +373,106 @@
     transition: background 0.15s;
 }
 .dev-modal-btn:hover { background: #2a6ac4; }
+
+/* ── 모달 구분선 ── */
+.dev-modal-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin: 16px 0 14px;
+}
+
+/* ── 이력 섹션 제목 ── */
+.dev-modal-history-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #5a9ef5;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+/* ── 이력 테이블 래퍼 (스크롤) ── */
+.dev-modal-history-wrap {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px;
+}
+
+/* ── 이력 테이블 ── */
+.dev-modal-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+}
+.dev-modal-history-table thead th {
+    background: #162032;
+    padding: 7px 10px;
+    text-align: left;
+    color: #6a8aaa;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+}
+.dev-modal-history-table tbody td {
+    padding: 7px 10px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    color: #9ab8d4;
+    vertical-align: middle;
+}
+.dev-modal-history-table tbody tr:hover td {
+    background: rgba(58,123,213,0.07);
+}
+.dev-history-empty {
+    text-align: center;
+    color: #3a5070;
+    padding: 16px 0 !important;
+}
+.dev-history-time {
+    white-space: nowrap;
+    font-family: 'Consolas', 'D2Coding', monospace;
+    font-size: 11px;
+    color: #7a9cbf;
+}
+.dev-history-payload {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Consolas', 'D2Coding', monospace;
+    font-size: 11px;
+    color: #8aa8c4;
+    cursor: default;
+}
+.dev-history-payload:hover {
+    white-space: normal;
+    word-break: break-all;
+}
+
+/* ── 수신 상태 뱃지 (목록 + 모달 공용) ── */
+.recv-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+.recv-success { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+.recv-warn    { background: rgba(243,156,18,0.12);  color: #f39c12; border: 1px solid rgba(243,156,18,0.3); }
+.recv-error   { background: rgba(231,76,60,0.12);   color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+
+/* ── 목록 수신 일시 ── */
+.recv-time {
+    font-size: 11px;
+    font-family: 'Consolas', 'D2Coding', monospace;
+    color: #7a9cbf;
+    white-space: normal;
+    word-break: keep-all;
+    line-height: 1.5;
+}
 
 /* 지도 컨트롤 버튼 */
 .dash-map-controls {

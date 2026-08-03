@@ -467,4 +467,98 @@ body {
 .btn-delete { background: #dc3545; color: #fff; }
 .btn-search { background: #3a7bd5; color: #fff; }
 .pagination { text-align: center; padding: 12px 0; color: #8aa8c4; }
+
+/* ── 로그아웃 알림 모달 ── */
+.logout-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 2000;
+    backdrop-filter: blur(2px);
+}
+
+.logout-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2001;
+    width: 400px;
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+
+.logout-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.logout-modal-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #dce8f5;
+    display: flex;
+    align-items: center;
+}
+
+.logout-modal-body {
+    padding: 28px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.logout-modal-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(58,123,213,0.12);
+    border: 1px solid rgba(58,123,213,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5a9ef5;
+}
+
+.logout-modal-text {
+    font-size: 13.5px;
+    color: #9ab8d4;
+    line-height: 1.7;
+    text-align: center;
+}
+
+.logout-modal-footer {
+    padding: 16px 22px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.btn-logout-confirm {
+    height: 36px;
+    padding: 0 24px;
+    background: #3a7bd5;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(58,123,213,0.3);
+}
+.btn-logout-confirm:hover {
+    background: #2a6ac4;
+    box-shadow: 0 4px 14px rgba(58,123,213,0.45);
+}
 .footer { margin-top: 40px; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.07); text-align: center; color: #3a4e66; font-size: 12px; }

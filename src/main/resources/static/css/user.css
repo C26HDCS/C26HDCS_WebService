@@ -237,6 +237,55 @@
     outline-offset: -1px;
 }
 
+/* ── 페이지네이션 ── */
+.user-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 14px 0 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 6px;
+    color: #7a9cbf;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.page-btn:hover:not(:disabled) {
+    background: rgba(58,123,213,0.18);
+    border-color: rgba(58,123,213,0.4);
+    color: #dce8f5;
+}
+.page-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+.page-btn-active {
+    background: #3a7bd5 !important;
+    border-color: #3a7bd5 !important;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+.page-info {
+    margin-left: 8px;
+    font-size: 12px;
+    color: #4a6078;
+    user-select: none;
+}
+
 /* ============================================================
    사용자 등록 모달
    ============================================================ */
@@ -412,7 +461,7 @@
 .user-modal-footer {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
+    justify-content: center;
     padding: 14px 22px 18px;
     border-top: 1px solid rgba(255,255,255,0.07);
 }
@@ -568,6 +617,19 @@
     font-weight: 700;
     color: #e74c3c;
     letter-spacing: 0.3px;
+}
+.user-modal-confirm-id {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(231,76,60,0.7);
+    margin-left: 4px;
+}
+
+/* 성공(초록) 아이콘 변형 */
+.confirm-icon-success {
+    background: rgba(46,204,113,0.1) !important;
+    border: 1px solid rgba(46,204,113,0.25) !important;
+    color: #2ecc71 !important;
 }
 
 .btn-modal-delete {

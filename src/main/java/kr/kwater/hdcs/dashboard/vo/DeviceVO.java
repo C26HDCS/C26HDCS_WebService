@@ -12,4 +12,6 @@ public class DeviceVO {
     private String ipAddress;
     private String deviceStatus;
     private String createdAt;
+    private String latestReceivedAt;
+    private String latestReceivedStatus;
 }

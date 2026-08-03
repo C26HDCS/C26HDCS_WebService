@@ -33,14 +33,26 @@
     </select>
 
     <select id="selectAllDevices" resultType="kr.kwater.hdcs.dashboard.vo.DeviceVO">
-        SELECT device_id          AS deviceId,
-               device_name        AS deviceName,
-               TRIM(device_type)  AS deviceType,
-               ip_address         AS ipAddress,
-               TRIM(device_status) AS deviceStatus,
-               TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') AS createdAt
+        SELECT device_id                                          AS deviceId,
+               device_name                                       AS deviceName,
+               TRIM(device_type)                                 AS deviceType,
+               ip_address                                        AS ipAddress,
+               TRIM(device_status)                               AS deviceStatus,
+               TO_CHAR(created_at,      'YYYY-MM-DD HH24:MI')   AS createdAt,
+               TO_CHAR(last_received_at, 'YYYY-MM-DD HH24:MI')  AS latestReceivedAt,
+               TRIM(last_receive_status)                         AS latestReceivedStatus
         FROM public.tb_device
         ORDER BY device_id
+    </select>
+
+    <select id="selectDeviceHistory" resultType="kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO">
+        SELECT TO_CHAR(checked_at, 'YYYY-MM-DD HH24:MI') AS receivedAt,
+               status_message                              AS dataPayload,
+               TRIM(device_status)                        AS receivedStatus
+        FROM public.tb_device_status
+        WHERE device_id = CAST(#{deviceId} AS BIGINT)
+        ORDER BY checked_at DESC
+        LIMIT 10
     </select>
 
 </mapper>
