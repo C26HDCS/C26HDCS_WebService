@@ -6,7 +6,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
     $scope.devices       = [];
     $scope.deviceHistory = [];
     $scope.currentTime   = '';
-    $scope.equipPanelCollapsed = false;
+    $scope.equipPanelCollapsed = true;
     $scope.selectedDevice  = null;
     $scope.deviceModalOpen = false;
 
@@ -67,4 +67,53 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         .then(function (res) {
             $scope.devices = res.data;
         });
+
+    // ── CesiumJS 지도 초기화 (CesiumMapManager.ts 설정값 적용) ──
+    var ION_TOKEN          = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmYWJlYjRmYy03ZTAxLTRjMDAtYTA3NC0wNTg2M2RiOThkNTIiLCJpZCI6MjIyMTkxLCJpYXQiOjE3MTgzNTI0MjJ9.Ieo02cB_7Iin7ed4IN_Vnv0ivyuXkNBHduWnFFVm7hw';
+    var ION_TERRAIN_ID     = 3124909; // 한국 고해상도 지형 Asset
+    var VWORLD_KEY         = 'EFEF8448-8509-379E-97FE-E69D9B60914D';
+
+    Cesium.Ion.defaultAccessToken = ION_TOKEN;
+
+    // VWorld WMTS 프로바이더 생성 (WebMapTileServiceImageryProvider 방식이 정확)
+    function createVWorldProvider(layerName, tileType) {
+        return new Cesium.WebMapTileServiceImageryProvider({
+            url:            'https://api.vworld.kr/req/wmts/1.0.0/' + VWORLD_KEY + '/' + layerName + '/{TileMatrix}/{TileRow}/{TileCol}.' + tileType,
+            layer:          layerName,
+            style:          'default',
+            tileMatrixSetID: 'EPSG:900913',
+            maximumLevel:   19,
+            credit:         new Cesium.Credit('국토지리정보원 VWorld')
+        });
+    }
+
+    function initViewer(terrainProvider) {
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            baseLayer:            new Cesium.ImageryLayer(createVWorldProvider('Satellite', 'jpeg')),
+            terrainProvider:      terrainProvider,
+            baseLayerPicker:      false,
+            navigationHelpButton: false,
+            sceneModePicker:      false,
+            animation:            false,
+            timeline:             false,
+            fullscreenButton:     false,
+            homeButton:           false,
+            geocoder:             false,
+            infoBox:              false,
+            selectionIndicator:   false
+        });
+
+        // 한국어 수계·지명 레이블 (Hybrid 레이어)
+        viewer.imageryLayers.addImageryProvider(createVWorldProvider('Hybrid', 'png'));
+
+        // 초기 카메라: 한반도 전체 (CesiumMapManager.ts initialPoint 기준)
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(127.7, 37.9, 1000000)
+        });
+    }
+
+    // Ion 한국 지형 비동기 로드 → 실패 시 기본 타원체로 폴백
+    Cesium.CesiumTerrainProvider.fromIonAssetId(ION_TERRAIN_ID)
+        .then(function (terrain) { initViewer(terrain); })
+        .catch(function ()        { initViewer(new Cesium.EllipsoidTerrainProvider()); });
 }]);

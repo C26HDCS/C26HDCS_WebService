@@ -35,16 +35,9 @@
         <!-- 왼쪽: 지도 + 장비 목록 -->
         <div class="dash-left">
 
-            <!-- 지도 플레이스홀더 -->
+            <!-- CesiumJS 지도 -->
             <div class="dash-map-area">
-                <svg viewBox="0 0 200 300" width="140" height="210" opacity="0.07"
-                     xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                    <path d="M100 10 C80 20 60 30 50 55 C40 80 35 100 30 130
-                             C25 160 20 185 30 210 C40 235 55 255 70 270
-                             C85 285 95 295 100 295 C105 295 115 285 130 270
-                             C145 255 160 235 170 210 C180 185 175 160 170 130
-                             C165 100 160 80 150 55 C140 30 120 20 100 10Z"/>
-                </svg>
+                <div id="cesiumContainer"></div>
             </div>
 
             <!-- 장비 목록 패널 -->

@@ -13,6 +13,7 @@
     <link rel="stylesheet" th:href="@{/static/css/storage.css}">
     <link rel="stylesheet" th:href="@{/static/css/mypage.css}">
     <link rel="stylesheet" th:href="@{/static/css/report.css}">
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 </head>
 <body ng-controller="AppCtrl">
 
@@ -148,6 +149,8 @@
     </div><!-- /.page-body -->
 </div>
 
+<script>window.CESIUM_BASE_URL = 'https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/';</script>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
 <script th:src="@{/webjars/angularjs/1.8.2/angular.min.js}"></script>
 <script th:src="@{/webjars/angularjs/1.8.2/angular-route.min.js}"></script>
 

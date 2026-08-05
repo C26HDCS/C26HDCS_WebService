@@ -31,7 +31,7 @@
 }
 
 .dash-status-left {
-    flex: 2.8;
+    flex: 2.95;
     border-right: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -112,20 +112,51 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* 지도 플레이스홀더 */
+/* CesiumJS 지도 영역 */
 .dash-map-area {
     width: 100%;
     height: 100%;
-    background:
-        radial-gradient(ellipse at 45% 35%, rgba(30,60,100,0.35) 0%, transparent 55%),
-        radial-gradient(ellipse at 65% 65%, rgba(20,45,80,0.25) 0%, transparent 45%),
-        linear-gradient(180deg, #0d1822 0%, #111e2e 40%, #0e1a28 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.06);
-    font-size: 80px;
-    user-select: none;
+    background: #0d1822;
+    position: relative;
+    overflow: hidden;
+}
+
+#cesiumContainer {
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Cesium 기본 UI 재정의 ── */
+
+/* 크레딧(저작권) 텍스트 – 검정 배경에 어두운 글씨로 눈에 덜 띄게 */
+#cesiumContainer .cesium-credit-logoContainer,
+#cesiumContainer .cesium-credit-textContainer {
+    background: rgba(0, 0, 0, 0.45) !important;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+#cesiumContainer .cesium-credit-text,
+#cesiumContainer .cesium-credit-textContainer a {
+    color: rgba(255, 255, 255, 0.55) !important;
+    font-size: 10px !important;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+}
+
+/* 우측 상단 줌·나침반 버튼 */
+#cesiumContainer .cesium-viewer-toolbar {
+    display: none !important;
+}
+
+/* 우측 하단 Cesium 로고 */
+#cesiumContainer .cesium-credit-logoContainer img {
+    height: 14px !important;
+    opacity: 0.5;
+}
+
+/* 선택 표시기, 정보박스 숨김 (JS에서도 비활성화했지만 CSS로 이중 차단) */
+#cesiumContainer .cesium-infoBox,
+#cesiumContainer .cesium-selection-wrapper {
+    display: none !important;
 }
 
 /* ── 장비 목록 패널 (지도 좌측 오버레이) ── */
