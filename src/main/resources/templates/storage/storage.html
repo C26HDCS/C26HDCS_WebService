@@ -70,6 +70,12 @@
                         <strong>{{device.usagePercent}}%</strong>
                     </div>
                     <div class="storage-device-total">전체 {{device.totalText}}</div>
+                    <div class="storage-device-policy" title="{{device.statusReason}}">
+                        {{device.statusReason}} · 기준 {{device.policyWarningPercent}}% / {{device.policyDangerPercent}}%
+                        <span ng-show="device.policyMinFreeText && device.policyMinFreeText !== '-'">
+                            · 최소 여유 {{device.policyMinFreeText}}
+                        </span>
+                    </div>
                 </button>
             </div>
         </section>
@@ -140,8 +146,8 @@
 
         <section class="storage-panel storage-policy-panel">
             <div class="storage-panel-title">
-                <span class="storage-panel-heading">삭제 정책</span>
-                <button type="button" class="storage-refresh-btn" ng-click="loadDeleteTargets(); loadRetentionPolicies();" title="정책 새로고침">
+                <span class="storage-panel-heading">저장 정책</span>
+                <button type="button" class="storage-refresh-btn" ng-click="loadDeleteTargets(); loadRetentionPolicies(); loadSpacePolicies();" title="정책 새로고침">
                     새로고침
                 </button>
             </div>
@@ -156,6 +162,11 @@
                         ng-class="{active: policyTab === 'retentionPolicies'}"
                         ng-click="setPolicyTab('retentionPolicies')">
                     보관 기간
+                </button>
+                <button type="button"
+                        ng-class="{active: policyTab === 'spacePolicies'}"
+                        ng-click="setPolicyTab('spacePolicies')">
+                    가용 공간
                 </button>
             </div>
 
@@ -465,6 +476,201 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="storage-policy-body" ng-show="policyTab === 'spacePolicies'">
+                <div class="storage-policy-tools">
+                    <strong>가용 공간 기준</strong>
+                    <button type="button"
+                            class="storage-save-btn"
+                            ng-click="openNewSpacePolicy()"
+                            ng-disabled="showingNewSpacePolicy">
+                        추가
+                    </button>
+                </div>
+
+                <div class="storage-create-form" ng-show="showingNewSpacePolicy">
+                    <div class="storage-edit-form-head">
+                        <strong>가용 공간 기준 추가</strong>
+                        <button type="button" class="storage-mini-btn" ng-click="cancelNewSpacePolicy()">닫기</button>
+                    </div>
+                    <label>
+                        <span>적용 경로</span>
+                        <div class="storage-path-input-row">
+                            <input type="text" ng-model="newSpacePolicy.targetPath" placeholder="폴더 선택 버튼으로 경로를 지정하세요">
+                            <button type="button"
+                                    class="storage-mini-btn"
+                                    ng-click="openFolderPicker(newSpacePolicy, 'targetPath')">
+                                폴더 선택
+                            </button>
+                        </div>
+                    </label>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>주의 기준(%)</span>
+                            <input type="number" min="0" max="100" step="0.1" ng-model="newSpacePolicy.warningPercent">
+                        </label>
+                        <label>
+                            <span>위험 기준(%)</span>
+                            <input type="number" min="0" max="100" step="0.1" ng-model="newSpacePolicy.dangerPercent">
+                        </label>
+                    </div>
+                    <div class="storage-edit-grid">
+                        <label>
+                            <span>최소 여유 공간(GB)</span>
+                            <input type="number" min="0" step="0.1" ng-model="newSpacePolicy.minFreeGb">
+                        </label>
+                        <label class="storage-edit-check">
+                            <input type="checkbox" class="storage-chk" ng-model="newSpacePolicy.enabled">
+                            <span>사용</span>
+                        </label>
+                    </div>
+                    <label>
+                        <span>설명</span>
+                        <input type="text" ng-model="newSpacePolicy.description">
+                    </label>
+                    <div class="storage-edit-actions">
+                        <button type="button"
+                                class="storage-save-btn"
+                                ng-click="createSpacePolicy()"
+                                ng-disabled="creatingSpacePolicy">
+                            {{creatingSpacePolicy ? '추가 중' : '추가'}}
+                        </button>
+                    </div>
+                </div>
+
+                <table class="data-table storage-compact-table">
+                    <thead>
+                        <tr>
+                            <th>적용 대상</th>
+                            <th style="width:72px;">상태</th>
+                            <th style="width:76px;">주의%</th>
+                            <th style="width:76px;">위험%</th>
+                            <th style="width:88px;">최소GB</th>
+                            <th style="width:52px;">사용</th>
+                            <th style="width:92px;">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-show="loadingSpacePolicies">
+                            <td colspan="7" class="no-data">가용 공간 기준을 조회 중입니다.</td>
+                        </tr>
+                        <tr ng-show="!loadingSpacePolicies && spacePolicies.length === 0">
+                            <td colspan="7" class="no-data">등록된 가용 공간 기준이 없습니다.</td>
+                        </tr>
+                        <tr ng-repeat="policy in spacePolicies" ng-show="!loadingSpacePolicies">
+                            <td class="storage-name-cell" title="{{policy.description}}">
+                                <strong>{{spacePolicyTargetText(policy)}}</strong>
+                                <span>{{policy.statusReason || policy.description || '-'}}</span>
+                            </td>
+                            <td>
+                                <span class="storage-status-badge storage-status-{{policy.status}}">
+                                    {{statusLabel(policy.status)}}
+                                </span>
+                            </td>
+                            <td>
+                                <input type="number"
+                                       class="storage-policy-input"
+                                       min="0"
+                                       max="100"
+                                       step="0.1"
+                                       ng-model="policy.warningPercent">
+                            </td>
+                            <td>
+                                <input type="number"
+                                       class="storage-policy-input"
+                                       min="0"
+                                       max="100"
+                                       step="0.1"
+                                       ng-model="policy.dangerPercent">
+                            </td>
+                            <td>
+                                <input type="number"
+                                       class="storage-policy-input"
+                                       min="0"
+                                       step="0.1"
+                                       ng-model="policy.minFreeGb">
+                            </td>
+                            <td>
+                                <input type="checkbox"
+                                       class="storage-chk"
+                                       ng-model="policy.enabled">
+                            </td>
+                            <td>
+                                <div class="storage-row-actions">
+                                    <button type="button"
+                                            class="storage-save-btn"
+                                            ng-click="saveSpacePolicy(policy)"
+                                            ng-disabled="savingSpacePolicyId === policy.id || !policy.id">
+                                        {{savingSpacePolicyId === policy.id ? '저장 중' : '저장'}}
+                                    </button>
+                                    <button type="button"
+                                            class="storage-delete-mini-btn"
+                                            ng-click="deleteSpacePolicy(policy)"
+                                            ng-disabled="deletingSpacePolicyId === policy.id || !isSpacePolicyDeletable(policy)">
+                                        {{deletingSpacePolicyId === policy.id ? '삭제 중' : '삭제'}}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
+    </div>
+
+    <div class="storage-picker-backdrop" ng-show="folderPicker.open">
+        <div class="storage-picker">
+            <div class="storage-picker-head">
+                <strong>폴더 선택</strong>
+                <button type="button" class="storage-mini-btn" ng-click="closeFolderPicker()">닫기</button>
+            </div>
+
+            <div class="storage-picker-path">
+                <span>현재 폴더</span>
+                <strong title="{{folderPicker.path}}">{{folderPicker.path || '-'}}</strong>
+            </div>
+
+            <div class="storage-picker-body">
+                <div class="storage-picker-devices">
+                    <button type="button"
+                            ng-repeat="device in devices"
+                            ng-class="{active: folderPicker.path === device.path}"
+                            ng-click="selectFolderPickerDevice(device)">
+                        <strong>{{device.name}}</strong>
+                        <span>{{device.path}}</span>
+                    </button>
+                </div>
+
+                <div class="storage-picker-folders">
+                    <div class="storage-picker-actions">
+                        <button type="button"
+                                class="storage-nav-btn"
+                                ng-click="goBackFolderPicker()"
+                                ng-disabled="!canGoBackFolderPicker()">
+                            상위
+                        </button>
+                        <button type="button"
+                                class="storage-save-btn"
+                                ng-click="applyFolderPicker()"
+                                ng-disabled="!folderPicker.path">
+                            현재 폴더 선택
+                        </button>
+                    </div>
+
+                    <div class="no-data" ng-show="folderPicker.loading">폴더 목록을 조회 중입니다.</div>
+                    <div class="no-data" ng-show="!folderPicker.loading && folderPicker.folders.length === 0">하위 폴더가 없습니다.</div>
+
+                    <button type="button"
+                            class="storage-picker-folder-row"
+                            ng-repeat="folder in folderPicker.folders"
+                            ng-show="!folderPicker.loading"
+                            ng-click="openFolderPickerFolder(folder)"
+                            title="{{folder.path}}">
+                        <span>[폴더]</span>
+                        <strong>{{folder.name}}</strong>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

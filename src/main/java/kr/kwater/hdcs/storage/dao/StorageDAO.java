@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO;
 import kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO;
+import kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO;
 
 @Mapper
 public interface StorageDAO {
@@ -26,4 +27,12 @@ public interface StorageDAO {
     int updateRetentionPolicy(StorageRetentionPolicyVO vo);
 
     int deleteRetentionPolicy(@Param("id") Long id);
+
+    List<StorageSpacePolicyVO> selectSpacePolicyList();
+
+    int insertSpacePolicy(StorageSpacePolicyVO vo);
+
+    int updateSpacePolicy(StorageSpacePolicyVO vo);
+
+    int deleteSpacePolicy(@Param("id") Long id);
 }

@@ -5,10 +5,18 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class StorageDeviceVO {
+public class StorageSpacePolicyVO {
 
-    private String name;
-    private String path;
+    private Long id;
+    private String targetPath;
+    private Double warningPercent;
+    private Double dangerPercent;
+    private Long minFreeBytes;
+    private String minFreeText;
+    private Boolean enabled;
+    private String description;
+    private String regDt;
+    private String updDt;
     private long totalBytes;
     private long usedBytes;
     private long usableBytes;
@@ -18,7 +26,5 @@ public class StorageDeviceVO {
     private String usableText;
     private String status;
     private String statusReason;
-    private Double policyWarningPercent;
-    private Double policyDangerPercent;
-    private String policyMinFreeText;
+    private Boolean deletable;
 }

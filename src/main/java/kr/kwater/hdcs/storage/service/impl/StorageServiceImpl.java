@@ -29,6 +29,7 @@ import kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO;
 import kr.kwater.hdcs.storage.vo.StorageDeviceVO;
 import kr.kwater.hdcs.storage.vo.StorageFileVO;
 import kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO;
+import kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,8 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final double DEFAULT_WARNING_PERCENT = 80.0;
+    private static final double DEFAULT_DANGER_PERCENT = 90.0;
 
     private final StorageDAO storageDAO;
 
@@ -46,9 +49,10 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
             return Collections.emptyList();
         }
 
+        List<StorageSpacePolicyVO> spacePolicies = selectSpacePoliciesSafely();
         return Arrays.stream(roots)
                 .filter(File::exists)
-                .map(this::toDevice)
+                .map(root -> toDevice(root, spacePolicies))
                 .sorted(Comparator.comparing(StorageDeviceVO::getPath))
                 .collect(Collectors.toList());
     }
@@ -244,6 +248,94 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         }
     }
 
+    @Override
+    public List<StorageSpacePolicyVO> getSpacePolicies() {
+        try {
+            List<StorageSpacePolicyVO> policies = storageDAO.selectSpacePolicyList();
+            if (policies.isEmpty()) {
+                StorageSpacePolicyVO defaultPolicy = defaultSpacePolicy();
+                storageDAO.insertSpacePolicy(defaultPolicy);
+                policies = storageDAO.selectSpacePolicyList();
+            }
+            return policies.stream()
+                    .peek(this::setDisplayValues)
+                    .collect(Collectors.toList());
+        } catch (DataAccessException ex) {
+            return Collections.singletonList(setDisplayValues(defaultSpacePolicy()));
+        }
+    }
+
+    @Override
+    public StorageSpacePolicyVO createSpacePolicy(StorageSpacePolicyVO vo) {
+        if (vo == null) {
+            throw new IllegalArgumentException("등록할 가용 공간 기준이 없습니다.");
+        }
+
+        prepareSpacePolicy(vo, true);
+
+        try {
+            storageDAO.insertSpacePolicy(vo);
+        } catch (DataAccessException ex) {
+            throw new IllegalArgumentException("이미 등록된 적용 경로입니다.", ex);
+        }
+
+        Long createdId = vo.getId();
+        if (createdId == null) {
+            return setDisplayValues(vo);
+        }
+
+        return storageDAO.selectSpacePolicyList().stream()
+                .filter(policy -> createdId.equals(policy.getId()))
+                .findFirst()
+                .map(this::setDisplayValues)
+                .orElseGet(() -> setDisplayValues(vo));
+    }
+
+    @Override
+    public StorageSpacePolicyVO updateSpacePolicy(Long id, StorageSpacePolicyVO vo) {
+        if (id == null) {
+            throw new IllegalArgumentException("가용 공간 기준 ID가 없습니다.");
+        }
+        if (vo == null) {
+            throw new IllegalArgumentException("수정할 가용 공간 기준이 없습니다.");
+        }
+
+        vo.setId(id);
+        prepareSpacePolicy(vo, false);
+
+        int updatedCount = storageDAO.updateSpacePolicy(vo);
+        if (updatedCount == 0) {
+            throw new IllegalArgumentException("수정할 가용 공간 기준이 없습니다.");
+        }
+
+        return storageDAO.selectSpacePolicyList().stream()
+                .filter(policy -> id.equals(policy.getId()))
+                .findFirst()
+                .map(this::setDisplayValues)
+                .orElseGet(() -> setDisplayValues(vo));
+    }
+
+    @Override
+    public void deleteSpacePolicy(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("가용 공간 기준 ID가 없습니다.");
+        }
+
+        StorageSpacePolicyVO target = storageDAO.selectSpacePolicyList().stream()
+                .filter(policy -> id.equals(policy.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("삭제할 가용 공간 기준이 없습니다."));
+
+        if (isDefaultSpacePolicy(target)) {
+            throw new IllegalArgumentException("전체 저장장치 공통 기준은 삭제할 수 없습니다.");
+        }
+
+        int deletedCount = storageDAO.deleteSpacePolicy(id);
+        if (deletedCount == 0) {
+            throw new IllegalArgumentException("삭제할 가용 공간 기준이 없습니다.");
+        }
+    }
+
     private void prepareDeleteTarget(StorageDeleteTargetVO vo) {
         if (!StringUtils.hasText(vo.getTargetName())) {
             throw new IllegalArgumentException("기준명을 입력해주세요.");
@@ -305,6 +397,106 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         }
     }
 
+    private void prepareSpacePolicy(StorageSpacePolicyVO vo, boolean validateTargetPath) {
+        if (validateTargetPath && !StringUtils.hasText(vo.getTargetPath())) {
+            throw new IllegalArgumentException("적용 경로를 입력해주세요.");
+        }
+        if (validateTargetPath) {
+            vo.setTargetPath(normalizeSpaceTargetPath(vo.getTargetPath()));
+            if (isDefaultSpacePolicy(vo)) {
+                throw new IllegalArgumentException("전체 저장장치 공통 기준은 이미 기본 기준으로 관리됩니다.");
+            }
+        }
+        if (vo.getWarningPercent() == null || vo.getDangerPercent() == null) {
+            throw new IllegalArgumentException("주의/위험 기준을 입력해주세요.");
+        }
+        if (vo.getWarningPercent() < 0 || vo.getWarningPercent() > 100
+                || vo.getDangerPercent() < 0 || vo.getDangerPercent() > 100) {
+            throw new IllegalArgumentException("가용 공간 기준은 0부터 100 사이로 입력해주세요.");
+        }
+        if (vo.getWarningPercent() >= vo.getDangerPercent()) {
+            throw new IllegalArgumentException("주의 기준은 위험 기준보다 작아야 합니다.");
+        }
+        if (vo.getMinFreeBytes() != null && vo.getMinFreeBytes() < 0) {
+            throw new IllegalArgumentException("최소 여유 공간은 0 이상으로 입력해주세요.");
+        }
+
+        vo.setDescription(trimToNull(vo.getDescription()));
+        if (vo.getEnabled() == null) {
+            vo.setEnabled(Boolean.TRUE);
+        }
+    }
+
+    private String normalizeSpaceTargetPath(String targetPath) {
+        if (!StringUtils.hasText(targetPath)) {
+            return null;
+        }
+
+        String trimmedPath = targetPath.trim();
+        if ("ALL".equalsIgnoreCase(trimmedPath)) {
+            return "ALL";
+        }
+
+        File targetDirectory = toCanonicalFile(new File(trimmedPath));
+        if (!targetDirectory.exists() || !targetDirectory.isDirectory()) {
+            throw new IllegalArgumentException("조회할 수 있는 폴더 경로를 입력해주세요.");
+        }
+        return targetDirectory.getAbsolutePath();
+    }
+
+    private List<StorageSpacePolicyVO> selectSpacePoliciesSafely() {
+        try {
+            List<StorageSpacePolicyVO> policies = storageDAO.selectSpacePolicyList();
+            return policies.isEmpty() ? Collections.singletonList(defaultSpacePolicy()) : policies;
+        } catch (DataAccessException ex) {
+            return Collections.singletonList(defaultSpacePolicy());
+        }
+    }
+
+    private StorageSpacePolicyVO findPolicy(String rootPath, List<StorageSpacePolicyVO> policies) {
+        if (policies != null) {
+            for (StorageSpacePolicyVO policy : policies) {
+                if (StringUtils.hasText(policy.getTargetPath())
+                        && policy.getTargetPath().equalsIgnoreCase(rootPath)) {
+                    return normalizeSpacePolicy(policy);
+                }
+            }
+            for (StorageSpacePolicyVO policy : policies) {
+                if ("ALL".equalsIgnoreCase(policy.getTargetPath())) {
+                    return normalizeSpacePolicy(policy);
+                }
+            }
+        }
+        return defaultSpacePolicy();
+    }
+
+    private StorageSpacePolicyVO defaultSpacePolicy() {
+        StorageSpacePolicyVO policy = new StorageSpacePolicyVO();
+        policy.setTargetPath("ALL");
+        policy.setWarningPercent(DEFAULT_WARNING_PERCENT);
+        policy.setDangerPercent(DEFAULT_DANGER_PERCENT);
+        policy.setEnabled(Boolean.TRUE);
+        policy.setDescription("전체 저장장치 공통 가용 공간 기준");
+        return policy;
+    }
+
+    private StorageSpacePolicyVO normalizeSpacePolicy(StorageSpacePolicyVO policy) {
+        if (policy.getWarningPercent() == null) {
+            policy.setWarningPercent(DEFAULT_WARNING_PERCENT);
+        }
+        if (policy.getDangerPercent() == null) {
+            policy.setDangerPercent(DEFAULT_DANGER_PERCENT);
+        }
+        if (policy.getEnabled() == null) {
+            policy.setEnabled(Boolean.TRUE);
+        }
+        return policy;
+    }
+
+    private boolean isDefaultSpacePolicy(StorageSpacePolicyVO policy) {
+        return policy != null && "ALL".equalsIgnoreCase(policy.getTargetPath());
+    }
+
     private String normalizeCode(String value, String defaultValue) {
         if (!StringUtils.hasText(value)) {
             return defaultValue;
@@ -360,13 +552,14 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         }
     }
 
-    private StorageDeviceVO toDevice(File root) {
+    private StorageDeviceVO toDevice(File root, List<StorageSpacePolicyVO> policies) {
         long totalBytes = safeSpace(root::getTotalSpace);
         long usableBytes = safeSpace(root::getUsableSpace);
         long usedBytes = totalBytes > 0 ? Math.max(totalBytes - usableBytes, 0L) : 0L;
         double usagePercent = totalBytes > 0
                 ? Math.round((usedBytes * 1000.0) / totalBytes) / 10.0
                 : 0.0;
+        StorageSpacePolicyVO policy = findPolicy(root.getAbsolutePath(), policies);
 
         StorageDeviceVO vo = new StorageDeviceVO();
         vo.setName(toDeviceName(root));
@@ -378,7 +571,11 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         vo.setTotalText(formatBytes(totalBytes));
         vo.setUsedText(formatBytes(usedBytes));
         vo.setUsableText(formatBytes(usableBytes));
-        vo.setStatus(toStatus(usagePercent));
+        vo.setStatus(toStatus(usagePercent, usableBytes, policy));
+        vo.setStatusReason(toStatusReason(usagePercent, usableBytes, policy, vo.getStatus()));
+        vo.setPolicyWarningPercent(policy.getWarningPercent());
+        vo.setPolicyDangerPercent(policy.getDangerPercent());
+        vo.setPolicyMinFreeText(formatNullableBytes(policy.getMinFreeBytes()));
         return vo;
     }
 
@@ -412,14 +609,38 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         return path;
     }
 
-    private String toStatus(double usagePercent) {
-        if (usagePercent >= 90.0) {
+    private String toStatus(double usagePercent, long usableBytes, StorageSpacePolicyVO policy) {
+        if (!Boolean.TRUE.equals(policy.getEnabled())) {
+            return "normal";
+        }
+        if (policy.getMinFreeBytes() != null && usableBytes <= policy.getMinFreeBytes()) {
             return "danger";
         }
-        if (usagePercent >= 80.0) {
+        if (usagePercent >= policy.getDangerPercent()) {
+            return "danger";
+        }
+        if (usagePercent >= policy.getWarningPercent()) {
             return "warning";
         }
         return "normal";
+    }
+
+    private String toStatusReason(double usagePercent, long usableBytes, StorageSpacePolicyVO policy, String status) {
+        if (!Boolean.TRUE.equals(policy.getEnabled())) {
+            return "가용 공간 기준 미사용";
+        }
+        if ("danger".equals(status)
+                && policy.getMinFreeBytes() != null
+                && usableBytes <= policy.getMinFreeBytes()) {
+            return "여유 공간 " + formatBytes(usableBytes) + " / 최소 기준 " + formatBytes(policy.getMinFreeBytes());
+        }
+        if ("danger".equals(status)) {
+            return "사용률 " + usagePercent + "% / 위험 기준 " + policy.getDangerPercent() + "%";
+        }
+        if ("warning".equals(status)) {
+            return "사용률 " + usagePercent + "% / 주의 기준 " + policy.getWarningPercent() + "%";
+        }
+        return "가용 공간 기준 이내";
     }
 
     private String getExtension(String fileName) {
@@ -466,5 +687,48 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
     private StorageDeleteTargetVO setDisplayValues(StorageDeleteTargetVO target) {
         target.setMinSizeText(formatNullableBytes(target.getMinSizeBytes()));
         return target;
+    }
+
+    private StorageSpacePolicyVO setDisplayValues(StorageSpacePolicyVO policy) {
+        normalizeSpacePolicy(policy);
+        policy.setMinFreeText(formatNullableBytes(policy.getMinFreeBytes()));
+        policy.setDeletable(!isDefaultSpacePolicy(policy));
+
+        if (isDefaultSpacePolicy(policy)) {
+            policy.setStatus("normal");
+            policy.setStatusReason("저장장치 카드에 공통 적용");
+            policy.setTotalText("-");
+            policy.setUsedText("-");
+            policy.setUsableText("-");
+            return policy;
+        }
+
+        File targetDirectory = new File(policy.getTargetPath());
+        if (!targetDirectory.exists() || !targetDirectory.isDirectory()) {
+            policy.setStatus("danger");
+            policy.setStatusReason("조회할 수 없는 경로");
+            policy.setTotalText("-");
+            policy.setUsedText("-");
+            policy.setUsableText("-");
+            return policy;
+        }
+
+        long totalBytes = safeSpace(targetDirectory::getTotalSpace);
+        long usableBytes = safeSpace(targetDirectory::getUsableSpace);
+        long usedBytes = totalBytes > 0 ? Math.max(totalBytes - usableBytes, 0L) : 0L;
+        double usagePercent = totalBytes > 0
+                ? Math.round((usedBytes * 1000.0) / totalBytes) / 10.0
+                : 0.0;
+
+        policy.setTotalBytes(totalBytes);
+        policy.setUsedBytes(usedBytes);
+        policy.setUsableBytes(usableBytes);
+        policy.setUsagePercent(usagePercent);
+        policy.setTotalText(formatBytes(totalBytes));
+        policy.setUsedText(formatBytes(usedBytes));
+        policy.setUsableText(formatBytes(usableBytes));
+        policy.setStatus(toStatus(usagePercent, usableBytes, policy));
+        policy.setStatusReason(toStatusReason(usagePercent, usableBytes, policy, policy.getStatus()));
+        return policy;
     }
 }

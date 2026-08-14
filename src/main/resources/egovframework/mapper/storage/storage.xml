@@ -32,6 +32,19 @@
         <result column="UPD_DT"          property="updDt"/>
     </resultMap>
 
+    <resultMap id="spacePolicyResultMap" type="kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO">
+        <id     column="ID"               property="id"/>
+        <result column="TARGET_PATH"      property="targetPath"/>
+        <result column="WARNING_PERCENT"  property="warningPercent"/>
+        <result column="DANGER_PERCENT"   property="dangerPercent"/>
+        <result column="MIN_FREE_BYTES"   property="minFreeBytes"/>
+        <result column="ENABLED"          property="enabled"
+                javaType="boolean" typeHandler="org.apache.ibatis.type.BooleanTypeHandler"/>
+        <result column="DESCRIPTION"      property="description"/>
+        <result column="REG_DT"           property="regDt"/>
+        <result column="UPD_DT"           property="updDt"/>
+    </resultMap>
+
     <select id="selectDeleteTargetList" resultMap="deleteTargetResultMap">
         SELECT ID,
                TARGET_NAME,
@@ -142,6 +155,58 @@
 
     <delete id="deleteRetentionPolicy" parameterType="long">
         DELETE FROM TB_STORAGE_RETENTION_POLICY
+        WHERE ID = #{id}
+    </delete>
+
+    <select id="selectSpacePolicyList" resultMap="spacePolicyResultMap">
+        SELECT ID,
+               TARGET_PATH,
+               WARNING_PERCENT,
+               DANGER_PERCENT,
+               MIN_FREE_BYTES,
+               CASE WHEN ENABLED = 'Y' THEN TRUE ELSE FALSE END AS ENABLED,
+               DESCRIPTION,
+               REG_DT,
+               UPD_DT
+        FROM TB_STORAGE_SPACE_POLICY
+        ORDER BY CASE WHEN TARGET_PATH = 'ALL' THEN 0 ELSE 1 END, TARGET_PATH ASC, ID ASC
+    </select>
+
+    <insert id="insertSpacePolicy"
+            parameterType="kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO"
+            useGeneratedKeys="true"
+            keyProperty="id"
+            keyColumn="ID">
+        INSERT INTO TB_STORAGE_SPACE_POLICY (
+            TARGET_PATH,
+            WARNING_PERCENT,
+            DANGER_PERCENT,
+            MIN_FREE_BYTES,
+            ENABLED,
+            DESCRIPTION
+        ) VALUES (
+            #{targetPath},
+            #{warningPercent},
+            #{dangerPercent},
+            #{minFreeBytes},
+            CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END,
+            #{description}
+        )
+    </insert>
+
+    <update id="updateSpacePolicy" parameterType="kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO">
+        UPDATE TB_STORAGE_SPACE_POLICY
+        SET WARNING_PERCENT = #{warningPercent},
+            DANGER_PERCENT = #{dangerPercent},
+            MIN_FREE_BYTES = #{minFreeBytes},
+            ENABLED = CASE WHEN #{enabled} = TRUE THEN 'Y' ELSE 'N' END,
+            DESCRIPTION = #{description},
+            UPD_DT = CURRENT_TIMESTAMP
+        WHERE ID = #{id}
+    </update>
+
+    <delete id="deleteSpacePolicy" parameterType="long">
+        DELETE FROM TB_STORAGE_SPACE_POLICY
         WHERE ID = #{id}
     </delete>
 

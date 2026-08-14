@@ -5,6 +5,7 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.files = [];
     $scope.deleteTargets = [];
     $scope.retentionPolicies = [];
+    $scope.spacePolicies = [];
     $scope.selectedFiles = {};
     $scope.selectedDevice = null;
     $scope.currentPath = '';
@@ -13,16 +14,30 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.loadingFiles = false;
     $scope.loadingDeleteTargets = false;
     $scope.loadingRetentionPolicies = false;
+    $scope.loadingSpacePolicies = false;
     $scope.deletingFiles = false;
     $scope.editingDeleteTarget = null;
     $scope.savingDeleteTargetId = null;
     $scope.savingRetentionPolicyId = null;
+    $scope.savingSpacePolicyId = null;
     $scope.creatingDeleteTarget = false;
     $scope.creatingRetentionPolicy = false;
+    $scope.creatingSpacePolicy = false;
     $scope.deletingDeleteTargetId = null;
     $scope.deletingRetentionPolicyId = null;
+    $scope.deletingSpacePolicyId = null;
     $scope.showingNewDeleteTarget = false;
     $scope.showingNewRetentionPolicy = false;
+    $scope.showingNewSpacePolicy = false;
+    $scope.folderPicker = {
+        open: false,
+        path: '',
+        history: [],
+        folders: [],
+        loading: false,
+        targetModel: null,
+        targetField: ''
+    };
     $scope.policyTab = 'deleteTargets';
     $scope.errorMessage = '';
 
@@ -55,6 +70,17 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
         };
     };
 
+    $scope.resetNewSpacePolicy = function () {
+        $scope.newSpacePolicy = {
+            targetPath: '',
+            warningPercent: 80,
+            dangerPercent: 90,
+            minFreeGb: null,
+            enabled: true,
+            description: ''
+        };
+    };
+
     $scope.openNewDeleteTarget = function () {
         $scope.cancelEditDeleteTarget();
         $scope.resetNewDeleteTarget();
@@ -76,6 +102,16 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.showingNewRetentionPolicy = false;
     };
 
+    $scope.openNewSpacePolicy = function () {
+        $scope.resetNewSpacePolicy();
+        $scope.showingNewSpacePolicy = true;
+    };
+
+    $scope.cancelNewSpacePolicy = function () {
+        $scope.resetNewSpacePolicy();
+        $scope.showingNewSpacePolicy = false;
+    };
+
     function toNullableNumber(value) {
         if (value === null || value === undefined || value === '') {
             return null;
@@ -90,6 +126,118 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
         }
         return String(value).replace(/^\.+/, '').trim().toLowerCase();
     }
+
+    function bytesToGb(bytes) {
+        if (bytes === null || bytes === undefined) {
+            return null;
+        }
+        return Math.round((bytes / 1073741824) * 10) / 10;
+    }
+
+    function gbToBytes(gb) {
+        if (gb === null || gb === undefined || gb === '') {
+            return null;
+        }
+        var parsed = parseFloat(gb);
+        if (isNaN(parsed)) {
+            return null;
+        }
+        return Math.round(parsed * 1073741824);
+    }
+
+    $scope.openFolderPicker = function (targetModel, targetField) {
+        var startPath = targetModel && targetModel[targetField]
+            ? targetModel[targetField]
+            : ($scope.currentPath || ($scope.selectedDevice && $scope.selectedDevice.path));
+
+        if (!startPath && $scope.devices.length > 0) {
+            startPath = $scope.devices[0].path;
+        }
+        if (!startPath) {
+            alert('선택 가능한 저장장치가 없습니다.');
+            return;
+        }
+
+        $scope.folderPicker.open = true;
+        $scope.folderPicker.history = [];
+        $scope.folderPicker.targetModel = targetModel;
+        $scope.folderPicker.targetField = targetField;
+        $scope.loadFolderPicker(startPath);
+    };
+
+    $scope.closeFolderPicker = function () {
+        $scope.folderPicker.open = false;
+        $scope.folderPicker.path = '';
+        $scope.folderPicker.history = [];
+        $scope.folderPicker.folders = [];
+        $scope.folderPicker.loading = false;
+        $scope.folderPicker.targetModel = null;
+        $scope.folderPicker.targetField = '';
+    };
+
+    $scope.loadFolderPicker = function (path) {
+        if (!path) {
+            return;
+        }
+
+        $scope.folderPicker.loading = true;
+        $scope.folderPicker.path = path;
+
+        $http.get(ctx + '/api/storage/files', { params: { path: path } })
+            .then(function (res) {
+                $scope.folderPicker.folders = (res.data || []).filter(function (file) {
+                    return file.directory;
+                });
+            })
+            .catch(function () {
+                $scope.folderPicker.folders = [];
+                $scope.errorMessage = '폴더 목록을 조회하지 못했습니다.';
+            })
+            .finally(function () {
+                $scope.folderPicker.loading = false;
+            });
+    };
+
+    $scope.selectFolderPickerDevice = function (device) {
+        if (!device || !device.path || $scope.folderPicker.loading) {
+            return;
+        }
+
+        $scope.folderPicker.history = [];
+        $scope.loadFolderPicker(device.path);
+    };
+
+    $scope.openFolderPickerFolder = function (folder) {
+        if (!folder || !folder.directory || $scope.folderPicker.loading) {
+            return;
+        }
+
+        $scope.folderPicker.history.push($scope.folderPicker.path);
+        $scope.loadFolderPicker(folder.path);
+    };
+
+    $scope.goBackFolderPicker = function () {
+        if (!$scope.canGoBackFolderPicker()) {
+            return;
+        }
+
+        var previousPath = $scope.folderPicker.history.pop();
+        $scope.loadFolderPicker(previousPath);
+    };
+
+    $scope.canGoBackFolderPicker = function () {
+        return $scope.folderPicker.history.length > 0 && !$scope.folderPicker.loading;
+    };
+
+    $scope.applyFolderPicker = function () {
+        if (!$scope.folderPicker.targetModel || !$scope.folderPicker.targetField) {
+            $scope.closeFolderPicker();
+            return;
+        }
+
+        $scope.folderPicker.targetModel[$scope.folderPicker.targetField] = $scope.folderPicker.path;
+        $scope.closeFolderPicker();
+    };
 
     $scope.loadDevices = function () {
         $scope.loadingDevices = true;
@@ -314,6 +462,159 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
             })
             .finally(function () {
                 $scope.loadingRetentionPolicies = false;
+            });
+    };
+
+    $scope.loadSpacePolicies = function () {
+        $scope.loadingSpacePolicies = true;
+
+        $http.get(ctx + '/api/storage/space-policies')
+            .then(function (res) {
+                $scope.spacePolicies = (res.data || []).map(function (policy) {
+                    policy.minFreeGb = bytesToGb(policy.minFreeBytes);
+                    return policy;
+                });
+            })
+            .catch(function () {
+                $scope.spacePolicies = [];
+                $scope.errorMessage = '가용 공간 기준을 조회하지 못했습니다.';
+            })
+            .finally(function () {
+                $scope.loadingSpacePolicies = false;
+            });
+    };
+
+    $scope.saveSpacePolicy = function (policy) {
+        if (!policy || !policy.id || $scope.savingSpacePolicyId) {
+            return;
+        }
+
+        var warningPercent = parseFloat(policy.warningPercent);
+        var dangerPercent = parseFloat(policy.dangerPercent);
+        var minFreeBytes = gbToBytes(policy.minFreeGb);
+
+        if (isNaN(warningPercent) || isNaN(dangerPercent)) {
+            alert('주의/위험 기준을 입력해주세요.');
+            return;
+        }
+        if (warningPercent < 0 || warningPercent > 100 || dangerPercent < 0 || dangerPercent > 100) {
+            alert('가용 공간 기준은 0부터 100 사이로 입력해주세요.');
+            return;
+        }
+        if (warningPercent >= dangerPercent) {
+            alert('주의 기준은 위험 기준보다 작아야 합니다.');
+            return;
+        }
+        if (minFreeBytes !== null && minFreeBytes < 0) {
+            alert('최소 여유 공간은 0 이상으로 입력해주세요.');
+            return;
+        }
+
+        $scope.savingSpacePolicyId = policy.id;
+        $scope.errorMessage = '';
+
+        $http.put(ctx + '/api/storage/space-policies/' + policy.id, {
+            warningPercent: warningPercent,
+            dangerPercent: dangerPercent,
+            minFreeBytes: minFreeBytes,
+            enabled: !!policy.enabled,
+            description: policy.description
+        }).then(function (res) {
+            angular.extend(policy, res.data || {});
+            policy.minFreeGb = bytesToGb(policy.minFreeBytes);
+            $scope.refreshSelectedDevice();
+            alert('가용 공간 기준을 저장했습니다.');
+        }).catch(function () {
+            $scope.errorMessage = '가용 공간 기준을 저장하지 못했습니다.';
+        }).finally(function () {
+            $scope.savingSpacePolicyId = null;
+        });
+    };
+
+    $scope.createSpacePolicy = function () {
+        var policy = $scope.newSpacePolicy;
+        if (!policy || $scope.creatingSpacePolicy) {
+            return;
+        }
+
+        var warningPercent = parseFloat(policy.warningPercent);
+        var dangerPercent = parseFloat(policy.dangerPercent);
+        var minFreeBytes = gbToBytes(policy.minFreeGb);
+
+        if (!policy.targetPath) {
+            alert('적용 경로를 입력해주세요.');
+            return;
+        }
+        if (String(policy.targetPath).trim().toUpperCase() === 'ALL') {
+            alert('전체 저장장치 기준은 기본 기준으로만 관리됩니다.');
+            return;
+        }
+        if (isNaN(warningPercent) || isNaN(dangerPercent)) {
+            alert('주의/위험 기준을 입력해주세요.');
+            return;
+        }
+        if (warningPercent < 0 || warningPercent > 100 || dangerPercent < 0 || dangerPercent > 100) {
+            alert('가용 공간 기준은 0부터 100 사이로 입력해주세요.');
+            return;
+        }
+        if (warningPercent >= dangerPercent) {
+            alert('주의 기준은 위험 기준보다 작아야 합니다.');
+            return;
+        }
+        if (minFreeBytes !== null && minFreeBytes < 0) {
+            alert('최소 여유 공간은 0 이상으로 입력해주세요.');
+            return;
+        }
+
+        $scope.creatingSpacePolicy = true;
+        $scope.errorMessage = '';
+
+        $http.post(ctx + '/api/storage/space-policies', {
+            targetPath: policy.targetPath,
+            warningPercent: warningPercent,
+            dangerPercent: dangerPercent,
+            minFreeBytes: minFreeBytes,
+            enabled: !!policy.enabled,
+            description: policy.description
+        }).then(function (res) {
+            var createdPolicy = res.data || {};
+            createdPolicy.minFreeGb = bytesToGb(createdPolicy.minFreeBytes);
+            $scope.spacePolicies.push(createdPolicy);
+            $scope.resetNewSpacePolicy();
+            $scope.showingNewSpacePolicy = false;
+            $scope.refreshSelectedDevice();
+            alert('가용 공간 기준을 추가했습니다.');
+        }).catch(function () {
+            $scope.errorMessage = '가용 공간 기준을 추가하지 못했습니다. 경로가 존재하거나 이미 등록된 경로인지 확인해주세요.';
+        }).finally(function () {
+            $scope.creatingSpacePolicy = false;
+        });
+    };
+
+    $scope.deleteSpacePolicy = function (policy) {
+        if (!policy || !policy.id || $scope.deletingSpacePolicyId || !$scope.isSpacePolicyDeletable(policy)) {
+            return;
+        }
+        if (!confirm('가용 공간 기준 "' + $scope.spacePolicyTargetText(policy) + '"을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        $scope.deletingSpacePolicyId = policy.id;
+        $scope.errorMessage = '';
+
+        $http.delete(ctx + '/api/storage/space-policies/' + policy.id)
+            .then(function () {
+                $scope.spacePolicies = $scope.spacePolicies.filter(function (item) {
+                    return item.id !== policy.id;
+                });
+                $scope.refreshSelectedDevice();
+                alert('가용 공간 기준을 삭제했습니다.');
+            })
+            .catch(function () {
+                $scope.errorMessage = '가용 공간 기준을 삭제하지 못했습니다.';
+            })
+            .finally(function () {
+                $scope.deletingSpacePolicyId = null;
             });
     };
 
@@ -610,9 +911,25 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
         return conditions.length > 0 ? conditions.join(' / ') : '-';
     };
 
+    $scope.spacePolicyTargetText = function (policy) {
+        if (!policy || !policy.targetPath) {
+            return '-';
+        }
+        if (policy.targetPath === 'ALL') {
+            return '전체 저장장치';
+        }
+        return policy.targetPath;
+    };
+
+    $scope.isSpacePolicyDeletable = function (policy) {
+        return policy && policy.deletable !== false && policy.targetPath !== 'ALL';
+    };
+
     $scope.resetNewDeleteTarget();
     $scope.resetNewRetentionPolicy();
+    $scope.resetNewSpacePolicy();
     $scope.loadDevices();
     $scope.loadDeleteTargets();
     $scope.loadRetentionPolicies();
+    $scope.loadSpacePolicies();
 }]);

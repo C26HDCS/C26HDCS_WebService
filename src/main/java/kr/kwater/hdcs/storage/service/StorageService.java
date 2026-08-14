@@ -7,6 +7,7 @@ import kr.kwater.hdcs.storage.vo.StorageDeleteResultVO;
 import kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO;
 import kr.kwater.hdcs.storage.vo.StorageFileVO;
 import kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO;
+import kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO;
 
 public interface StorageService {
 
@@ -31,4 +32,12 @@ public interface StorageService {
     StorageRetentionPolicyVO updateRetentionPolicy(Long id, StorageRetentionPolicyVO vo);
 
     void deleteRetentionPolicy(Long id);
+
+    List<StorageSpacePolicyVO> getSpacePolicies();
+
+    StorageSpacePolicyVO createSpacePolicy(StorageSpacePolicyVO vo);
+
+    StorageSpacePolicyVO updateSpacePolicy(Long id, StorageSpacePolicyVO vo);
+
+    void deleteSpacePolicy(Long id);
 }

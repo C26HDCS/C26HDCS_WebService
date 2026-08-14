@@ -23,6 +23,7 @@ import kr.kwater.hdcs.storage.vo.StorageDeleteTargetVO;
 import kr.kwater.hdcs.storage.vo.StorageDeviceVO;
 import kr.kwater.hdcs.storage.vo.StorageFileVO;
 import kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO;
+import kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO;
 
 @RestController
 @RequestMapping("/api/storage")
@@ -116,6 +117,40 @@ public class StorageController {
     public ResponseEntity<Void> deleteRetentionPolicy(@PathVariable Long id) {
         try {
             storageService.deleteRetentionPolicy(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
+        }
+    }
+
+    @GetMapping("/space-policies")
+    public ResponseEntity<List<StorageSpacePolicyVO>> getSpacePolicies() {
+        return ResponseEntity.ok(storageService.getSpacePolicies());
+    }
+
+    @PostMapping("/space-policies")
+    public ResponseEntity<StorageSpacePolicyVO> createSpacePolicy(@RequestBody StorageSpacePolicyVO request) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(storageService.createSpacePolicy(request));
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
+        }
+    }
+
+    @PutMapping("/space-policies/{id}")
+    public ResponseEntity<StorageSpacePolicyVO> updateSpacePolicy(@PathVariable Long id,
+                                                                  @RequestBody StorageSpacePolicyVO request) {
+        try {
+            return ResponseEntity.ok(storageService.updateSpacePolicy(id, request));
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
+        }
+    }
+
+    @DeleteMapping("/space-policies/{id}")
+    public ResponseEntity<Void> deleteSpacePolicy(@PathVariable Long id) {
+        try {
+            storageService.deleteSpacePolicy(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
