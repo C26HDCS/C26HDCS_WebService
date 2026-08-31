@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.log.service.impl;
+package kr.kwater.hdcs.log.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;

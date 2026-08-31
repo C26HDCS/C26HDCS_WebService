@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.log.vo;
+package kr.kwater.hdcs.log.vo;
 
 import kr.kwater.hdcs.common.vo.BaseVO;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.dashboard.dao;
+package kr.kwater.hdcs.dashboard.dao;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO;
 import kr.kwater.hdcs.dashboard.vo.DeviceVO;
+import kr.kwater.hdcs.dashboard.vo.ObservationStationVO;
 
 @Mapper
 public interface DashboardDAO {
@@ -28,4 +29,6 @@ public interface DashboardDAO {
     List<DeviceVO> selectAllDevices();
 
     List<DeviceStatusHistoryVO> selectDeviceHistory(@Param("deviceId") String deviceId);
+
+    List<ObservationStationVO> selectAllStations();
 }

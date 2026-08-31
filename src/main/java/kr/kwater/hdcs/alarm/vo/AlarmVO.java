@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.alarm.vo;
+package kr.kwater.hdcs.alarm.vo;
 
 import kr.kwater.hdcs.common.vo.BaseVO;
 import lombok.Getter;

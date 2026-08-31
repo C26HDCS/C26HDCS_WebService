@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.system.vo;
+package kr.kwater.hdcs.system.vo;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.log.dao;
+package kr.kwater.hdcs.log.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 

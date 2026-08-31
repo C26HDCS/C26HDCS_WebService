@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.dashboard.vo;
+package kr.kwater.hdcs.dashboard.vo;
 
 import lombok.Getter;
 import lombok.Setter;

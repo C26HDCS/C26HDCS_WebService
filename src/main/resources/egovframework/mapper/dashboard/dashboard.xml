@@ -55,4 +55,16 @@
         LIMIT 10
     </select>
 
+
+    <select id="selectAllStations" resultType="kr.kwater.hdcs.dashboard.vo.ObservationStationVO">
+        SELECT station_id,
+               name,
+               lat,
+               lng,
+               address,
+               TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at
+        FROM public.tb_observation_station
+        ORDER BY station_id
+    </select>
+
 </mapper>

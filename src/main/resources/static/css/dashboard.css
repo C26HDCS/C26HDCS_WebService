@@ -98,7 +98,7 @@
 .dash-main {
     display: flex;
     gap: 12px;
-    height: 680px;
+    height: 685px;
     min-height: 0;
 }
 
@@ -128,7 +128,7 @@
 
 /* ── Cesium 기본 UI 재정의 ── */
 
-/* 크레딧(저작권) 텍스트 – 검정 배경에 어두운 글씨로 눈에 덜 띄게 */
+/* 크레딧(저작권) 텍스트 */
 #cesiumContainer .cesium-credit-logoContainer,
 #cesiumContainer .cesium-credit-textContainer {
     background: rgba(0, 0, 0, 0.45) !important;

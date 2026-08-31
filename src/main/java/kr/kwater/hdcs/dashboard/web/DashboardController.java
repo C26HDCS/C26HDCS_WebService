@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.dashboard.web;
+package kr.kwater.hdcs.dashboard.web;
 
 import java.util.List;
 
@@ -15,6 +15,7 @@ import kr.kwater.hdcs.dashboard.service.DashboardService;
 import kr.kwater.hdcs.dashboard.vo.DashboardVO;
 import kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO;
 import kr.kwater.hdcs.dashboard.vo.DeviceVO;
+import kr.kwater.hdcs.dashboard.vo.ObservationStationVO;
 
 @Slf4j
 @RestController
@@ -38,6 +39,11 @@ public class DashboardController {
     public ResponseEntity<List<DeviceStatusHistoryVO>> getDeviceHistory(
             @PathVariable String deviceId) throws Exception {
         return ResponseEntity.ok(dashboardService.getDeviceHistory(deviceId));
+    }
+
+    @GetMapping("/stations")
+    public ResponseEntity<List<ObservationStationVO>> getStations() throws Exception {
+        return ResponseEntity.ok(dashboardService.getStations());
     }
 
     @GetMapping("/devices/{deviceId}/data")

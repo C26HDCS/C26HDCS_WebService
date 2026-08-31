@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.algorithm.vo;
+package kr.kwater.hdcs.algorithm.vo;
 
 import kr.kwater.hdcs.common.vo.BaseVO;
 import lombok.Getter;

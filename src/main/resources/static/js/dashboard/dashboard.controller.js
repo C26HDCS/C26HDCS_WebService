@@ -87,6 +87,48 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         });
     }
 
+    // ── 관측소 마커 렌더링 ──
+    function renderStationMarkers(viewer, stations) {
+        stations.forEach(function (station) {
+            if (!station.lat || !station.lng) return;
+            viewer.entities.add({
+                id:       'station_' + station.stationId,
+                name:     station.name,
+                position: Cesium.Cartesian3.fromDegrees(station.lng, station.lat, 0),
+                point: {
+                    pixelSize:                10,
+                    color:                    Cesium.Color.fromCssColorString('#2ecc71'),
+                    outlineColor:             Cesium.Color.WHITE,
+                    outlineWidth:             2,
+                    heightReference:          Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY
+                },
+                label: {
+                    text:                     station.name,
+                    font:                     '11px Malgun Gothic, sans-serif',
+                    fillColor:                Cesium.Color.WHITE,
+                    outlineColor:             Cesium.Color.BLACK,
+                    outlineWidth:             2,
+                    style:                    Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    pixelOffset:              new Cesium.Cartesian2(0, -18),
+                    heightReference:          Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 300000)
+                }
+            });
+        });
+    }
+
+    function loadStationMarkers(viewer) {
+        $http.get(ctx + '/api/dashboard/stations')
+            .then(function (res) {
+                renderStationMarkers(viewer, res.data);
+            })
+            .catch(function (err) {
+                console.warn('[stations API 오류]', err);
+            });
+    }
+
     function initViewer(terrainProvider) {
         var viewer = new Cesium.Viewer('cesiumContainer', {
             baseLayer:            new Cesium.ImageryLayer(createVWorldProvider('Satellite', 'jpeg')),
@@ -106,10 +148,12 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         // 한국어 수계·지명 레이블 (Hybrid 레이어)
         viewer.imageryLayers.addImageryProvider(createVWorldProvider('Hybrid', 'png'));
 
-        // 초기 카메라: 한반도 전체 (CesiumMapManager.ts initialPoint 기준)
+        // 초기 카메라: 전라남북도 중심
         viewer.camera.setView({
-            destination: Cesium.Cartesian3.fromDegrees(127.7, 37.9, 1000000)
+            destination: Cesium.Cartesian3.fromDegrees(127.2, 35.2, 500000)
         });
+
+        loadStationMarkers(viewer);
     }
 
     // Ion 한국 지형 비동기 로드 → 실패 시 기본 타원체로 폴백

@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs;
+package kr.kwater.hdcs;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

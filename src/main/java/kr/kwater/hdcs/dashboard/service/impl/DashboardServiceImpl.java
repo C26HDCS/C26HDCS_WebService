@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.dashboard.service.impl;
+package kr.kwater.hdcs.dashboard.service.impl;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +14,7 @@ import kr.kwater.hdcs.dashboard.service.DashboardService;
 import kr.kwater.hdcs.dashboard.vo.DashboardVO;
 import kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO;
 import kr.kwater.hdcs.dashboard.vo.DeviceVO;
+import kr.kwater.hdcs.dashboard.vo.ObservationStationVO;
 
 @Slf4j
 @Service
@@ -63,5 +64,10 @@ public class DashboardServiceImpl extends EgovAbstractServiceImpl implements Das
             return result;
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<ObservationStationVO> getStations() throws Exception {
+        return dashboardDAO.selectAllStations();
     }
 }

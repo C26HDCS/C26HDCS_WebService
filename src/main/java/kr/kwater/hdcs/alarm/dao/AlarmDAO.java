@@ -1,4 +1,4 @@
-﻿package kr.kwater.hdcs.alarm.dao;
+package kr.kwater.hdcs.alarm.dao;
 
 import org.apache.ibatis.annotations.Mapper;
 
