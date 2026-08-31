@@ -322,6 +322,13 @@
     font-size: 11.5px;
 }
 
+.storage-device-policy {
+    margin-top: 7px;
+    color: #8aa8c4;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
 .storage-file-title {
     gap: 10px;
 }
@@ -423,7 +430,7 @@
 
 .storage-tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 6px;
     padding: 10px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -477,6 +484,15 @@
     background: rgba(255,255,255,0.035);
     color: #dce8f5;
     font-size: 12.5px;
+}
+
+.storage-policy-tools span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #8aa8c4;
+    font-size: 11.5px;
 }
 
 .storage-row-actions {
@@ -555,6 +571,12 @@
     border-color: rgba(90,158,245,0.65);
 }
 
+.storage-path-input-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+}
+
 .storage-edit-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -587,6 +609,131 @@
 .storage-policy-input:focus {
     outline: none;
     border-color: rgba(90,158,245,0.65);
+}
+
+.storage-picker-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(5, 12, 22, 0.68);
+}
+
+.storage-picker {
+    width: min(760px, 92vw);
+    height: min(560px, 82vh);
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    background: #1c2b40;
+    box-shadow: 0 18px 54px rgba(0,0,0,0.42);
+}
+
+.storage-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #dce8f5;
+}
+
+.storage-picker-path {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #8aa8c4;
+    font-size: 12px;
+}
+
+.storage-picker-path strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #9fc8ff;
+}
+
+.storage-picker-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+}
+
+.storage-picker-devices,
+.storage-picker-folders {
+    min-height: 0;
+    overflow: auto;
+    padding: 10px;
+}
+
+.storage-picker-devices {
+    border-right: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.025);
+}
+
+.storage-picker-devices button,
+.storage-picker-folder-row {
+    width: 100%;
+    display: grid;
+    gap: 3px;
+    margin-bottom: 7px;
+    padding: 9px 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    color: #dce8f5;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.storage-picker-devices button:hover,
+.storage-picker-devices button.active,
+.storage-picker-folder-row:hover {
+    border-color: rgba(90,158,245,0.46);
+    background: rgba(90,158,245,0.12);
+}
+
+.storage-picker-devices span,
+.storage-picker-folder-row span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #8aa8c4;
+    font-size: 11.5px;
+}
+
+.storage-picker-folder-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+}
+
+.storage-picker-folder-row strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12.5px;
+}
+
+.storage-picker-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
 @media (max-width: 1280px) {
