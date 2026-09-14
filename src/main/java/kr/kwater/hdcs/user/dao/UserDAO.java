@@ -31,6 +31,7 @@ public interface UserDAO {
     @Select("SELECT user_id AS userId, " +
             "       user_name AS name, " +
             "       email AS email, " +
+            "       phone_number AS phoneNumber, " +
             "       TRIM(role_type) AS role, " +
             "       CASE WHEN use_yn = 'Y' THEN true ELSE false END AS active, " +
             "       TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') AS createdAt " +

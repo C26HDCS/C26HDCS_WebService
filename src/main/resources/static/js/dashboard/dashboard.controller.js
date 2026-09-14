@@ -119,6 +119,8 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         });
     }
 
+    var cesiumViewer = null; // 지도 제어 함수에서 공유
+
     function loadStationMarkers(viewer) {
         $http.get(ctx + '/api/dashboard/stations')
             .then(function (res) {
@@ -128,6 +130,40 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
                 console.warn('[stations API 오류]', err);
             });
     }
+
+    // ── 지도 컨트롤 버튼 핸들러 ──
+    $scope.mapZoomIn = function () {
+        if (!cesiumViewer) return;
+        var cam = cesiumViewer.camera;
+        cam.zoomIn(cam.positionCartographic.height * 0.4);
+    };
+
+    $scope.mapZoomOut = function () {
+        if (!cesiumViewer) return;
+        var cam = cesiumViewer.camera;
+        cam.zoomOut(cam.positionCartographic.height * 0.6);
+    };
+
+    $scope.mapGoHome = function () {
+        if (!cesiumViewer) return;
+        cesiumViewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(127.2, 35.2, 500000),
+            duration: 1.5
+        });
+    };
+
+    $scope.mapCurrentLocation = function () {
+        if (!cesiumViewer || !navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(function (pos) {
+            cesiumViewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(
+                    pos.coords.longitude, pos.coords.latitude, 50000),
+                duration: 1.5
+            });
+        }, function () {
+            $scope.mapGoHome();
+        });
+    };
 
     function initViewer(terrainProvider) {
         var viewer = new Cesium.Viewer('cesiumContainer', {
@@ -153,6 +189,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
             destination: Cesium.Cartesian3.fromDegrees(127.2, 35.2, 500000)
         });
 
+        cesiumViewer = viewer;
         loadStationMarkers(viewer);
     }
 

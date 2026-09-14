@@ -107,7 +107,7 @@
             <!-- 지도 컨트롤 버튼 -->
             <div class="dash-map-controls">
                 <!-- 확대 -->
-                <button class="dash-map-btn" title="확대">
+                <button class="dash-map-btn" title="확대" ng-click="mapZoomIn()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
                          stroke-width="2.5" stroke-linecap="round">
@@ -115,7 +115,7 @@
                     </svg>
                 </button>
                 <!-- 축소 -->
-                <button class="dash-map-btn" title="축소">
+                <button class="dash-map-btn" title="축소" ng-click="mapZoomOut()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
                          stroke-width="2.5" stroke-linecap="round">
@@ -124,7 +124,7 @@
                 </button>
                 <div class="dash-map-btn-divider"></div>
                 <!-- 현재 위치 -->
-                <button class="dash-map-btn" title="현재 위치">
+                <button class="dash-map-btn" title="현재 위치" ng-click="mapCurrentLocation()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -132,8 +132,8 @@
                         <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
                     </svg>
                 </button>
-                <!-- 초기화/홈 -->
-                <button class="dash-map-btn" title="전체 보기">
+                <!-- 전체 보기/홈 -->
+                <button class="dash-map-btn" title="전체 보기" ng-click="mapGoHome()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor"
                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

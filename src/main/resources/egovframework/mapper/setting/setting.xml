@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.setting.dao.SettingDAO">
+
+    <select id="selectDeviceConfigList" resultType="kr.kwater.hdcs.setting.vo.DeviceConfigVO">
+        SELECT *
+        FROM public.v_device_config
+        ORDER BY device_id
+    </select>
+
+    <select id="selectGroupNames" resultType="string">
+        SELECT group_name
+        FROM public.tb_device_group
+        WHERE use_yn = 'Y'
+        ORDER BY sort_order, group_name
+    </select>
+
+</mapper>
