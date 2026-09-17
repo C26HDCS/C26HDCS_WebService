@@ -29,7 +29,12 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public int registerFromCsv(List<Map<String, String>> rows) throws Exception {
         if (rows == null || rows.isEmpty()) return 0;
-        settingDAO.upsertObsStation(rows);
+        for (Map<String, String> row : rows) {
+            int updated = settingDAO.updateObsStation(row);
+            if (updated == 0) {
+                settingDAO.insertObsStation(row);
+            }
+        }
         return rows.size();
     }
 }

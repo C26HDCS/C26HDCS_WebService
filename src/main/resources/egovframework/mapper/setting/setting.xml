@@ -17,14 +17,15 @@
         ORDER BY sort_order, group_name
     </select>
 
-    <insert id="upsertObsStation">
+    <update id="updateObsStation" parameterType="map">
+        UPDATE public.tb_observation_station
+        SET display_name = #{displayName}
+        WHERE obs_code = #{obsCode}
+    </update>
+
+    <insert id="insertObsStation" parameterType="map">
         INSERT INTO public.tb_observation_station (obs_code, display_name)
-        VALUES
-        <foreach collection="list" item="row" separator=",">
-            (#{row.obsCode}, #{row.displayName})
-        </foreach>
-        ON CONFLICT (obs_code)
-        DO UPDATE SET display_name = EXCLUDED.display_name
+        VALUES (#{obsCode}, #{displayName})
     </insert>
 
 </mapper>

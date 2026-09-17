@@ -316,7 +316,7 @@
 
     <div class="user-modal-footer">
         <button class="btn-modal-cancel" ng-click="closeRegisterModal()">취소</button>
-        <button class="btn-modal-confirm"
+        <button class="btn-modal-submit"
                 ng-disabled="!csvRows.length || registerLoading"
                 ng-click="submitRegister()">
             <span ng-if="!registerLoading">등록 ({{csvRows.length}}건)</span>
