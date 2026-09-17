@@ -231,7 +231,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
             .then(function (res) {
                 $scope.registerLoading   = false;
                 $scope.showRegisterModal = false;
-                alert(res.data.count + '건이 등록되었습니다.');
+                alert('등록되었습니다.');
                 $scope.load();
             })
             .catch(function () {
