@@ -137,11 +137,16 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     };
 
     /* ── 환경설정 CSV 일괄등록 모달 ── */
-    $scope.showRegisterModal = false;
-    $scope.csvRows           = [];
-    $scope.csvPreview        = [];
-    $scope.registerError     = '';
-    $scope.registerLoading   = false;
+    $scope.showRegisterModal        = false;
+    $scope.showRegisterSuccessModal = false;
+    $scope.csvRows                  = [];
+    $scope.csvPreview               = [];
+    $scope.registerError            = '';
+    $scope.registerLoading          = false;
+
+    $scope.closeRegisterSuccessModal = function () {
+        $scope.showRegisterSuccessModal = false;
+    };
 
     $scope.openRegisterModal = function () {
         $scope.csvRows         = [];
@@ -229,10 +234,14 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.registerError   = '';
         $http.post(ctx + '/api/config/register/csv', $scope.csvRows)
             .then(function (res) {
-                $scope.registerLoading   = false;
-                $scope.showRegisterModal = false;
-                alert('등록되었습니다.');
-                $scope.load();
+                $scope.registerLoading = false;
+                if (res.data.count > 0) {
+                    $scope.showRegisterModal        = false;
+                    $scope.showRegisterSuccessModal = true;
+                    $scope.load();
+                } else {
+                    $scope.registerError = '일치하는 장비를 찾을 수 없습니다. 장비ID가 목록의 장비 ID와 정확히 일치하는지 확인해주세요.';
+                }
             })
             .catch(function () {
                 $scope.registerLoading = false;
