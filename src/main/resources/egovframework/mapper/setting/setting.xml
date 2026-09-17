@@ -17,15 +17,35 @@
         ORDER BY sort_order, group_name
     </select>
 
-    <update id="updateObsStation" parameterType="map">
+    <!-- CSV 등록: 장비 조회 (device_name = equipId) -->
+    <select id="selectDeviceForCsv" parameterType="string" resultType="map">
+        SELECT device_id  AS "deviceId",
+               station_id AS "stationId"
+        FROM public.tb_device
+        WHERE device_name = #{equipId}
+        LIMIT 1
+    </select>
+
+    <!-- 기존 관측소 이름·코드 업데이트 -->
+    <update id="updateStationById" parameterType="map">
         UPDATE public.tb_observation_station
-        SET name = #{displayName}
-        WHERE obs_code = #{obsCode}
+        SET name     = #{name},
+            obs_code = #{obsCode}
+        WHERE station_id = #{stationId}
     </update>
 
-    <insert id="insertObsStation" parameterType="map">
+    <!-- 관측소 신규 생성 (generated station_id 반환) -->
+    <insert id="insertStation" parameterType="map"
+            useGeneratedKeys="true" keyProperty="stationId" keyColumn="station_id">
         INSERT INTO public.tb_observation_station (obs_code, name)
-        VALUES (#{obsCode}, #{displayName})
+        VALUES (#{obsCode}, #{name})
     </insert>
+
+    <!-- 장비에 관측소 연결 -->
+    <update id="updateDeviceStationId" parameterType="map">
+        UPDATE public.tb_device
+        SET station_id = #{stationId}
+        WHERE device_name = #{equipId}
+    </update>
 
 </mapper>

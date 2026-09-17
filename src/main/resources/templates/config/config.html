@@ -245,7 +245,8 @@
     <div class="cfg-register-body">
         <p class="cfg-register-desc">
             CSV 파일을 업로드하여 관측소 표시명을 일괄 등록합니다.<br>
-            파일 형식: <code>관측소코드, 관측소표시명</code> (첫 행은 헤더)
+            파일 형식: <code>장비ID, 관측소코드, 관측소표시명</code> (첫 행은 헤더)<br>
+            장비ID는 목록의 <strong style="color:#dce8f5;">장비 ID</strong> 컬럼 값과 일치해야 합니다.
         </p>
 
         <div class="cfg-register-actions">
@@ -292,7 +293,8 @@
             <table class="cfg-table">
                 <thead>
                     <tr>
-                        <th style="width:40px;">#</th>
+                        <th style="width:36px;">#</th>
+                        <th>장비ID</th>
                         <th>관측소코드</th>
                         <th>관측소표시명</th>
                     </tr>
@@ -300,11 +302,12 @@
                 <tbody>
                     <tr ng-repeat="row in csvPreview track by $index">
                         <td>{{$index + 1}}</td>
-                        <td class="cfg-code-cell">{{row.obsCode}}</td>
-                        <td>{{row.displayName || '-'}}</td>
+                        <td>{{row.equipId}}</td>
+                        <td class="cfg-code-cell">{{row.obsCode || '-'}}</td>
+                        <td>{{row.displayName}}</td>
                     </tr>
                     <tr ng-if="csvRows.length > 5">
-                        <td colspan="3" class="cfg-csv-more">... 외 {{csvRows.length - 5}}건</td>
+                        <td colspan="4" class="cfg-csv-more">... 외 {{csvRows.length - 5}}건</td>
                     </tr>
                 </tbody>
             </table>

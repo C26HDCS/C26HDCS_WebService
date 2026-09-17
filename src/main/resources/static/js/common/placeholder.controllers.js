@@ -188,28 +188,30 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
             return { error: '데이터가 없습니다. 헤더 포함 최소 2행이 필요합니다.' };
         }
         var headers = lines[0].split(',').map(function (h) { return h.trim(); });
-        var obsIdx = -1, nameIdx = -1;
+        var equipIdx = -1, obsIdx = -1, nameIdx = -1;
         headers.forEach(function (h, i) {
-            if (h === '관측소코드' || h === 'obs_code' || h === 'obsCode') obsIdx = i;
+            if (h === '장비ID' || h === 'device_name' || h === 'equipId') equipIdx = i;
+            if (h === '관측소코드' || h === 'obs_code'   || h === 'obsCode')   obsIdx   = i;
             if (h === '관측소표시명' || h === 'display_name' || h === 'displayName') nameIdx = i;
         });
-        if (obsIdx === -1 || nameIdx === -1) {
-            return { error: '헤더 형식 오류. 관측소코드, 관측소표시명 컬럼이 필요합니다.' };
+        if (equipIdx === -1 || nameIdx === -1) {
+            return { error: '헤더 형식 오류. 장비ID, 관측소표시명 컬럼이 필요합니다.' };
         }
         var rows = [];
         for (var i = 1; i < lines.length; i++) {
-            var cols = lines[i].split(',');
-            var obsCode     = (cols[obsIdx]  || '').trim();
-            var displayName = (cols[nameIdx] || '').trim();
-            if (!obsCode) continue;
-            rows.push({ obsCode: obsCode, displayName: displayName });
+            var cols        = lines[i].split(',');
+            var equipId     = (cols[equipIdx] || '').trim();
+            var obsCode     = obsIdx >= 0 ? (cols[obsIdx]  || '').trim() : '';
+            var displayName = (cols[nameIdx]  || '').trim();
+            if (!equipId || !displayName) continue;
+            rows.push({ equipId: equipId, obsCode: obsCode, displayName: displayName });
         }
         if (!rows.length) return { error: '유효한 데이터가 없습니다.' };
         return { rows: rows };
     }
 
     $scope.downloadTemplate = function () {
-        var csv  = '﻿관측소코드,관측소표시명\n';
+        var csv  = '﻿장비ID,관측소코드,관측소표시명\n';
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         var url  = URL.createObjectURL(blob);
         var a    = document.createElement('a');
