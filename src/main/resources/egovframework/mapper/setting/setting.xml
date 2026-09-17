@@ -19,12 +19,12 @@
 
     <update id="updateObsStation" parameterType="map">
         UPDATE public.tb_observation_station
-        SET display_name = #{displayName}
+        SET name = #{displayName}
         WHERE obs_code = #{obsCode}
     </update>
 
     <insert id="insertObsStation" parameterType="map">
-        INSERT INTO public.tb_observation_station (obs_code, display_name)
+        INSERT INTO public.tb_observation_station (obs_code, name)
         VALUES (#{obsCode}, #{displayName})
     </insert>
 
