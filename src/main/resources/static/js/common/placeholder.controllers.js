@@ -136,6 +136,108 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         alert('그룹 관리 기능은 준비 중입니다.');
     };
 
+    /* ── 환경설정 CSV 일괄등록 모달 ── */
+    $scope.showRegisterModal = false;
+    $scope.csvRows           = [];
+    $scope.csvPreview        = [];
+    $scope.registerError     = '';
+    $scope.registerLoading   = false;
+
+    $scope.openRegisterModal = function () {
+        $scope.csvRows         = [];
+        $scope.csvPreview      = [];
+        $scope.registerError   = '';
+        $scope.registerLoading = false;
+        $scope.showRegisterModal = true;
+    };
+
+    $scope.closeRegisterModal = function () {
+        $scope.showRegisterModal = false;
+    };
+
+    $scope.triggerFileInput = function () {
+        document.getElementById('csvFileInput').click();
+    };
+
+    $scope.onFileSelect = function (input) {
+        if (!input.files || !input.files[0]) return;
+        var file = input.files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $scope.$apply(function () {
+                var result = parseCsvText(e.target.result);
+                if (result.error) {
+                    $scope.registerError = result.error;
+                    $scope.csvRows       = [];
+                    $scope.csvPreview    = [];
+                } else {
+                    $scope.csvRows     = result.rows;
+                    $scope.csvPreview  = result.rows.slice(0, 5);
+                    $scope.registerError = '';
+                }
+            });
+            input.value = '';
+        };
+        reader.readAsText(file, 'UTF-8');
+    };
+
+    function parseCsvText(text) {
+        text = text.replace(/^﻿/, '');
+        var lines = text.split(/\r?\n/).filter(function (l) { return l.trim(); });
+        if (lines.length < 2) {
+            return { error: '데이터가 없습니다. 헤더 포함 최소 2행이 필요합니다.' };
+        }
+        var headers = lines[0].split(',').map(function (h) { return h.trim(); });
+        var obsIdx = -1, nameIdx = -1;
+        headers.forEach(function (h, i) {
+            if (h === '관측소코드' || h === 'obs_code' || h === 'obsCode') obsIdx = i;
+            if (h === '관측소표시명' || h === 'display_name' || h === 'displayName') nameIdx = i;
+        });
+        if (obsIdx === -1 || nameIdx === -1) {
+            return { error: '헤더 형식 오류. 관측소코드, 관측소표시명 컬럼이 필요합니다.' };
+        }
+        var rows = [];
+        for (var i = 1; i < lines.length; i++) {
+            var cols = lines[i].split(',');
+            var obsCode     = (cols[obsIdx]  || '').trim();
+            var displayName = (cols[nameIdx] || '').trim();
+            if (!obsCode) continue;
+            rows.push({ obsCode: obsCode, displayName: displayName });
+        }
+        if (!rows.length) return { error: '유효한 데이터가 없습니다.' };
+        return { rows: rows };
+    }
+
+    $scope.downloadTemplate = function () {
+        var csv  = '﻿관측소코드,관측소표시명\n';
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href     = url;
+        a.download = '환경설정등록_양식.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    $scope.submitRegister = function () {
+        if (!$scope.csvRows.length || $scope.registerLoading) return;
+        $scope.registerLoading = true;
+        $scope.registerError   = '';
+        $http.post(ctx + '/api/config/register/csv', $scope.csvRows)
+            .then(function (res) {
+                $scope.registerLoading   = false;
+                $scope.showRegisterModal = false;
+                alert(res.data.count + '건이 등록되었습니다.');
+                $scope.load();
+            })
+            .catch(function () {
+                $scope.registerLoading = false;
+                $scope.registerError   = '등록 중 오류가 발생했습니다. 다시 시도해주세요.';
+            });
+    };
+
     $scope.load();
 }]);
 qosApp.controller('ReportCtrl', ['$scope', '$http', function ($scope, $http) {

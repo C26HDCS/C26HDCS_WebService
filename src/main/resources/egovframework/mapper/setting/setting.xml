@@ -17,4 +17,14 @@
         ORDER BY sort_order, group_name
     </select>
 
+    <insert id="upsertObsStation">
+        INSERT INTO public.tb_observation_station (obs_code, display_name)
+        VALUES
+        <foreach collection="list" item="row" separator=",">
+            (#{row.obsCode}, #{row.displayName})
+        </foreach>
+        ON CONFLICT (obs_code)
+        DO UPDATE SET display_name = EXCLUDED.display_name
+    </insert>
+
 </mapper>

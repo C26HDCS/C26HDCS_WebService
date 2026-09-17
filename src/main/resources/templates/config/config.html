@@ -81,6 +81,16 @@
 <div class="cfg-table-panel">
     <div class="cfg-table-toolbar">
         <span class="cfg-count-label">총 <strong>{{filteredList.length}}</strong>건</span>
+        <button class="btn-cfg-register" ng-click="openRegisterModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            환경설정등록
+        </button>
     </div>
 
     <table class="cfg-table">
@@ -206,6 +216,113 @@
             ng-click="saveChanges()">
         변경사항 저장
     </button>
+</div>
+
+<!-- ── 환경설정등록 모달 ── -->
+<div class="user-modal-overlay" ng-show="showRegisterModal" ng-click="closeRegisterModal()"></div>
+
+<div class="user-modal cfg-register-modal" ng-show="showRegisterModal">
+    <div class="user-modal-header">
+        <span class="user-modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            환경설정 CSV 일괄등록
+        </span>
+        <button class="user-modal-close" ng-click="closeRegisterModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="cfg-register-body">
+        <p class="cfg-register-desc">
+            CSV 파일을 업로드하여 관측소 표시명을 일괄 등록합니다.<br>
+            파일 형식: <code>관측소코드, 관측소표시명</code> (첫 행은 헤더)
+        </p>
+
+        <div class="cfg-register-actions">
+            <button class="btn-csv-template" ng-click="downloadTemplate()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                양식 다운로드
+            </button>
+        </div>
+
+        <!-- 파일 업로드 존 -->
+        <div class="cfg-file-zone" ng-click="triggerFileInput()">
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none"
+                   onchange="angular.element(this).scope().onFileSelect(this)">
+            <div ng-if="csvRows.length === 0">
+                <div class="cfg-file-zone-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                </div>
+                CSV 파일을 클릭하여 선택하세요
+            </div>
+            <div ng-if="csvRows.length > 0" class="cfg-file-zone-loaded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                {{csvRows.length}}건 로드됨 &nbsp;·&nbsp; 클릭하여 변경
+            </div>
+        </div>
+
+        <!-- CSV 미리보기 -->
+        <div class="cfg-csv-preview" ng-if="csvRows.length > 0">
+            <table class="cfg-table">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th>관측소코드</th>
+                        <th>관측소표시명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in csvPreview track by $index">
+                        <td>{{$index + 1}}</td>
+                        <td class="cfg-code-cell">{{row.obsCode}}</td>
+                        <td>{{row.displayName || '-'}}</td>
+                    </tr>
+                    <tr ng-if="csvRows.length > 5">
+                        <td colspan="3" class="cfg-csv-more">... 외 {{csvRows.length - 5}}건</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 오류 메시지 -->
+        <div class="cfg-register-error" ng-if="registerError">{{registerError}}</div>
+    </div>
+
+    <div class="user-modal-footer">
+        <button class="btn-modal-cancel" ng-click="closeRegisterModal()">취소</button>
+        <button class="btn-modal-confirm"
+                ng-disabled="!csvRows.length || registerLoading"
+                ng-click="submitRegister()">
+            <span ng-if="!registerLoading">등록 ({{csvRows.length}}건)</span>
+            <span ng-if="registerLoading">등록 중...</span>
+        </button>
+    </div>
 </div>
 
 <!-- ── 장비 상세 모달 ── -->
