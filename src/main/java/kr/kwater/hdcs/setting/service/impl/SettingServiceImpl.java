@@ -30,6 +30,89 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     @Transactional
+    public int saveChanges(List<Map<String, Object>> items) throws Exception {
+        if (items == null || items.isEmpty()) return 0;
+        int count = 0;
+        for (Map<String, Object> item : items) {
+            Object deviceIdObj = item.get("deviceId");
+            if (deviceIdObj == null) continue;
+            int deviceId = ((Number) deviceIdObj).intValue();
+
+            String displayName = (String) item.get("displayName");
+            String groupName   = (String) item.get("groupName");
+
+            Map<String, Object> deviceInfo = settingDAO.selectDeviceInfoById(deviceId);
+            if (deviceInfo == null) continue;
+
+            Object stationId = deviceInfo.get("stationId");
+
+            if (displayName != null) {
+                if (stationId != null) {
+                    Map<String, Object> update = new HashMap<>();
+                    update.put("stationId",   stationId);
+                    update.put("displayName", displayName);
+                    settingDAO.updateStationName(update);
+                } else if (!displayName.isEmpty()) {
+                    String obsCode = (String) item.get("obsCode");
+                    Map<String, Object> newStation = new HashMap<>();
+                    newStation.put("obsCode", obsCode != null ? obsCode : "");
+                    newStation.put("name",    displayName);
+                    settingDAO.insertStation(newStation);
+
+                    Map<String, Object> link = new HashMap<>();
+                    link.put("deviceId",  deviceId);
+                    link.put("stationId", newStation.get("stationId"));
+                    settingDAO.updateDeviceStationIdById(link);
+                }
+            }
+
+            if (groupName != null) {
+                Map<String, Object> groupUpdate = new HashMap<>();
+                groupUpdate.put("deviceId", deviceId);
+                if (groupName.isEmpty()) {
+                    groupUpdate.put("groupId", null);
+                } else {
+                    groupUpdate.put("groupId", settingDAO.selectGroupIdByName(groupName));
+                }
+                settingDAO.updateDeviceGroup(groupUpdate);
+            }
+
+            count++;
+        }
+        return count;
+    }
+
+    @Override
+    public List<Map<String, Object>> getGroupList() throws Exception {
+        return settingDAO.selectGroupList();
+    }
+
+    @Override
+    public void addGroup(String groupName) throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("groupName", groupName);
+        settingDAO.insertGroup(data);
+    }
+
+    @Override
+    public void updateGroup(long groupId, String groupName) throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("groupId",   groupId);
+        data.put("groupName", groupName);
+        settingDAO.updateGroup(data);
+    }
+
+    @Override
+    public void deleteGroup(long groupId) throws Exception {
+        int count = settingDAO.countDevicesByGroup(groupId);
+        if (count > 0) {
+            throw new IllegalStateException("장비 " + count + "대가 배정된 그룹은 삭제할 수 없습니다. 먼저 장비의 그룹을 변경해주세요.");
+        }
+        settingDAO.deleteGroup(groupId);
+    }
+
+    @Override
+    @Transactional
     public int registerFromCsv(List<Map<String, String>> rows) throws Exception {
         if (rows == null || rows.isEmpty()) return 0;
         int count = 0;

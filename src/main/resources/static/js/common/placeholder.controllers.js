@@ -109,13 +109,29 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     };
 
     /* ── 변경사항 저장 ── */
+    $scope.saveLoading          = false;
+    $scope.showSaveSuccessModal = false;
+
+    $scope.closeSaveSuccessModal = function () {
+        $scope.showSaveSuccessModal = false;
+    };
+
     $scope.saveChanges = function () {
         var dirty = allData.filter(function (item) { return item._dirty; });
-        if (!dirty.length) return;
-        /* TODO: $http.post(ctx + '/api/config/save', dirty) 로 교체 */
-        dirty.forEach(function (item) { item._dirty = false; });
-        $scope.hasDirty = false;
-        alert('변경사항이 저장되었습니다. (' + dirty.length + '건)');
+        if (!dirty.length || $scope.saveLoading) return;
+        $scope.saveLoading = true;
+        $http.post(ctx + '/api/config/save', dirty)
+            .then(function () {
+                dirty.forEach(function (item) { item._dirty = false; });
+                $scope.hasDirty          = false;
+                $scope.saveLoading       = false;
+                $scope.showSaveSuccessModal = true;
+                $scope.load();
+            })
+            .catch(function () {
+                $scope.saveLoading = false;
+                alert('저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+            });
     };
 
     /* ── 장비 상세 모달 ── */
@@ -131,9 +147,94 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.showDetailModal = false;
     };
 
-    /* ── 그룹 관리 모달 (추후 구현) ── */
+    /* ── 그룹 관리 모달 ── */
+    $scope.showGroupModal = false;
+    $scope.groupList      = [];
+    $scope.newGroupName   = '';
+    $scope.groupError     = '';
+
+    function loadGroupList() {
+        $http.get(ctx + '/api/config/groups/manage')
+            .then(function (res) { $scope.groupList = res.data; })
+            .catch(function () { $scope.groupList = []; });
+    }
+
+    function reloadGroupOptions() {
+        $http.get(ctx + '/api/config/groups')
+            .then(function (res) { $scope.groupOptions = res.data; });
+    }
+
     $scope.openGroupManager = function () {
-        alert('그룹 관리 기능은 준비 중입니다.');
+        $scope.newGroupName   = '';
+        $scope.groupError     = '';
+        $scope.showGroupModal = true;
+        loadGroupList();
+    };
+
+    $scope.closeGroupModal = function () {
+        $scope.showGroupModal = false;
+    };
+
+    $scope.startEditGroup = function (g) {
+        g._editing  = true;
+        g._editName = g.groupName;
+        $scope.groupError = '';
+    };
+
+    $scope.cancelEditGroup = function (g) {
+        g._editing = false;
+    };
+
+    $scope.confirmEditGroup = function (g) {
+        var name = (g._editName || '').trim();
+        if (!name) return;
+        $http.put(ctx + '/api/config/groups/' + g.groupId, { groupName: name })
+            .then(function () {
+                g.groupName = name;
+                g._editing  = false;
+                $scope.groupError = '';
+                reloadGroupOptions();
+            })
+            .catch(function (res) {
+                $scope.groupError = (res.data && res.data.message) || '수정 중 오류가 발생했습니다.';
+            });
+    };
+
+    $scope.confirmDeleteGroup = function (g) {
+        g._confirmDelete = true;
+        $scope.groupError = '';
+    };
+
+    $scope.cancelDeleteGroup = function (g) {
+        g._confirmDelete = false;
+    };
+
+    $scope.deleteGroup = function (g) {
+        $http.delete(ctx + '/api/config/groups/' + g.groupId)
+            .then(function () {
+                $scope.groupError = '';
+                loadGroupList();
+                reloadGroupOptions();
+            })
+            .catch(function (res) {
+                g._confirmDelete = false;
+                $scope.groupError = (res.data && res.data.message) || '삭제 중 오류가 발생했습니다.';
+            });
+    };
+
+    $scope.addGroup = function () {
+        var name = ($scope.newGroupName || '').trim();
+        if (!name) return;
+        $http.post(ctx + '/api/config/groups/add', { groupName: name })
+            .then(function () {
+                $scope.newGroupName = '';
+                $scope.groupError   = '';
+                loadGroupList();
+                reloadGroupOptions();
+            })
+            .catch(function (res) {
+                $scope.groupError = (res.data && res.data.message) || '추가 중 오류가 발생했습니다.';
+            });
     };
 
     /* ── 환경설정 CSV 일괄등록 모달 ── */

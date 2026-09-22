@@ -14,4 +14,16 @@ public interface SettingDAO {
     void updateStationById(Map<String, Object> data);
     void insertStation(Map<String, Object> data);
     void updateDeviceStationId(Map<String, Object> data);
+
+    Map<String, Object> selectDeviceInfoById(int deviceId);
+    void updateStationName(Map<String, Object> data);
+    Integer selectGroupIdByName(String groupName);
+    void updateDeviceGroup(Map<String, Object> data);
+    void updateDeviceStationIdById(Map<String, Object> data);
+
+    List<Map<String, Object>> selectGroupList();
+    void insertGroup(Map<String, Object> data);
+    void updateGroup(Map<String, Object> data);
+    int countDevicesByGroup(long groupId);
+    void deleteGroup(long groupId);
 }

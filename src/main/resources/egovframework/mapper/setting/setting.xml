@@ -41,11 +41,86 @@
         VALUES (#{obsCode}, #{name})
     </insert>
 
-    <!-- 장비에 관측소 연결 -->
+    <!-- 장비에 관측소 연결 (device_name 기준) -->
     <update id="updateDeviceStationId" parameterType="map">
         UPDATE public.tb_device
         SET station_id = #{stationId}
         WHERE device_name = #{equipId}
     </update>
+
+    <!-- 변경사항 저장: 장비 조회 (device_id 기준) -->
+    <select id="selectDeviceInfoById" parameterType="int" resultType="map">
+        SELECT device_id  AS "deviceId",
+               station_id AS "stationId",
+               group_id   AS "groupId"
+        FROM public.tb_device
+        WHERE device_id = #{deviceId}
+    </select>
+
+    <!-- 관측소 표시명만 업데이트 -->
+    <update id="updateStationName" parameterType="map">
+        UPDATE public.tb_observation_station
+        SET name = #{displayName}
+        WHERE station_id = #{stationId}
+    </update>
+
+    <!-- 그룹명으로 group_id 조회 -->
+    <select id="selectGroupIdByName" parameterType="string" resultType="int">
+        SELECT group_id
+        FROM public.tb_device_group
+        WHERE group_name = #{groupName}
+        LIMIT 1
+    </select>
+
+    <!-- 장비 그룹 업데이트 -->
+    <update id="updateDeviceGroup" parameterType="map">
+        UPDATE public.tb_device
+        SET group_id = #{groupId}
+        WHERE device_id = #{deviceId}
+    </update>
+
+    <!-- 장비에 관측소 연결 (device_id 기준) -->
+    <update id="updateDeviceStationIdById" parameterType="map">
+        UPDATE public.tb_device
+        SET station_id = #{stationId}
+        WHERE device_id = #{deviceId}
+    </update>
+
+    <!-- 그룹 관리: 전체 목록 (장비 수 포함) -->
+    <select id="selectGroupList" resultType="map">
+        SELECT g.group_id   AS "groupId",
+               g.group_name AS "groupName",
+               g.sort_order AS "sortOrder",
+               COUNT(d.device_id) AS "deviceCount"
+        FROM public.tb_device_group g
+        LEFT JOIN public.tb_device d ON d.group_id = g.group_id
+        WHERE g.use_yn = 'Y'
+        GROUP BY g.group_id, g.group_name, g.sort_order
+        ORDER BY g.sort_order, g.group_name
+    </select>
+
+    <!-- 그룹 추가 -->
+    <insert id="insertGroup" parameterType="map">
+        INSERT INTO public.tb_device_group (group_name)
+        VALUES (#{groupName})
+    </insert>
+
+    <!-- 그룹명 수정 -->
+    <update id="updateGroup" parameterType="map">
+        UPDATE public.tb_device_group
+        SET group_name = #{groupName},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE group_id = #{groupId}
+    </update>
+
+    <!-- 그룹에 배정된 장비 수 조회 -->
+    <select id="countDevicesByGroup" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM public.tb_device WHERE group_id = #{groupId}
+    </select>
+
+    <!-- 그룹 삭제 -->
+    <delete id="deleteGroup" parameterType="long">
+        DELETE FROM public.tb_device_group WHERE group_id = #{groupId}
+    </delete>
 
 </mapper>

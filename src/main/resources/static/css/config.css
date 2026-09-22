@@ -394,3 +394,56 @@
     margin-top: 4px;
     margin-bottom: 4px;
 }
+
+/* 그룹 관리 모달 */
+.cfg-group-modal { width: 440px; }
+
+.cfg-group-body { padding: 16px 24px 8px; }
+
+.cfg-group-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.cfg-group-action-btn {
+    height: 26px;
+    padding: 0 10px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 4px;
+    color: var(--text-secondary, #8a9bb5);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: border-color .15s, color .15s, background .15s;
+}
+.cfg-group-action-btn:hover {
+    border-color: #4a90d9;
+    color: #4a90d9;
+}
+.cfg-group-action-del { color: #e74c3c; border-color: rgba(231,76,60,.3); }
+.cfg-group-action-del:hover { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,.08); }
+.cfg-group-action-save { color: #2ecc71; border-color: rgba(46,204,113,.3); }
+.cfg-group-action-save:hover { border-color: #2ecc71; color: #2ecc71; background: rgba(46,204,113,.08); }
+
+.cfg-group-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border, rgba(255,255,255,.06));
+}
+.cfg-group-add-row .cfg-name-input { flex: 1; }
+
+.cfg-group-add-btn {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 16px;
+    font-size: 12px;
+}
