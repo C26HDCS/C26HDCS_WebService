@@ -4,32 +4,76 @@
 
 <mapper namespace="kr.kwater.hdcs.log.dao.LogDAO">
 
+    <!--
+        TB_LOG(장치 로그) + TB_EVENT(사용자 이벤트)를 UNION ALL로 합쳐
+        "로그 및 이벤트 관리" 화면 하나에서 전체/로그/이벤트 필터로 조회한다.
+    -->
     <resultMap id="logResultMap" type="kr.kwater.hdcs.log.vo.LogVO">
-        <id     column="ID"      property="id"/>
-        <result column="LEVEL"   property="level"/>
-        <result column="MESSAGE" property="message"/>
-        <result column="REG_DT"  property="regDt"/>
+        <id     column="ID"          property="id"/>
+        <result column="CATEGORY"    property="category"/>
+        <result column="DEVICE_ID"   property="deviceId"/>
+        <result column="DEVICE_NAME" property="deviceName"/>
+        <result column="USER_ID"     property="userId"/>
+        <result column="LEVEL"       property="level"/>
+        <result column="MESSAGE"     property="message"/>
+        <result column="REG_DT"      property="regDt"/>
     </resultMap>
+
+    <sql id="logEventUnion">
+        SELECT L.ID, 'LOG' AS CATEGORY, L.DEVICE_ID, D.DEVICE_NAME,
+               CAST(NULL AS VARCHAR(50)) AS USER_ID,
+               L.LEVEL, L.MESSAGE, L.REG_DT
+        FROM TB_LOG L
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = L.DEVICE_ID
+        UNION ALL
+        SELECT ID, 'EVENT' AS CATEGORY,
+               CAST(NULL AS BIGINT) AS DEVICE_ID,
+               CAST(NULL AS VARCHAR(100)) AS DEVICE_NAME,
+               USER_ID, EVENT_TYPE AS LEVEL, MESSAGE, REG_DT
+        FROM TB_EVENT
+    </sql>
 
     <select id="selectLogList" parameterType="kr.kwater.hdcs.log.vo.LogVO"
             resultMap="logResultMap">
-        SELECT ID, LEVEL, MESSAGE, REG_DT
-        FROM TB_LOG
+        SELECT ID, CATEGORY, DEVICE_ID, DEVICE_NAME, USER_ID, LEVEL, MESSAGE, REG_DT
+        FROM (
+            <include refid="logEventUnion"/>
+        ) COMBINED
         <where>
             <if test="searchCondition != null and searchCondition != ''">
-                AND LEVEL = #{searchCondition}
+                AND CATEGORY = #{searchCondition}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND MESSAGE LIKE '%' || #{searchKeyword} || '%'
+            </if>
+            <if test="searchDateFrom != null and searchDateFrom != ''">
+                AND REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
+            </if>
+            <if test="searchDateTo != null and searchDateTo != ''">
+                AND REG_DT &lt; CAST(#{searchDateTo} AS TIMESTAMP) + INTERVAL '1 day'
             </if>
         </where>
-        ORDER BY ID DESC
+        ORDER BY REG_DT DESC
     </select>
 
     <select id="selectLogCount" parameterType="kr.kwater.hdcs.log.vo.LogVO"
             resultType="int">
         SELECT COUNT(*)
-        FROM TB_LOG
+        FROM (
+            <include refid="logEventUnion"/>
+        ) COMBINED
         <where>
             <if test="searchCondition != null and searchCondition != ''">
-                AND LEVEL = #{searchCondition}
+                AND CATEGORY = #{searchCondition}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND MESSAGE LIKE '%' || #{searchKeyword} || '%'
+            </if>
+            <if test="searchDateFrom != null and searchDateFrom != ''">
+                AND REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
+            </if>
+            <if test="searchDateTo != null and searchDateTo != ''">
+                AND REG_DT &lt; CAST(#{searchDateTo} AS TIMESTAMP) + INTERVAL '1 day'
             </if>
         </where>
     </select>
