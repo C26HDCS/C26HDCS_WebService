@@ -118,7 +118,8 @@ qosApp.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 /* ── 루트 컨트롤러 ────────────────────────────────────── */
-qosApp.controller('AppCtrl', ['$scope', '$route', '$location', function ($scope, $route, $location) {
+qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interval',
+    function ($scope, $route, $location, $http, $interval) {
 
     // 페이지 타이틀 동기화
     $scope.$on('$routeChangeSuccess', function () {
@@ -130,5 +131,83 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', function ($scope,
     // 사이드바 활성 상태 판별
     $scope.isActive = function (path) {
         return $location.path() === path;
+    };
+
+    /* ── 헤더 알람 드롭다운 ── */
+    var NOTIF_PREVIEW_SIZE = 10;
+
+    $scope.unreadCount       = 0;
+    $scope.notifList         = [];
+    $scope.showNotifDropdown = false;
+
+    $scope.loadUnreadCount = function () {
+        $http.get(ctx + '/api/alarm/unread-count')
+            .then(function (res) { $scope.unreadCount = res.data.count; })
+            .catch(function () {});
+    };
+
+    $scope.loadRecentNotifications = function () {
+        $http.get(ctx + '/api/alarm/list', { params: { limit: NOTIF_PREVIEW_SIZE } })
+            .then(function (res) { $scope.notifList = res.data; })
+            .catch(function () { $scope.notifList = []; });
+    };
+
+    $scope.toggleNotifDropdown = function ($event) {
+        if ($event) $event.stopPropagation();
+        $scope.showNotifDropdown = !$scope.showNotifDropdown;
+        if ($scope.showNotifDropdown) $scope.loadRecentNotifications();
+    };
+
+    $scope.goToAlarmList = function () {
+        $scope.showNotifDropdown = false;
+        $location.path('/alarm');
+    };
+
+    $scope.formatNotifTime = function (occurredAt) {
+        if (!occurredAt) return '-';
+        return occurredAt.replace('T', ' ').substring(5, 16);
+    };
+
+    // 드롭다운 바깥 클릭 시 닫기
+    document.addEventListener('click', function () {
+        if ($scope.showNotifDropdown) $scope.$apply(function () { $scope.showNotifDropdown = false; });
+    });
+
+    $scope.loadUnreadCount();
+    $interval($scope.loadUnreadCount, 3000);
+
+    /* ── 알람 상세 팝업 (헤더 알림 클릭 / 알람 관리 화면 행 클릭에서 공통으로 재사용) ── */
+    $scope.showDetailModal = false;
+    $scope.detailAlarm     = {};
+
+    $scope.getLevelClass = function (level) {
+        var map = { 'HIGH': 'status-high', 'MEDIUM': 'status-medium', 'LOW': 'status-low' };
+        return map[level] || '';
+    };
+
+    $scope.formatOccurredAt = function (occurredAt) {
+        if (!occurredAt) return '-';
+        return occurredAt.replace('T', ' ').substring(0, 16);
+    };
+
+    $scope.openDetailModal = function (item) {
+        $scope.showNotifDropdown = false;
+        $scope.detailAlarm = angular.copy(item);
+        $scope.showDetailModal = true;
+
+        if (!item.checked) {
+            $http.post(ctx + '/api/alarm/' + item.id + '/check').then(function (res) {
+                item.checked = true;
+                $scope.detailAlarm.checked = true;
+                $scope.unreadCount = res.data.unreadCount;
+                // AppCtrl(부모)에서 AlarmCtrl(자식, ng-view 안)로 알려야 하므로 $broadcast 사용
+                $scope.$broadcast('alarmChecked', item.id);
+            });
+        }
+    };
+
+    $scope.closeDetailModal = function () {
+        $scope.showDetailModal = false;
+        $scope.detailAlarm = {};
     };
 }]);

@@ -218,6 +218,78 @@ body {
     z-index: 10;
 }
 
+/* 알림 미리보기 드롭다운 */
+.notif-dropdown {
+    position: absolute;
+    top: 42px;
+    right: -8px;
+    width: 320px;
+    background: #1c2b40;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    z-index: 400;
+    overflow: hidden;
+}
+.notif-dropdown-header {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #dce8f5;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.notif-dropdown-list {
+    max-height: 420px;
+    overflow-y: auto;
+}
+.notif-empty {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 12.5px;
+    color: #6a8aaa;
+}
+.notif-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+}
+.notif-item:hover { background: rgba(255,255,255,0.04); }
+.notif-item-title {
+    font-size: 12.5px;
+    color: #8aa8c4;
+    margin-bottom: 2px;
+}
+.notif-item-message {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.notif-item-time {
+    font-size: 11px;
+    color: #5a7090;
+    margin-top: 2px;
+}
+.notif-item-unread .notif-item-message { color: #f0f6ff; font-weight: 700; }
+.notif-item-unread { background: rgba(58,123,213,0.06); }
+.notif-item-read .notif-item-message { color: #63788f; font-weight: 400; }
+.notif-dropdown-footer {
+    padding: 8px;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+.notif-view-all {
+    background: none;
+    border: none;
+    color: #5a9ef5;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 4px 8px;
+}
+.notif-view-all:hover { color: #fff; }
+
 /* 기존 사용자 정보 유지 */
 .user-info {
     display: flex;

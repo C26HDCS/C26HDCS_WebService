@@ -27,13 +27,29 @@
         </div>
         <div class="header-right">          
             <div class="notification-wrap">
-                <button type="button" class="icon-btn" aria-label="알림">
+                <button type="button" class="icon-btn" aria-label="알림" ng-click="toggleNotifDropdown($event)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
                 </button>
-                <span class="notification-dot"></span> 
+                <span class="notification-dot" ng-show="unreadCount > 0"></span>
+
+                <div class="notif-dropdown" ng-show="showNotifDropdown" ng-click="$event.stopPropagation()">
+                    <div class="notif-dropdown-header">알림</div>
+                    <div class="notif-dropdown-list">
+                        <div class="notif-empty" ng-if="notifList.length === 0">새 알림이 없습니다.</div>
+                        <div class="notif-item" ng-class="{'notif-item-unread': !item.checked, 'notif-item-read': item.checked}"
+                             ng-repeat="item in notifList" ng-click="openDetailModal(item)">
+                            <div class="notif-item-title">{{item.alarmType}}</div>
+                            <div class="notif-item-message">{{item.alarmMessage || '-'}}</div>
+                            <div class="notif-item-time">{{formatNotifTime(item.occurredAt)}}</div>
+                        </div>
+                    </div>
+                    <div class="notif-dropdown-footer">
+                        <button type="button" class="notif-view-all" ng-click="goToAlarmList()">전체보기</button>
+                    </div>
+                </div>
             </div>
 
             <div class="user-info">
@@ -231,6 +247,71 @@
         <button class="btn-logout-confirm" onclick="confirmLogout()">확인</button>
     </div>
 
+</div>
+
+<!-- ── 알람 상세 팝업 (헤더 알림/알람 관리 화면 공통) ── -->
+<div class="alarm-modal-overlay" ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
+
+<div class="alarm-modal alarm-detail-modal" ng-show="showDetailModal">
+    <div class="alarm-modal-header">
+        <span class="alarm-modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            알람 상세 정보
+        </span>
+        <button class="alarm-modal-close" ng-click="closeDetailModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="alarm-detail-body">
+
+        <div class="alarm-detail-avatar">
+            <div class="alarm-detail-avatar-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </div>
+            <div class="alarm-detail-avatar-name">{{detailAlarm.alarmType}}</div>
+        </div>
+
+        <div class="alarm-detail-rows">
+            <div class="alarm-detail-row">
+                <span class="alarm-detail-label">등급</span>
+                <span class="alarm-detail-value">
+                    <span class="status-badge" ng-class="getLevelClass(detailAlarm.alarmLevel)">{{detailAlarm.alarmLevel}}</span>
+                </span>
+            </div>
+            <div class="alarm-detail-row">
+                <span class="alarm-detail-label">장비</span>
+                <span class="alarm-detail-value">{{detailAlarm.deviceName || detailAlarm.deviceId || '-'}}</span>
+            </div>
+            <div class="alarm-detail-row">
+                <span class="alarm-detail-label">발생원인</span>
+                <span class="alarm-detail-value">{{detailAlarm.alarmMessage || '-'}}</span>
+            </div>
+            <div class="alarm-detail-row">
+                <span class="alarm-detail-label">발생일시</span>
+                <span class="alarm-detail-value">{{formatOccurredAt(detailAlarm.occurredAt)}}</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="alarm-modal-footer">
+        <button class="btn-modal-cancel" ng-click="closeDetailModal()">닫기</button>
+    </div>
 </div>
 
 </body>

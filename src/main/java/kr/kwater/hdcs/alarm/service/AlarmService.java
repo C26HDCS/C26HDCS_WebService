@@ -9,4 +9,8 @@ public interface AlarmService {
     List<AlarmVO> getAlarmList(AlarmVO vo) throws Exception;
 
     int getAlarmCount(AlarmVO vo) throws Exception;
+
+    int getUnreadCount(String currentUserId) throws Exception;
+
+    void checkAlarm(Long alarmId, String userId) throws Exception;
 }
