@@ -25,4 +25,14 @@ public class AlarmServiceImpl extends EgovAbstractServiceImpl implements AlarmSe
     public int getAlarmCount(AlarmVO vo) throws Exception {
         return alarmDAO.selectAlarmCount(vo);
     }
+
+    @Override
+    public int getUnreadCount(String currentUserId) throws Exception {
+        return alarmDAO.selectUnreadCount(currentUserId);
+    }
+
+    @Override
+    public void checkAlarm(Long alarmId, String userId) throws Exception {
+        alarmDAO.insertAlarmCheck(alarmId, userId);
+    }
 }

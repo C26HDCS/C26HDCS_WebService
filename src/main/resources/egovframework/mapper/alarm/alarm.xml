@@ -1,39 +1,67 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.kwater.hdcs.alarm.dao.AlarmDAO">
 
     <resultMap id="alarmResultMap" type="kr.kwater.hdcs.alarm.vo.AlarmVO">
-        <id     column="ID"       property="id"/>
-        <result column="TYPE"     property="type"/>
-        <result column="TARGET"   property="target"/>
-        <result column="SEVERITY" property="severity"/>
-        <result column="STATUS"   property="status"/>
-        <result column="REG_DT"   property="regDt"/>
+        <id     column="ALARM_ID"      property="id"/>
+        <result column="DEVICE_ID"     property="deviceId"/>
+        <result column="DEVICE_NAME"   property="deviceName"/>
+        <result column="ALARM_TYPE"    property="alarmType"/>
+        <result column="ALARM_LEVEL"   property="alarmLevel"/>
+        <result column="ALARM_MESSAGE" property="alarmMessage"/>
+        <result column="OCCURRED_AT"   property="occurredAt"/>
+        <result column="IS_CHECKED"    property="checked"/>
     </resultMap>
+
+    <sql id="alarmWhere">
+        <where>
+            <if test="searchAlarmType != null and searchAlarmType != ''">
+                AND A.ALARM_TYPE = #{searchAlarmType}
+            </if>
+            <if test="searchAlarmLevel != null and searchAlarmLevel != ''">
+                AND A.ALARM_LEVEL = #{searchAlarmLevel}
+            </if>
+            <if test="searchDateFrom != null and searchDateFrom != ''">
+                AND A.OCCURRED_AT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
+            </if>
+            <if test="searchDateTo != null and searchDateTo != ''">
+                AND A.OCCURRED_AT &lt; CAST(#{searchDateTo} AS TIMESTAMP) + INTERVAL '1 day'
+            </if>
+        </where>
+    </sql>
 
     <select id="selectAlarmList" parameterType="kr.kwater.hdcs.alarm.vo.AlarmVO"
             resultMap="alarmResultMap">
-        SELECT ID, TYPE, TARGET, SEVERITY, STATUS, REG_DT
-        FROM TB_ALARM
-        <where>
-            <if test="searchCondition != null and searchCondition != ''">
-                AND STATUS = #{searchCondition}
-            </if>
-        </where>
-        ORDER BY ID DESC
+        SELECT A.ALARM_ID, A.DEVICE_ID, D.DEVICE_NAME, A.ALARM_TYPE, A.ALARM_LEVEL, A.ALARM_MESSAGE, A.OCCURRED_AT,
+               CASE WHEN C.ALARM_ID IS NULL THEN false ELSE true END AS IS_CHECKED
+        FROM TB_ALARM A
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
+        LEFT JOIN TB_ALARM_CHECK C ON C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{currentUserId}
+        <include refid="alarmWhere"/>
+        ORDER BY A.OCCURRED_AT DESC, A.ALARM_ID DESC
+        <if test="limit != null">LIMIT #{limit}</if>
     </select>
 
     <select id="selectAlarmCount" parameterType="kr.kwater.hdcs.alarm.vo.AlarmVO"
             resultType="int">
         SELECT COUNT(*)
-        FROM TB_ALARM
-        <where>
-            <if test="searchCondition != null and searchCondition != ''">
-                AND STATUS = #{searchCondition}
-            </if>
-        </where>
+        FROM TB_ALARM A
+        <include refid="alarmWhere"/>
     </select>
+
+    <select id="selectUnreadCount" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_ALARM A
+        LEFT JOIN TB_ALARM_CHECK C ON C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{currentUserId}
+        WHERE C.ALARM_ID IS NULL
+    </select>
+
+    <insert id="insertAlarmCheck">
+        INSERT INTO TB_ALARM_CHECK (ALARM_ID, USER_ID, CHECKED_AT)
+        VALUES (#{alarmId}, #{userId}, CURRENT_TIMESTAMP)
+        ON CONFLICT (ALARM_ID, USER_ID) DO NOTHING
+    </insert>
 
 </mapper>

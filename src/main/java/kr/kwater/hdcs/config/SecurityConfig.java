@@ -48,7 +48,7 @@ public class SecurityConfig {
                     
                     // 화면(View) 이동을 위한 URL 라우팅 허용
                     "/dashboard", "/output", "/distribution", "/ftp", "/user",
-                    "/mypage", "/alarm", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
+                    "/mypage", "/log", "/alarm", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
                 ).permitAll()
                 
                 // 2. 인증(JWT 토큰)이 반드시 필요한 URL 명시적 설정 (옵션)
