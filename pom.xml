@@ -195,6 +195,16 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- ============================== -->
+        <!--  Report (Word 생성)           -->
+        <!-- ============================== -->
+        <!-- Apache POI: .docx(XWPF) 생성. Spring Boot 2.7 BOM이 버전을 관리하지 않으므로 직접 지정 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+
         <!-- jwt  -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

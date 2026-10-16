@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    리포트 본문용 원천 데이터 조회/집계.
+    조회 기간: periodFrom 00:00 이상 ~ periodTo 다음날 00:00 미만 (종료일 당일 포함)
+    상세 목록은 최신순으로 limit 건까지만 조회한다.
+-->
+<mapper namespace="kr.kwater.hdcs.report.dao.ReportDataDAO">
+
+    <!-- 기간 조건. ${column}에는 이 파일에서 직접 지정한 상수 컬럼명만 전달한다. -->
+    <sql id="periodCond">
+        ${column} &gt;= CAST(#{periodFrom} AS DATE)
+        AND ${column} &lt; CAST(#{periodTo} AS DATE) + INTERVAL '1 day'
+    </sql>
+
+    <!-- ══════════════ 로그 (TB_LOG) ══════════════ -->
+
+    <!-- 기간 내 로그 전체 건수 -->
+    <select id="selectLogTotalCount" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_LOG L
+        WHERE <include refid="periodCond"><property name="column" value="L.REG_DT"/></include>
+    </select>
+
+    <!-- 기간 내 로그 레벨별 건수 -->
+    <select id="selectLogLevelCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT L.LEVEL AS LABEL, COUNT(*) AS COUNT
+        FROM TB_LOG L
+        WHERE <include refid="periodCond"><property name="column" value="L.REG_DT"/></include>
+        GROUP BY L.LEVEL
+        ORDER BY CASE UPPER(L.LEVEL)
+                     WHEN 'DEBUG'   THEN 1
+                     WHEN 'INFO'    THEN 2
+                     WHEN 'WARN'    THEN 3
+                     WHEN 'WARNING' THEN 3
+                     WHEN 'ERROR'   THEN 4
+                     ELSE 9
+                 END, L.LEVEL
+    </select>
+
+    <!-- 기간 내 장비별 로그 건수 -->
+    <select id="selectLogDeviceCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT COALESCE(D.DEVICE_NAME, '미등록 장비') AS LABEL, COUNT(*) AS COUNT
+        FROM TB_LOG L
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = L.DEVICE_ID
+        WHERE <include refid="periodCond"><property name="column" value="L.REG_DT"/></include>
+        GROUP BY COALESCE(D.DEVICE_NAME, '미등록 장비')
+        ORDER BY 1
+    </select>
+
+    <!-- 기간 내 로그 상세 목록 -->
+    <select id="selectLogDetails" resultType="kr.kwater.hdcs.report.vo.ReportLogRowVO">
+        SELECT TO_CHAR(L.REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS REG_DT,
+               D.DEVICE_NAME,
+               L.LEVEL,
+               L.MESSAGE
+        FROM TB_LOG L
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = L.DEVICE_ID
+        WHERE <include refid="periodCond"><property name="column" value="L.REG_DT"/></include>
+        ORDER BY L.REG_DT DESC, L.ID DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ══════════════ 이벤트 (TB_EVENT) ══════════════ -->
+
+    <!-- 기간 내 이벤트 전체 건수 -->
+    <select id="selectEventTotalCount" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_EVENT E
+        WHERE <include refid="periodCond"><property name="column" value="E.REG_DT"/></include>
+    </select>
+
+    <!-- 기간 내 이벤트 유형별 건수 -->
+    <select id="selectEventTypeCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT E.EVENT_TYPE AS LABEL, COUNT(*) AS COUNT
+        FROM TB_EVENT E
+        WHERE <include refid="periodCond"><property name="column" value="E.REG_DT"/></include>
+        GROUP BY E.EVENT_TYPE
+        ORDER BY E.EVENT_TYPE
+    </select>
+
+    <!-- 기간 내 이벤트 상세 목록 -->
+    <select id="selectEventDetails" resultType="kr.kwater.hdcs.report.vo.ReportEventRowVO">
+        SELECT TO_CHAR(E.REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS REG_DT,
+               E.USER_ID,
+               E.EVENT_TYPE,
+               E.MESSAGE
+        FROM TB_EVENT E
+        WHERE <include refid="periodCond"><property name="column" value="E.REG_DT"/></include>
+        ORDER BY E.REG_DT DESC, E.ID DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ══════════════ 알람 (TB_ALARM) ══════════════ -->
+
+    <!-- 기간 내 알람 전체 건수 -->
+    <select id="selectAlarmTotalCount" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_ALARM A
+        WHERE <include refid="periodCond"><property name="column" value="A.OCCURRED_AT"/></include>
+    </select>
+
+    <!-- 기간 내 알람 유형별 건수 -->
+    <select id="selectAlarmTypeCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT A.ALARM_TYPE AS LABEL, COUNT(*) AS COUNT
+        FROM TB_ALARM A
+        WHERE <include refid="periodCond"><property name="column" value="A.OCCURRED_AT"/></include>
+        GROUP BY A.ALARM_TYPE
+        ORDER BY A.ALARM_TYPE
+    </select>
+
+    <!-- 기간 내 알람 등급별 건수 -->
+    <select id="selectAlarmLevelCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT COALESCE(A.ALARM_LEVEL, '미지정') AS LABEL, COUNT(*) AS COUNT
+        FROM TB_ALARM A
+        WHERE <include refid="periodCond"><property name="column" value="A.OCCURRED_AT"/></include>
+        GROUP BY COALESCE(A.ALARM_LEVEL, '미지정')
+        ORDER BY CASE UPPER(COALESCE(A.ALARM_LEVEL, '미지정'))
+                     WHEN 'LOW'    THEN 1
+                     WHEN 'MEDIUM' THEN 2
+                     WHEN 'HIGH'   THEN 3
+                     WHEN '미지정'  THEN 9
+                     ELSE 5
+                 END, 1
+    </select>
+
+    <!-- 기간 내 알람 상세 목록 -->
+    <select id="selectAlarmDetails" resultType="kr.kwater.hdcs.report.vo.ReportAlarmRowVO">
+        SELECT TO_CHAR(A.OCCURRED_AT, 'YYYY-MM-DD HH24:MI:SS') AS OCCURRED_AT,
+               D.DEVICE_NAME,
+               A.ALARM_TYPE,
+               A.ALARM_LEVEL,
+               A.ALARM_MESSAGE
+        FROM TB_ALARM A
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
+        WHERE <include refid="periodCond"><property name="column" value="A.OCCURRED_AT"/></include>
+        ORDER BY A.OCCURRED_AT DESC, A.ALARM_ID DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ══════════════ 수신데이터 (tb_dcs_data: L대역, tb_ka_data: Ka대역) ══════════════ -->
+
+    <!-- 기간 내 대역별(DCS/KA) 수신 건수 -->
+    <select id="selectReceiveBandCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT 'DCS' AS LABEL, COUNT(*) AS COUNT
+        FROM public.tb_dcs_data X
+        WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        UNION ALL
+        SELECT 'KA' AS LABEL, COUNT(*) AS COUNT
+        FROM public.tb_ka_data X
+        WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+    </select>
+
+    <!-- 기간 내 L대역(DCS) 수신 상태별 건수 -->
+    <select id="selectDcsStatusCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT COALESCE(TRIM(X.received_status), '미지정') AS LABEL, COUNT(*) AS COUNT
+        FROM public.tb_dcs_data X
+        WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        GROUP BY COALESCE(TRIM(X.received_status), '미지정')
+        ORDER BY CASE WHEN COALESCE(TRIM(X.received_status), '미지정') = '미지정' THEN 1 ELSE 0 END, 1
+    </select>
+
+    <!-- 기간 내 Ka대역 수신 상태별 건수 -->
+    <select id="selectKaStatusCounts" resultType="kr.kwater.hdcs.report.vo.ReportCountVO">
+        SELECT COALESCE(TRIM(X.receive_status), '미지정') AS LABEL, COUNT(*) AS COUNT
+        FROM public.tb_ka_data X
+        WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        GROUP BY COALESCE(TRIM(X.receive_status), '미지정')
+        ORDER BY CASE WHEN COALESCE(TRIM(X.receive_status), '미지정') = '미지정' THEN 1 ELSE 0 END, 1
+    </select>
+
+    <!-- 일자별 수신 건수 (수신 데이터가 있는 일자만 조회한다) -->
+    <select id="selectReceiveDailyCounts" resultType="kr.kwater.hdcs.report.vo.ReportDailyReceiveVO">
+        SELECT TO_CHAR(CAST(U.RECEIVED_AT AS DATE), 'YYYY-MM-DD')   AS DAY,
+               SUM(CASE WHEN U.BAND = 'DCS' THEN 1 ELSE 0 END)      AS DCS_COUNT,
+               SUM(CASE WHEN U.BAND = 'KA'  THEN 1 ELSE 0 END)      AS KA_COUNT
+        FROM (
+            SELECT X.received_at AS RECEIVED_AT, 'DCS' AS BAND
+            FROM public.tb_dcs_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            UNION ALL
+            SELECT X.received_at, 'KA'
+            FROM public.tb_ka_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        ) U
+        GROUP BY CAST(U.RECEIVED_AT AS DATE)
+        ORDER BY CAST(U.RECEIVED_AT AS DATE)
+    </select>
+
+    <!-- 장비별 수신 건수와 기간 내 마지막 수신 시각 (수신 데이터가 있는 장비만 조회한다) -->
+    <select id="selectReceiveDeviceCounts" resultType="kr.kwater.hdcs.report.vo.ReportDeviceReceiveVO">
+        SELECT D.device_id                                           AS DEVICE_ID,
+               D.device_name                                         AS DEVICE_NAME,
+               TRIM(D.device_type)                                   AS DEVICE_TYPE,
+               R.RECEIVE_COUNT                                       AS RECEIVE_COUNT,
+               TO_CHAR(R.LAST_RECEIVED_AT, 'YYYY-MM-DD HH24:MI:SS')  AS LAST_RECEIVED_AT
+        FROM public.tb_device D
+        JOIN (
+            SELECT U.DEVICE_ID, COUNT(*) AS RECEIVE_COUNT, MAX(U.RECEIVED_AT) AS LAST_RECEIVED_AT
+            FROM (
+                SELECT X.device_id AS DEVICE_ID, X.received_at AS RECEIVED_AT
+                FROM public.tb_dcs_data X
+                WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+                UNION ALL
+                SELECT X.device_id, X.received_at
+                FROM public.tb_ka_data X
+                WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            ) U
+            GROUP BY U.DEVICE_ID
+        ) R ON R.DEVICE_ID = D.device_id
+        ORDER BY D.device_id
+    </select>
+
+    <!-- 수신 상세: DCS는 수신 데이터 앞 200자, Ka는 파일명을 payload로 통일해서 보여준다. -->
+    <select id="selectReceiveDetails" resultType="kr.kwater.hdcs.report.vo.ReportReceiveRowVO">
+        SELECT TO_CHAR(U.RECEIVED_AT, 'YYYY-MM-DD HH24:MI:SS') AS RECEIVED_AT,
+               D.device_name                                   AS DEVICE_NAME,
+               U.BAND,
+               U.PAYLOAD,
+               U.STATUS
+        FROM (
+            SELECT X.device_id AS DEVICE_ID, X.received_at AS RECEIVED_AT, 'DCS' AS BAND,
+                   LEFT(CAST(X.data_payload AS TEXT), 200) AS PAYLOAD,
+                   TRIM(X.received_status) AS STATUS
+            FROM public.tb_dcs_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            UNION ALL
+            SELECT X.device_id, X.received_at, 'KA',
+                   CAST(X.file_name AS TEXT),
+                   TRIM(X.receive_status)
+            FROM public.tb_ka_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        ) U
+        LEFT JOIN public.tb_device D ON D.device_id = U.DEVICE_ID
+        ORDER BY U.RECEIVED_AT DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

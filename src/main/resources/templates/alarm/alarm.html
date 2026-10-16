@@ -78,7 +78,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-if="pagedList.length === 0">
+            <tr ng-if="loadError">
+                <td colspan="6" class="no-data">{{loadError}}</td>
+            </tr>
+            <tr ng-if="!loadError && pagedList.length === 0">
                 <td colspan="6" class="no-data">알람이 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"

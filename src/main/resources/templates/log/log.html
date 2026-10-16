@@ -83,7 +83,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-if="pagedList.length === 0">
+            <tr ng-if="loadError">
+                <td colspan="6" class="no-data">{{loadError}}</td>
+            </tr>
+            <tr ng-if="!loadError && pagedList.length === 0">
                 <td colspan="6" class="no-data">이력이 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"
@@ -96,7 +99,7 @@
                     </span>
                 </td>
                 <td>
-                    <span class="status-badge" ng-class="getLevelClass(item.level)">{{item.level}}</span>
+                    <span class="status-badge" ng-class="getLevelClass(item.level)">{{getLevelLabel(item.level)}}</span>
                 </td>
                 <td>{{getTarget(item)}}</td>
                 <td class="log-message-cell">{{item.message}}</td>
@@ -208,7 +211,7 @@
             <div class="log-detail-row">
                 <span class="log-detail-label">유형</span>
                 <span class="log-detail-value">
-                    <span class="status-badge" ng-class="getLevelClass(detailLog.level)">{{detailLog.level}}</span>
+                    <span class="status-badge" ng-class="getLevelClass(detailLog.level)">{{getLevelLabel(detailLog.level)}}</span>
                 </span>
             </div>
             <div class="log-detail-row">

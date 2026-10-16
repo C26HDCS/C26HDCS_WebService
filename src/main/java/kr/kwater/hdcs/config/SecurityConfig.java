@@ -47,7 +47,7 @@ public class SecurityConfig {
                     "/api/collectionSetting/**",
                     
                     // 화면(View) 이동을 위한 URL 라우팅 허용
-                    "/dashboard", "/output", "/distribution", "/ftp", "/user",
+                    "/dashboard", "/output", "/distribution", "/ftp", "/user", "/report",
                     "/mypage", "/log", "/alarm", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
                 ).permitAll()
                 

@@ -182,9 +182,16 @@
 .log-badge-error { background: rgba(231,76,60,0.15);   color: #e74c3c; }
 .log-badge-debug { background: rgba(58,123,213,0.15);  color: #5a9ef5; }
 
-/* ── 구분(로그/이벤트) 배지 ── */
+/* ── 구분(로그/이벤트) 배지: 모서리가 각진 태그 모양 (리포트 관리의 데이터 유형 태그와 동일) ── */
 .log-badge-device { background: rgba(90,158,245,0.15);  color: #5a9ef5; }
 .log-badge-event  { background: rgba(155,89,182,0.15);  color: #9b59b6; }
+.status-badge.log-badge-device,
+.status-badge.log-badge-event {
+    border-radius: 3px;
+    line-height: 1.4;
+}
+.status-badge.log-badge-device { border: 1px solid rgba(90,158,245,0.35); }
+.status-badge.log-badge-event  { border: 1px solid rgba(155,89,182,0.4); }
 
 /* ── 내용 컬럼 ── */
 .log-table-panel .data-table tbody td.log-message-cell {
@@ -402,3 +409,4 @@
     background: rgba(255,255,255,0.1);
     color: #dce8f5;
 }
+

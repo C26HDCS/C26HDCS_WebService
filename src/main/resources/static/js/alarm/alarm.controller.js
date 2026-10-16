@@ -57,6 +57,8 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
         updatePaging();
     };
 
+    $scope.loadError = '';
+
     $scope.load = function () {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
@@ -76,10 +78,12 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
         })
             .then(function (res) {
                 $scope.alarmList = res.data;
+                $scope.loadError = '';
                 $scope.currentPage = 1;
                 updatePaging();
             })
             .catch(function () {
+                $scope.loadError = '목록을 불러오지 못했습니다. 서버 연결을 확인한 뒤 다시 시도해 주세요.';
                 $scope.alarmList = [];
                 $scope.currentPage = 1;
                 updatePaging();
