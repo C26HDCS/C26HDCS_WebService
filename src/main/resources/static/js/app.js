@@ -173,8 +173,139 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
         if ($scope.showNotifDropdown) $scope.$apply(function () { $scope.showNotifDropdown = false; });
     });
 
+    /* ── 알림 개수 실시간 수신 (SSE) ──
+       연결을 열어 두고, 서버가 알림 개수가 바뀔 때만 보내 준다.
+       인증 토큰이 요청 헤더로만 전달되므로(브라우저 기본 EventSource는 헤더를 못 붙임) fetch 로 스트림을 직접 읽는다. */
+    var STREAM_URL      = ctx + '/api/alarm/stream';
+    var RETRY_MIN_MS    = 3000;    // 재연결 최소 대기
+    var RETRY_MAX_MS    = 30000;   // 재연결 최대 대기 (인증 실패 시에도 이 간격으로만 다시 시도)
+    var IDLE_LIMIT_MS   = 60000;   // 서버는 20초마다 신호를 보낸다. 이 시간 동안 아무것도 안 오면 끊긴 것으로 보고 다시 연결
+    var FALLBACK_POLL_MS = 15000;  // 스트림을 못 쓰는 오래된 브라우저용 대체 조회 주기
+
+    var streamAbort   = null;
+    var reconnectTimer = null;
+    var idleTimer     = null;
+    var retryDelay    = RETRY_MIN_MS;
+    var streamClosed  = false;
+
+    function readToken() {
+        try { return window.localStorage.getItem('accessToken'); } catch (e) { return null; }
+    }
+
+    function supportsStream() {
+        return !!(window.fetch && window.AbortController && window.TextDecoder && window.ReadableStream);
+    }
+
+    function resetIdleTimer(controller) {
+        if (idleTimer) clearTimeout(idleTimer);
+        idleTimer = setTimeout(function () { controller.abort(); }, IDLE_LIMIT_MS);
+    }
+
+    function scheduleReconnect(delay) {
+        if (streamClosed) return;
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connectStream, delay);
+    }
+
+    // 서버가 보낸 이벤트 한 건 처리
+    function onStreamEvent(name, data) {
+        if (name !== 'unread') return;
+        var obj;
+        try { obj = JSON.parse(data); } catch (e) { return; }
+        if (typeof obj.count !== 'number') return;
+        $scope.$applyAsync(function () { $scope.unreadCount = obj.count; });
+    }
+
+    function connectStream() {
+        if (streamClosed) return;
+
+        var token = readToken();
+        if (!token) {                       // 로그인 전이면 천천히 다시 확인
+            scheduleReconnect(RETRY_MAX_MS);
+            return;
+        }
+
+        var controller = new AbortController();
+        streamAbort = controller;
+        resetIdleTimer(controller);
+
+        fetch(STREAM_URL, {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'text/event-stream' },
+            cache: 'no-store',
+            signal: controller.signal
+        })
+            .then(function (res) {
+                if (!res.ok || !res.body) {
+                    var err = new Error('stream ' + res.status);
+                    err.status = res.status;
+                    throw err;
+                }
+                var reader  = res.body.getReader();
+                var decoder = new TextDecoder('utf-8');
+                var buffer  = '';
+                var evName  = 'message';
+                var evData  = [];
+
+                function handleLine(line) {
+                    if (line === '') {                       // 빈 줄 = 이벤트 하나 끝
+                        if (evData.length) {
+                            retryDelay = RETRY_MIN_MS;       // 정상 수신 중이므로 재연결 대기 초기화
+                            onStreamEvent(evName, evData.join('\n'));
+                        }
+                        evName = 'message';
+                        evData = [];
+                    } else if (line.charAt(0) === ':') {
+                        // 주석(연결 유지 신호): 무시
+                    } else if (line.indexOf('event:') === 0) {
+                        evName = line.substring(6).replace(/^ /, '');
+                    } else if (line.indexOf('data:') === 0) {
+                        evData.push(line.substring(5).replace(/^ /, ''));
+                    }
+                }
+
+                function pump() {
+                    return reader.read().then(function (r) {
+                        if (r.done) return;
+                        resetIdleTimer(controller);
+                        buffer += decoder.decode(r.value, { stream: true });
+                        var lines = buffer.split(/\r?\n/);
+                        buffer = lines.pop();                // 아직 덜 도착한 마지막 줄은 보관
+                        lines.forEach(handleLine);
+                        return pump();
+                    });
+                }
+                return pump();
+            })
+            .then(function () {
+                // 서버가 정상적으로 연결을 닫음(최대 유지 시간 도달 등): 바로 다시 연결
+                scheduleReconnect(1000);
+            })
+            .catch(function (err) {
+                if (streamClosed) return;
+                if (err && (err.status === 401 || err.status === 403)) {
+                    // 토큰이 없거나 만료됨: 자주 재시도해도 소용없다.
+                    scheduleReconnect(RETRY_MAX_MS);
+                    return;
+                }
+                scheduleReconnect(retryDelay);
+                retryDelay = Math.min(retryDelay * 2, RETRY_MAX_MS);
+            });
+    }
+
+    function closeStream() {
+        streamClosed = true;
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        if (idleTimer) clearTimeout(idleTimer);
+        if (streamAbort) streamAbort.abort();
+    }
+
     $scope.loadUnreadCount();
-    $interval($scope.loadUnreadCount, 3000);
+    if (supportsStream()) {
+        connectStream();
+        $scope.$on('$destroy', closeStream);
+    } else {
+        $interval($scope.loadUnreadCount, FALLBACK_POLL_MS);   // 대체: 15초마다 조회
+    }
 
     /* ── 알람 상세 팝업 (헤더 알림 클릭 / 알람 관리 화면 행 클릭에서 공통으로 재사용) ── */
     $scope.showDetailModal = false;
