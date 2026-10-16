@@ -1,6 +1,7 @@
 package kr.kwater.hdcs.alarm.web;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,10 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import kr.kwater.hdcs.alarm.service.AlarmService;
+import kr.kwater.hdcs.alarm.service.AlarmStreamService;
 import kr.kwater.hdcs.alarm.vo.AlarmVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +26,7 @@ import java.util.Map;
 public class AlarmController {
 
     private final AlarmService alarmService;
+    private final AlarmStreamService alarmStreamService;
 
     private String currentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -40,11 +45,24 @@ public class AlarmController {
         return ResponseEntity.ok(Map.of("count", count));
     }
 
+    /**
+     * 헤더 알림 개수 실시간 구독(SSE). 연결을 열어 두면 알람이 바뀔 때만 개수를 보내 준다.
+     * 인증 토큰은 일반 API처럼 Authorization 헤더로 받는다. (화면은 fetch 로 연결)
+     */
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Accel-Buffering", "no"); // nginx 등 프록시가 응답을 모아서 보내지 않게 한다.
+        return alarmStreamService.subscribe(currentUserId());
+    }
+
     @PostMapping("/{id}/check")
     public ResponseEntity<?> check(@PathVariable("id") Long id) throws Exception {
         String userId = currentUserId();
         alarmService.checkAlarm(id, userId);
         int unreadCount = alarmService.getUnreadCount(userId);
+        // 같은 사용자의 다른 탭·PC 헤더 알림 개수도 바로 맞춘다.
+        alarmStreamService.publishUnreadCount(userId, unreadCount);
         return ResponseEntity.ok(Map.of("unreadCount", unreadCount));
     }
 }

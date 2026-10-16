@@ -58,6 +58,13 @@
         WHERE C.ALARM_ID IS NULL
     </select>
 
+    <!-- SSE 변경 감지용: 알람 추가·삭제, 확인 기록 변화가 있으면 값이 달라진다 -->
+    <select id="selectAlarmSignature" resultType="string">
+        SELECT CAST((SELECT COUNT(*) FROM TB_ALARM) AS VARCHAR) || ':' ||
+               CAST((SELECT COALESCE(MAX(ALARM_ID), 0) FROM TB_ALARM) AS VARCHAR) || ':' ||
+               CAST((SELECT COUNT(*) FROM TB_ALARM_CHECK) AS VARCHAR)
+    </select>
+
     <insert id="insertAlarmCheck">
         INSERT INTO TB_ALARM_CHECK (ALARM_ID, USER_ID, CHECKED_AT)
         VALUES (#{alarmId}, #{userId}, CURRENT_TIMESTAMP)
