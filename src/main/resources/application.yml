@@ -87,6 +87,33 @@ jwt:
   # 토큰 암호화 및 검증에 사용할 비밀키 (32바이트 이상의 임의의 긴 문자열)
   secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXNlY3JldC1rZXktZm9yLWt3YXRlci1kY2RzLWV4dGVybmFsLXNlcnZpY2U=
 
+# 리포트 관리 설정
+report:
+  # 생성된 리포트 파일 저장 기준 디렉터리 (DB에는 이 경로 기준 상대경로만 저장)
+  # 환경별로 REPORT_STORAGE_PATH 환경변수로 변경 가능
+  storage-path: ${REPORT_STORAGE_PATH:./upload/reports}
+  # 조회 가능한 최대 기간 (시작일~종료일 포함)
+  max-period-days: 31
+  # 데이터 유형별 상세 목록 최대 건수 (초과 시 최신순으로 잘라서 표시)
+  max-detail-rows: 1000
+  # PDF 다운로드용 변환 프로그램(LibreOffice) 실행 파일 경로 (서버에 맞게 LIBREOFFICE_PATH 환경변수로 변경 가능)
+  soffice-path: ${LIBREOFFICE_PATH:C:/Program Files/LibreOffice/program/soffice.exe}
+  # PDF 변환 제한 시간(초)
+  pdf-timeout-seconds: 120
+  # 리포트 자동 생성
+  auto:
+    # 자동 생성 사용 여부. 여러 PC가 같은 DB를 쓰는 개발 환경에서는 PC마다 리포트 파일이 따로 저장되므로
+    # 켜기 전에 확인한다. (환경변수 REPORT_AUTO_ENABLED 로 덮어쓸 수 있다)
+    enabled: ${REPORT_AUTO_ENABLED:true}
+    # 서버 시작 때 지난주 리포트가 없으면 바로 만들지 여부
+    catch-up-on-startup: false
+    # 실행 시각: 초 분 시 일 월 요일 (매주 월요일 00:00)
+    cron: "0 0 0 * * MON"
+    # 실행 시각과 '지난주' 계산에 쓰는 시간대
+    zone: Asia/Seoul
+    # 자동 생성할 데이터 유형 (유형마다 리포트를 따로 만든다)
+    data-types: [LOG, DATA]
+
 ---
 # 운영 환경 프로파일
 spring:

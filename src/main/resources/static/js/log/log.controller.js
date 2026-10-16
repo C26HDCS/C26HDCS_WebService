@@ -52,6 +52,8 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
         updatePaging();
     };
 
+    $scope.loadError = '';
+
     $scope.load = function () {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
@@ -71,10 +73,12 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
         })
             .then(function (res) {
                 $scope.logList = res.data;
+                $scope.loadError = '';
                 $scope.currentPage = 1;
                 updatePaging();
             })
             .catch(function () {
+                $scope.loadError = '목록을 불러오지 못했습니다. 서버 연결을 확인한 뒤 다시 시도해 주세요.';
                 $scope.logList = [];
                 $scope.currentPage = 1;
                 updatePaging();
@@ -101,6 +105,12 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'LOGOUT':        'log-badge-debug'
         };
         return map[level] || 'log-badge-debug';
+    };
+
+    // 유형 배지 글자: 이벤트 유형의 결과 접미사(_SUCCESS/_FAIL)는 색(초록/빨강)으로 구분되므로 글자에서는 뺀다.
+    // 예) LOGIN_SUCCESS → LOGIN(초록), LOGIN_FAIL → LOGIN(빨강)
+    $scope.getLevelLabel = function (level) {
+        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '') : level;
     };
 
     $scope.getTarget = function (item) {

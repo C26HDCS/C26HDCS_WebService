@@ -34,9 +34,11 @@
         <div class="report-gen-group">
             <span class="report-gen-label">기간 선택</span>
             <div class="date-range">
-                <input type="date" class="report-date-input" ng-model="gen.dateFrom">
+                <input type="date" class="report-date-input" ng-model="gen.dateFrom"
+                       ng-attr-min="{{genFromMin()}}" ng-attr-max="{{genFromMax()}}">
                 <span class="date-sep">~</span>
-                <input type="date" class="report-date-input" ng-model="gen.dateTo">
+                <input type="date" class="report-date-input" ng-model="gen.dateTo"
+                       ng-attr-min="{{genToMin()}}" ng-attr-max="{{genToMax()}}">
             </div>
         </div>
 
@@ -45,6 +47,9 @@
         <div class="report-gen-group">
             <span class="report-gen-label">데이터 유형</span>
             <div class="report-check-group">
+                <label class="report-check-item">
+                    <input type="checkbox" class="report-chk" ng-checked="isAllTypes()" ng-click="toggleAllTypes()"> 전체
+                </label>
                 <label class="report-check-item">
                     <input type="checkbox" ng-model="gen.typeLog" class="report-chk"> 로그
                 </label>
@@ -60,36 +65,9 @@
             </div>
         </div>
 
-        <div class="report-gen-divider"></div>
-
-        <div class="report-gen-group">
-            <span class="report-gen-label">파일 형식</span>
-            <div class="report-check-group">
-                <label class="report-check-item">
-                    <input type="radio" name="genFormat" value="PDF" ng-model="gen.format" class="report-chk"> PDF
-                </label>
-                <label class="report-check-item">
-                    <input type="radio" name="genFormat" value="WORD" ng-model="gen.format" class="report-chk"> Word
-                </label>
-            </div>
-        </div>
-
-        <div class="report-gen-divider"></div>
-
-        <div class="report-gen-group">
-            <span class="report-gen-label">생성 방식</span>
-            <div class="report-check-group">
-                <label class="report-check-item">
-                    <input type="radio" name="genMethod" value="MANUAL" ng-model="gen.method" class="report-chk"> 수동
-                </label>
-                <label class="report-check-item">
-                    <input type="radio" name="genMethod" value="AUTO" ng-model="gen.method" class="report-chk"> 자동
-                </label>
-            </div>
-        </div>
 
         <div class="report-gen-actions">
-            <button class="btn-report-reset" ng-click="resetGen()">
+            <button class="btn-report-reset" ng-click="resetGen()" ng-disabled="generating">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2.5"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -98,7 +76,7 @@
                 </svg>
                 초기화
             </button>
-            <button class="btn-report-generate" ng-click="generateReport()">
+            <button class="btn-report-generate" ng-click="generateReport()" ng-disabled="generating">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2.5"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -107,20 +85,41 @@
                     <line x1="12" y1="18" x2="12" y2="12"/>
                     <line x1="9" y1="15" x2="15" y2="15"/>
                 </svg>
-                리포트 생성
+                {{generating ? '생성 중...' : '리포트 생성'}}
             </button>
         </div>
 
     </div>
+
+    <div class="report-gen-footer">
+        기간은 최대 {{maxPeriodDays}}일까지 선택할 수 있습니다.
+        <span class="report-gen-footer-days" ng-if="genDays() > 0">(선택 기간 {{genDays()}}일)</span>
+    </div>
 </div>
 
 <!-- ── 검색 영역 ── -->
-<div class="user-search-panel">
+<div class="user-search-panel report-search-panel">
     <div class="user-search-fields">
 
         <div class="user-search-field">
             <label>리포트 ID</label>
-            <input type="text" ng-model="searchKeyword" placeholder="리포트 ID 입력">
+            <input type="text" ng-model="searchReportNo" placeholder="예: RPT-001" ng-keyup="$event.keyCode === 13 && load()">
+        </div>
+
+        <div class="user-search-field">
+            <label>리포트명</label>
+            <input type="text" ng-model="searchKeyword" placeholder="리포트명 입력" ng-keyup="$event.keyCode === 13 && load()">
+        </div>
+
+        <div class="user-search-field">
+            <label>데이터 유형</label>
+            <select ng-model="searchDataType">
+                <option value="">전체</option>
+                <option value="LOG">로그</option>
+                <option value="EVENT">이벤트</option>
+                <option value="ALARM">알람</option>
+                <option value="DATA">수신데이터</option>
+            </select>
         </div>
 
         <div class="user-search-field">
@@ -133,17 +132,8 @@
         </div>
 
         <div class="user-search-field">
-            <label>파일형식</label>
-            <select ng-model="searchFormat">
-                <option value="">전체</option>
-                <option value="PDF">PDF</option>
-                <option value="WORD">Word</option>
-            </select>
-        </div>
-
-        <div class="user-search-field">
             <label>생성방식</label>
-            <select ng-model="searchMethod">
+            <select ng-model="searchGenerateType">
                 <option value="">전체</option>
                 <option value="AUTO">자동</option>
                 <option value="MANUAL">수동</option>
@@ -169,50 +159,234 @@
         <span class="user-count-label">총 <strong>{{reportList.length}}</strong>건</span>
     </div>
 
-    <table class="data-table">
+    <!-- 화면이 좁아지면 표를 줄이지 않고 가로로 스크롤한다 -->
+    <div class="report-table-scroll">
+    <table class="data-table report-table">
+        <colgroup>
+            <col style="width:6%;">
+            <col style="width:10%;">
+            <col style="width:21%;">
+            <col style="width:20%;">
+            <col style="width:9%;">
+            <col style="width:15%;">
+            <col style="width:19%;">
+        </colgroup>
         <thead>
             <tr>
-                <th style="width:56px;">번호</th>
-                <th style="width:110px;">리포트 ID</th>
+                <th>번호</th>
+                <th>리포트 ID</th>
                 <th>리포트명</th>
-                <th style="width:130px;">조회기간</th>
-                <th style="width:150px;">생성일시</th>
-                <th style="width:80px;">파일형식</th>
-                <th style="width:90px;">생성방식</th>
-                <th style="width:100px;">다운로드</th>
+                <th>조회기간</th>
+                <th>생성방식</th>
+                <th>생성일시</th>
+                <th>다운로드</th>
             </tr>
         </thead>
         <tbody>
-            <tr ng-if="reportList.length === 0">
-                <td colspan="8" class="no-data">데이터가 없습니다.</td>
+            <tr ng-if="loadError">
+                <td colspan="7" class="no-data">{{loadError}}</td>
             </tr>
-            <tr ng-repeat="item in reportList">
-                <td>{{$index + 1}}</td>
-                <td>{{item.reportId}}</td>
-                <td style="text-align:left;">{{item.reportName}}</td>
-                <td>{{item.period}}</td>
-                <td>{{item.createdAt}}</td>
-                <td>{{item.format}}</td>
+            <tr ng-if="!loadError && reportList.length === 0">
+                <td colspan="7" class="no-data">데이터가 없습니다.</td>
+            </tr>
+            <tr ng-repeat="item in pagedList"
+                class="log-row-clickable"
+                ng-class="{'report-row-new': item.reportId === highlightId}"
+                ng-click="openDetailModal(item)">
+                <td>{{(currentPage - 1) * pageSize + $index + 1}}</td>
+                <td>{{item.reportNo}}</td>
+                <td class="report-name-cell" title="{{item.reportName}}">{{item.reportName}}</td>
+                <td>{{item.periodFrom}} ~ {{item.periodTo}}</td>
                 <td>
                     <span class="status-badge"
-                          ng-class="item.method === 'AUTO' ? 'status-done' : 'status-wait'">
-                        {{item.method === 'AUTO' ? '자동' : '수동'}}
+                          ng-class="item.generateType === 'AUTO' ? 'status-done' : 'status-wait'">
+                        {{item.generateType === 'AUTO' ? '자동' : '수동'}}
                     </span>
                 </td>
-                <td>
-                    <button class="btn-report-download">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11"
+                <td>{{item.regDt.substring(0, 16)}}</td>
+                <td ng-click="$event.stopPropagation()">
+                    <button class="btn-report-download btn-dl-word" ng-class="{'is-busy': item.dl.wordSlow}"
+                            ng-click="downloadFile(item, 'word')" ng-disabled="item.dl.word || item.fileExists === false" title="{{item.fileExists === false ? '서버에 파일이 없습니다' : 'Word 다운로드'}}">
+                        <span class="dl-spinner" ng-show="item.dl.wordSlow"></span>
+                        <svg ng-hide="item.dl.wordSlow" xmlns="http://www.w3.org/2000/svg" width="11" height="11"
                              viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
-                        다운로드
+                        Word
+                    </button>
+                    <button class="btn-report-download btn-dl-pdf" ng-class="{'is-busy': item.dl.pdfSlow}"
+                            ng-click="downloadFile(item, 'pdf')" ng-disabled="item.dl.pdf || item.fileExists === false" title="{{item.fileExists === false ? '서버에 파일이 없습니다' : 'PDF 다운로드'}}">
+                        <span class="dl-spinner" ng-show="item.dl.pdfSlow"></span>
+                        <svg ng-hide="item.dl.pdfSlow" xmlns="http://www.w3.org/2000/svg" width="11" height="11"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        PDF
                     </button>
                 </td>
             </tr>
         </tbody>
     </table>
+    </div>
 
+    <!-- ── 페이지네이션 ── -->
+    <div class="log-pagination report-pagination">
+
+        <!-- 첫 페이지 / 이전 -->
+        <button class="page-btn page-btn-arrow"
+                ng-disabled="currentPage === 1"
+                ng-click="goToPage(1)" title="첫 페이지">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/>
+            </svg>
+        </button>
+        <button class="page-btn page-btn-arrow"
+                ng-disabled="currentPage === 1"
+                ng-click="goToPage(currentPage - 1)" title="이전 페이지">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </button>
+
+        <!-- 페이지 번호 -->
+        <button class="page-btn page-btn-num"
+                ng-repeat="n in pageNums track by n"
+                ng-class="{'page-btn-active': n === currentPage}"
+                ng-click="goToPage(n)">{{n}}</button>
+
+        <!-- 다음 / 마지막 페이지 -->
+        <button class="page-btn page-btn-arrow"
+                ng-disabled="currentPage === totalPages"
+                ng-click="goToPage(currentPage + 1)" title="다음 페이지">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+        <button class="page-btn page-btn-arrow"
+                ng-disabled="currentPage === totalPages"
+                ng-click="goToPage(totalPages)" title="마지막 페이지">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/>
+            </svg>
+        </button>
+
+        <span class="page-info">{{currentPage}} / {{totalPages}}</span>
+
+    </div>
+
+</div>
+
+<!-- ── 리포트 상세 정보 모달 ── -->
+<div class="log-modal-overlay" ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
+
+<div class="log-modal log-detail-modal report-detail-modal" ng-show="showDetailModal">
+    <div class="log-modal-header">
+        <span class="log-modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            리포트 상세 정보
+        </span>
+        <button class="log-modal-close" ng-click="closeDetailModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="log-detail-body">
+        <div class="log-detail-rows">
+            <div class="log-detail-row">
+                <span class="log-detail-label">리포트 ID</span>
+                <span class="log-detail-value">{{detailReport.reportNo}}</span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">리포트명</span>
+                <span class="log-detail-value">{{detailReport.reportName}}</span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">조회기간</span>
+                <span class="log-detail-value">{{detailReport.periodFrom}} ~ {{detailReport.periodTo}}</span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">데이터 유형</span>
+                <span class="log-detail-value">
+                    <span class="report-type-tag" ng-repeat="label in getDataTypeLabels(detailReport.dataTypes)">{{label}}</span>
+                    <span ng-if="!detailReport.dataTypes">-</span>
+                </span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">생성자</span>
+                <span class="log-detail-value">{{detailReport.userName || detailReport.userId || '-'}}</span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">생성일시</span>
+                <span class="log-detail-value">{{formatRegDt(detailReport.regDt)}}</span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">생성방식</span>
+                <span class="log-detail-value">
+                    <span class="status-badge"
+                          ng-class="detailReport.generateType === 'AUTO' ? 'status-done' : 'status-wait'">
+                        {{detailReport.generateType === 'AUTO' ? '자동' : '수동'}}
+                    </span>
+                </span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">파일명</span>
+                <span class="log-detail-value">{{detailReport.fileName}}</span>
+            </div>
+            <div class="log-detail-row">
+                <span class="log-detail-label">파일 크기</span>
+                <span class="log-detail-value">{{formatFileSize(detailReport.fileSize)}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="log-modal-footer">
+        <button class="btn-report-download btn-dl-word btn-modal-download" ng-class="{'is-busy': detailReport.dl.wordSlow}"
+                ng-click="downloadFile(detailReport, 'word')" ng-disabled="detailReport.dl.word || detailReport.fileExists === false">
+            <span class="dl-spinner" ng-show="detailReport.dl.wordSlow"></span>
+            <svg ng-hide="detailReport.dl.wordSlow" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Word 다운로드
+        </button>
+        <button class="btn-report-download btn-dl-pdf btn-modal-download" ng-class="{'is-busy': detailReport.dl.pdfSlow}"
+                ng-click="downloadFile(detailReport, 'pdf')" ng-disabled="detailReport.dl.pdf || detailReport.fileExists === false">
+            <span class="dl-spinner" ng-show="detailReport.dl.pdfSlow"></span>
+            <svg ng-hide="detailReport.dl.pdfSlow" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF 다운로드
+        </button>
+        <button class="btn-modal-cancel" ng-click="closeDetailModal()">닫기</button>
+    </div>
 </div>

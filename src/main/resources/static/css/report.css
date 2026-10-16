@@ -85,6 +85,18 @@
     box-shadow: 0 0 0 3px rgba(58,123,213,0.14);
 }
 
+/* 패널 하단 안내 문구: 회색 보조 텍스트, 선택 기간만 조금 밝게 */
+.report-gen-footer {
+    padding: 9px 20px;
+    font-size: 11.5px;
+    color: #7f93aa;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.report-gen-footer-days {
+    margin-left: 4px;
+    color: #b6c4d6;
+}
+
 /* 체크박스/라디오 그룹 */
 .report-check-group {
     display: flex;
@@ -195,6 +207,18 @@
     color: #fff;
 }
 
+.btn-report-download:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba(46,204,113,0.1);
+    color: #2ecc71;
+}
+.btn-report-generate:disabled,
+.btn-report-reset:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* ── 테이블 스타일 오버라이드 ── */
 .user-table-panel .data-table thead th {
     background: #19273c;
@@ -213,3 +237,251 @@
     min-width: 50px !important;
     text-align: center;
 }
+
+/* ── 리포트 목록 테이블: 컬럼 너비 고정, 한 줄 표시 ── */
+.report-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.user-table-panel .report-table {
+    width: 100%;
+    min-width: 1000px;   /* 이보다 좁아지면 열이 겹치지 않도록 가로 스크롤로 넘긴다 */
+    table-layout: fixed;
+}
+.user-table-panel .report-table thead th,
+.user-table-panel .report-table tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+/* 다운로드 버튼 칸은 버튼이 잘리지 않게 한다 */
+.user-table-panel .report-table td:last-child {
+    overflow: visible;
+}
+.user-table-panel .report-table td.report-name-cell {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── 다운로드 버튼 색상: Word(파랑) / PDF(빨강) ── */
+.btn-report-download.btn-dl-word,
+.btn-report-download.btn-dl-word:disabled {
+    background: rgba(43,124,211,0.12);
+    color: #5aa2ee;
+    border-color: rgba(43,124,211,0.35);
+}
+.btn-report-download.btn-dl-word:hover:not(:disabled) {
+    background: rgba(43,124,211,0.28);
+    color: #fff;
+}
+.btn-report-download.btn-dl-pdf,
+.btn-report-download.btn-dl-pdf:disabled {
+    background: rgba(231,76,60,0.12);
+    color: #ff7a6b;
+    border-color: rgba(231,76,60,0.35);
+}
+.btn-report-download.btn-dl-pdf:hover:not(:disabled) {
+    background: rgba(231,76,60,0.28);
+    color: #fff;
+}
+
+/* ── 다운로드 중 표시: 아이콘 자리에 같은 크기의 스피너를 보여줘서 버튼 크기가 변하지 않는다 ── */
+.btn-report-download.is-busy:disabled {
+    opacity: 0.85;
+    cursor: progress;
+}
+.dl-spinner {
+    width: 11px;
+    height: 11px;
+    flex: none;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    box-sizing: border-box;
+    animation: report-dl-spin 0.8s linear infinite;
+}
+@keyframes report-dl-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── 상세 모달: 모든 행의 높이/라벨 간격 통일 ── */
+.report-detail-modal .log-detail-row {
+    align-items: center;
+    min-height: 42px;
+    padding: 6px 0;
+    box-sizing: border-box;
+}
+.report-detail-modal .log-detail-label {
+    width: 96px;
+    padding-top: 0;
+}
+.report-detail-modal .log-detail-value {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.4;
+}
+
+/* ── 상세 모달: 데이터 유형 태그 (모서리가 각진 태그) ── */
+.report-type-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #b794f6;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(167,139,250,0.4);
+}
+
+/* ── 상세 모달 하단 다운로드 버튼: 닫기 버튼과 같은 높이로 맞춘다 ── */
+.btn-report-download.btn-modal-download {
+    height: 36px;
+    padding: 0 18px;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 7px;
+}
+
+/* ── 방금 생성된 리포트 행 강조: 파란 배경이 잠시 유지되다가 서서히 사라진다 ── */
+.report-table tbody tr.report-row-new {
+    animation: report-row-new 3.5s ease-out;
+}
+@keyframes report-row-new {
+    0%, 55% { background: rgba(43,124,211,0.32); box-shadow: inset 3px 0 0 #5aa2ee; }
+    100%    { background: transparent;           box-shadow: inset 3px 0 0 transparent; }
+}
+
+/* ============================================================
+   반응형 (태블릿 / 모바일)
+   ============================================================ */
+
+/* ── 태블릿 이하: 생성 패널 줄바꿈 정리 ── */
+@media (max-width: 900px) {
+    .report-gen-body {
+        gap: 14px 0;
+    }
+    .report-gen-group,
+    .report-gen-group:first-child {
+        padding: 0;
+        width: 100%;
+    }
+    .report-gen-divider {
+        display: none;
+    }
+    .report-check-group {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 34px;
+        row-gap: 8px;
+    }
+    .report-gen-actions {
+        margin-left: 0;
+        padding-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* ── 모바일: 입력칸을 한 줄에 하나씩, 가로 폭에 맞춤 ── */
+@media (max-width: 640px) {
+    .report-gen-panel .date-range {
+        flex-wrap: wrap;
+    }
+    .report-date-input {
+        flex: 1 1 130px;
+        min-width: 0;
+        width: auto;
+    }
+    .report-gen-actions .btn-report-generate,
+    .report-gen-actions .btn-report-reset {
+        flex: 1 1 0;
+        justify-content: center;
+    }
+
+    .report-search-panel {
+        padding: 12px 16px;
+    }
+    .report-search-panel .user-search-fields {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        width: 100%;
+    }
+    .report-search-panel .user-search-field {
+        width: 100%;
+    }
+    .report-search-panel .user-search-field input[type="text"],
+    .report-search-panel .user-search-field select {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .report-search-panel .date-range {
+        width: 100%;
+    }
+    .report-search-panel .date-range input[type="date"] {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+        box-sizing: border-box;
+    }
+    .report-search-panel .btn-search-user {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .report-pagination {
+        flex-wrap: wrap;
+    }
+    .report-pagination .page-info {
+        width: 100%;
+        margin: 4px 0 0;
+        text-align: center;
+    }
+
+    /* 상세 모달: 화면 폭을 넘지 않게, 버튼은 줄바꿈 */
+    .report-detail-modal {
+        width: calc(100vw - 32px);
+        max-width: 440px;
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+    }
+    .report-detail-modal .log-modal-footer {
+        flex-wrap: wrap;
+    }
+    .report-detail-modal .btn-modal-download,
+    .report-detail-modal .btn-modal-cancel {
+        flex: 1 1 calc(50% - 10px);
+        justify-content: center;
+    }
+    .report-detail-modal .btn-modal-cancel {
+        flex-basis: 100%;
+    }
+}
+
+/* 긴 파일명/리포트명이 모달 밖으로 나가지 않게 */
+.report-detail-modal .log-detail-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+
+/* 파일 없음 표시 */
+.file-missing-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #fdecea;
+    color: #c0392b;
+    font-size: 11px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+.btn-report-download:disabled { opacity: .45; cursor: not-allowed; }

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.kwater.hdcs.report.dao.ReportDAO">
+
+    <!-- 리포트 목록 조회 -->
+    <select id="selectReportList" parameterType="kr.kwater.hdcs.report.vo.ReportVO"
+            resultType="kr.kwater.hdcs.report.vo.ReportVO">
+        SELECT R.REPORT_ID,
+               R.USER_ID,
+               R.REPORT_NAME,
+               R.GENERATE_TYPE,
+               TO_CHAR(R.PERIOD_FROM, 'YYYY-MM-DD')          AS PERIOD_FROM,
+               TO_CHAR(R.PERIOD_TO,   'YYYY-MM-DD')          AS PERIOD_TO,
+               R.DATA_TYPES,
+               R.FILE_NAME,
+               R.FILE_PATH,
+               R.FILE_SIZE,
+               TO_CHAR(R.REG_DT, 'YYYY-MM-DD HH24:MI:SS')    AS REG_DT
+        FROM TB_REPORT R
+        <where>
+            <!-- 리포트 ID 부분 일치: 화면에 보이는 RPT-001 형태 문자열(대소문자 무시)에서 검색. 1000번 이상은 RPT-1000 -->
+            <if test="searchReportNo != null and searchReportNo != ''">
+                AND UPPER('RPT-' || CASE WHEN R.REPORT_ID &lt; 100 THEN LPAD(CAST(R.REPORT_ID AS VARCHAR), 3, '0')
+                                         ELSE CAST(R.REPORT_ID AS VARCHAR) END)
+                    LIKE '%' || UPPER(#{searchReportNo}) || '%' ESCAPE '\'
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND R.REPORT_NAME LIKE '%' || #{searchKeyword} || '%'
+            </if>
+            <if test="searchGenerateType != null and searchGenerateType != ''">
+                AND R.GENERATE_TYPE = #{searchGenerateType}
+            </if>
+            <!-- 데이터 유형: DATA_TYPES 는 'LOG,EVENT' 처럼 쉼표로 이어진 값이라 앞뒤에 쉼표를 붙여 정확히 일치하는 유형만 찾는다 -->
+            <if test="searchDataType != null and searchDataType != ''">
+                AND (',' || R.DATA_TYPES || ',') LIKE '%,' || #{searchDataType} || ',%'
+            </if>
+            <if test="searchDateFrom != null and searchDateFrom != ''">
+                AND R.REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
+            </if>
+            <if test="searchDateTo != null and searchDateTo != ''">
+                AND R.REG_DT &lt; CAST(#{searchDateTo} AS TIMESTAMP) + INTERVAL '1 day'
+            </if>
+        </where>
+        ORDER BY R.REG_DT DESC, R.REPORT_ID DESC
+    </select>
+
+    <!-- 다음 리포트 ID 발급 (시퀀스 nextval). 컬럼명 대소문자와 무관하게 시퀀스를 찾는다 -->
+    <select id="selectNextReportId" resultType="long">
+        SELECT nextval(pg_get_serial_sequence('tb_report', 'report_id'))
+    </select>
+
+    <!-- 리포트 이력 등록 (REPORT_ID 는 selectNextReportId 로 미리 발급한 값) -->
+    <insert id="insertReport" parameterType="kr.kwater.hdcs.report.vo.ReportVO">
+        INSERT INTO TB_REPORT (
+            REPORT_ID, USER_ID, REPORT_NAME, GENERATE_TYPE, PERIOD_FROM, PERIOD_TO,
+            DATA_TYPES, FILE_NAME, FILE_PATH, FILE_SIZE
+        ) VALUES (
+            #{reportId}, #{userId,jdbcType=VARCHAR}, #{reportName}, #{generateType},
+            CAST(#{periodFrom} AS DATE), CAST(#{periodTo} AS DATE),
+            #{dataTypes}, #{fileName}, #{filePath}, #{fileSize}
+        )
+    </insert>
+
+    <!-- 리포트 단건 조회 -->
+    <select id="selectReportById" resultType="kr.kwater.hdcs.report.vo.ReportVO">
+        SELECT R.REPORT_ID,
+               R.USER_ID,
+               R.REPORT_NAME,
+               R.GENERATE_TYPE,
+               TO_CHAR(R.PERIOD_FROM, 'YYYY-MM-DD')          AS PERIOD_FROM,
+               TO_CHAR(R.PERIOD_TO,   'YYYY-MM-DD')          AS PERIOD_TO,
+               R.DATA_TYPES,
+               R.FILE_NAME,
+               R.FILE_PATH,
+               R.FILE_SIZE,
+               TO_CHAR(R.REG_DT, 'YYYY-MM-DD HH24:MI:SS')    AS REG_DT
+        FROM TB_REPORT R
+        WHERE R.REPORT_ID = #{reportId}
+    </select>
+
+    <!-- 리포트 파일 다운로드 정보 조회 (파일명, 저장 경로) -->
+    <select id="selectReportFileInfo" resultType="kr.kwater.hdcs.report.vo.ReportVO">
+        SELECT R.REPORT_ID,
+               R.FILE_NAME,
+               R.FILE_PATH
+        FROM TB_REPORT R
+        WHERE R.REPORT_ID = #{reportId}
+    </select>
+
+    <!-- 같은 기간·같은 데이터 유형으로 자동 생성된 리포트 개수 (자동 생성 중복 방지) -->
+    <select id="countAutoReport" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_REPORT R
+        WHERE R.GENERATE_TYPE = 'AUTO'
+          AND R.DATA_TYPES    = #{dataTypes}
+          AND R.PERIOD_FROM   = CAST(#{periodFrom} AS DATE)
+          AND R.PERIOD_TO     = CAST(#{periodTo} AS DATE)
+    </select>
+
+</mapper>
