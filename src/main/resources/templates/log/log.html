@@ -93,11 +93,7 @@
                 class="log-row-clickable"
                 ng-click="openDetailModal(item)">
                 <td>{{(currentPage - 1) * pageSize + $index + 1}}</td>
-                <td>
-                    <span class="status-badge" ng-class="getCategoryClass(item.category)">
-                        {{getCategoryLabel(item.category)}}
-                    </span>
-                </td>
+                <td>{{getCategoryLabel(item.category)}}</td>
                 <td>
                     <span class="status-badge" ng-class="getLevelClass(item.level)">{{getLevelLabel(item.level)}}</span>
                 </td>
@@ -202,11 +198,7 @@
         <div class="log-detail-rows">
             <div class="log-detail-row">
                 <span class="log-detail-label">구분</span>
-                <span class="log-detail-value">
-                    <span class="status-badge" ng-class="getCategoryClass(detailLog.category)">
-                        {{getCategoryLabel(detailLog.category)}}
-                    </span>
-                </span>
+                <span class="log-detail-value">{{getCategoryLabel(detailLog.category)}}</span>
             </div>
             <div class="log-detail-row">
                 <span class="log-detail-label">유형</span>
