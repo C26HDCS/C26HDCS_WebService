@@ -149,6 +149,7 @@ public class AlarmStreamServiceImpl implements AlarmStreamService {
         }
     }
 
+    @SuppressWarnings("null")
     private void send(String userId, SseEmitter emitter, String event, String data) {
         try {
             // 여러 스레드(감시자, 요청 처리)가 같은 연결에 동시에 쓰지 않도록 한다.
