@@ -4,6 +4,7 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.logList        = [];
     $scope.filterCategory = '';   // '' (전체) / 'LOG' / 'EVENT'
+    $scope.filterLevel    = null; // null (전체) / 로그 레벨 / 이벤트 유형  ※ ''가 아니라 null 이어야 select 의 '전체' 항목이 선택돼 보인다.
     $scope.searchKeyword  = '';
     $scope.searchDateFrom = '';
     $scope.searchDateTo   = '';
@@ -54,6 +55,33 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.loadError = '';
 
+    // 구분을 바꾸면, 선택돼 있던 유형이 그 구분에 없는 값일 때 '전체'로 되돌린다.
+    var LOG_OPTIONS = [
+        { value: 'INFO',  label: 'INFO',  group: '로그' },
+        { value: 'WARN',  label: 'WARN',  group: '로그' },
+        { value: 'ERROR', label: 'ERROR', group: '로그' },
+        { value: 'DEBUG', label: 'DEBUG', group: '로그' }
+    ];
+    var EVENT_OPTIONS = [
+        { value: 'LOGIN_SUCCESS', label: '로그인 성공', group: '이벤트' },
+        { value: 'LOGIN_FAIL',    label: '로그인 실패', group: '이벤트' },
+        { value: 'LOGOUT',        label: '로그아웃',    group: '이벤트' }
+    ];
+
+    // 유형 선택 목록: 구분이 '로그'면 로그 레벨만, '이벤트'면 이벤트 유형만, '전체'면 둘 다 보여 준다.
+    function refreshLevelOptions() {
+        var opts = [];
+        if ($scope.filterCategory !== 'EVENT') opts = opts.concat(LOG_OPTIONS);
+        if ($scope.filterCategory !== 'LOG')   opts = opts.concat(EVENT_OPTIONS);
+        $scope.levelOptions = opts;
+        // 선택돼 있던 유형이 새 목록에 없으면 '전체'로 되돌린다.
+        var stillThere = opts.some(function (o) { return o.value === $scope.filterLevel; });
+        if (!stillThere) $scope.filterLevel = null;
+    }
+
+    $scope.onCategoryChange = refreshLevelOptions;
+    refreshLevelOptions();
+
     $scope.load = function () {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
@@ -66,6 +94,7 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
         $http.get(ctx + '/api/log/list', {
             params: {
                 searchCondition: $scope.filterCategory,
+                searchLevel:     $scope.filterLevel,
                 searchKeyword:   $scope.searchKeyword,
                 searchDateFrom:  fromStr,
                 searchDateTo:    toStr

@@ -43,6 +43,9 @@
             <if test="searchCondition != null and searchCondition != ''">
                 AND CATEGORY = #{searchCondition}
             </if>
+            <if test="searchLevel != null and searchLevel != ''">
+                AND LEVEL = #{searchLevel}
+            </if>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND MESSAGE LIKE '%' || #{searchKeyword} || '%'
             </if>
@@ -65,6 +68,9 @@
         <where>
             <if test="searchCondition != null and searchCondition != ''">
                 AND CATEGORY = #{searchCondition}
+            </if>
+            <if test="searchLevel != null and searchLevel != ''">
+                AND LEVEL = #{searchLevel}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND MESSAGE LIKE '%' || #{searchKeyword} || '%'

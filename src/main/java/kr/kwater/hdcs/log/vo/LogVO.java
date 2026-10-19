@@ -28,6 +28,8 @@ public class LogVO extends BaseVO {
     private String message;
     private String regDt;
 
+    /** 검색: 유형. 로그면 레벨(INFO/WARN/ERROR/DEBUG), 이벤트면 이벤트 유형(LOGIN_SUCCESS 등) */
+    private String searchLevel;
     private String searchDateFrom;
     private String searchDateTo;
 }

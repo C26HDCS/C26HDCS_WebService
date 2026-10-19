@@ -20,11 +20,25 @@
 
         <div class="log-search-field">
             <label>구분</label>
-            <select ng-model="filterCategory">
+            <select ng-model="filterCategory" ng-change="onCategoryChange()">
                 <option value="">전체</option>
                 <option value="LOG">로그</option>
                 <option value="EVENT">이벤트</option>
             </select>
+        </div>
+
+        <div class="log-search-field">
+            <label>유형</label>
+            <select ng-model="filterLevel"
+                    ng-options="o.value as o.label group by o.group for o in levelOptions">
+                <option value="">전체</option>
+            </select>
+        </div>
+
+        <div class="log-search-field">
+            <label>이력내용</label>
+            <input type="text" ng-model="searchKeyword" placeholder="이력 내용 입력"
+                   ng-keydown="$event.which === 13 && load()">
         </div>
 
         <div class="log-search-field">
@@ -34,12 +48,6 @@
                 <span class="log-date-sep">~</span>
                 <input type="date" ng-model="searchDateTo">
             </div>
-        </div>
-
-        <div class="log-search-field">
-            <label>이력내용</label>
-            <input type="text" ng-model="searchKeyword" placeholder="이력 내용 입력"
-                   ng-keydown="$event.which === 13 && load()">
         </div>
 
     </div>
