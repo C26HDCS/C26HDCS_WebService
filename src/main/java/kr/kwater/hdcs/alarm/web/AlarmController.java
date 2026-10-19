@@ -65,4 +65,15 @@ public class AlarmController {
         alarmStreamService.publishUnreadCount(userId, unreadCount);
         return ResponseEntity.ok(Map.of("unreadCount", unreadCount));
     }
+
+    /** 이 사용자의 안 읽은 알람을 모두 확인 처리 */
+    @PostMapping("/check-all")
+    public ResponseEntity<?> checkAll() throws Exception {
+        String userId = currentUserId();
+        int checked = alarmService.checkAllAlarms(userId);
+        int unreadCount = alarmService.getUnreadCount(userId);
+        // 같은 사용자의 다른 탭·PC 헤더 알림 개수도 바로 맞춘다.
+        alarmStreamService.publishUnreadCount(userId, unreadCount);
+        return ResponseEntity.ok(Map.of("checked", checked, "unreadCount", unreadCount));
+    }
 }

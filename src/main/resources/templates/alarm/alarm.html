@@ -46,6 +46,14 @@
             </div>
         </div>
 
+        <div class="alarm-search-field">
+            <label>읽음 상태</label>
+            <select ng-model="searchReadStatus">
+                <option value="">전체</option>
+                <option value="UNREAD">안 읽은 알람</option>
+            </select>
+        </div>
+
     </div>
 
     <button class="btn-search-alarm" ng-click="load()"
@@ -64,6 +72,10 @@
 
     <div class="alarm-table-toolbar">
         <span class="alarm-count-label">총 <strong>{{alarmList.length}}</strong>건</span>
+        <button class="btn-refresh-alarm" ng-click="checkAll()"
+                ng-disabled="!unreadCount || checkingAll">
+            모두 읽음 처리
+        </button>
     </div>
 
     <table class="data-table">

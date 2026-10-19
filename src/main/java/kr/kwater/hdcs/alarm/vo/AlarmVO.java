@@ -20,6 +20,7 @@ public class AlarmVO extends BaseVO {
     private String searchAlarmLevel;
     private String searchDateFrom;
     private String searchDateTo;
+    private Boolean searchUnreadOnly;   // true 면 현재 사용자가 아직 확인하지 않은 알람만 조회
 
     private boolean checked;
     private String  currentUserId;

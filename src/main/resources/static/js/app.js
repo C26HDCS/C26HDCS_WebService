@@ -146,6 +146,11 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
             .catch(function () {});
     };
 
+    // 알람 관리 화면(자식)에서 '모두 읽음 처리'를 했을 때 헤더 개수를 바로 맞춘다.
+    $scope.$on('alarmAllChecked', function (event, unreadCount) {
+        $scope.unreadCount = unreadCount;
+    });
+
     $scope.loadRecentNotifications = function () {
         $http.get(ctx + '/api/alarm/list', { params: { limit: NOTIF_PREVIEW_SIZE } })
             .then(function (res) { $scope.notifList = res.data; })

@@ -11,6 +11,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.alarmList       = [];
     $scope.searchAlarmType  = '';
     $scope.searchAlarmLevel = '';
+    $scope.searchReadStatus = '';   // '' (전체) / 'UNREAD' (안 읽은 알람)
     $scope.searchDateFrom   = '';
     $scope.searchDateTo     = '';
 
@@ -68,14 +69,15 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
             return;
         }
 
-        $http.get(ctx + '/api/alarm/list', {
-            params: {
-                searchAlarmType:  $scope.searchAlarmType,
-                searchAlarmLevel: $scope.searchAlarmLevel,
-                searchDateFrom:   fromStr,
-                searchDateTo:     toStr
-            }
-        })
+        var params = {
+            searchAlarmType:  $scope.searchAlarmType,
+            searchAlarmLevel: $scope.searchAlarmLevel,
+            searchDateFrom:   fromStr,
+            searchDateTo:     toStr
+        };
+        if ($scope.searchReadStatus === 'UNREAD') params.searchUnreadOnly = true;
+
+        $http.get(ctx + '/api/alarm/list', { params: params })
             .then(function (res) {
                 $scope.alarmList = res.data;
                 $scope.loadError = '';
@@ -87,6 +89,32 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
                 $scope.alarmList = [];
                 $scope.currentPage = 1;
                 updatePaging();
+            });
+    };
+
+    // 안 읽은 알람을 모두 읽음 처리
+    $scope.checkingAll = false;
+
+    $scope.checkAll = function () {
+        if ($scope.checkingAll || !$scope.unreadCount) return;
+        if (!confirm('안 읽은 알람 ' + $scope.unreadCount + '건을 모두 읽음 처리할까요?')) return;
+
+        $scope.checkingAll = true;
+        $http.post(ctx + '/api/alarm/check-all')
+            .then(function (res) {
+                // 헤더의 안 읽은 개수는 부모(AppCtrl)가 갖고 있으므로 이벤트로 알린다.
+                $scope.$emit('alarmAllChecked', res.data.unreadCount);
+                if ($scope.searchReadStatus === 'UNREAD') {
+                    $scope.load();                       // 안 읽은 알람만 보는 중이면 목록이 비어야 한다.
+                } else {
+                    $scope.alarmList.forEach(function (a) { a.checked = true; });   // 페이지·검색 상태 유지
+                }
+            })
+            .catch(function () {
+                alert('모두 읽음 처리 중 오류가 발생했습니다.');
+            })
+            .finally(function () {
+                $scope.checkingAll = false;
             });
     };
 

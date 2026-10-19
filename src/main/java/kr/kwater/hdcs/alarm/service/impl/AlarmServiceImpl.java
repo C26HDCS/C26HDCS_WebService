@@ -35,4 +35,9 @@ public class AlarmServiceImpl extends EgovAbstractServiceImpl implements AlarmSe
     public void checkAlarm(Long alarmId, String userId) throws Exception {
         alarmDAO.insertAlarmCheck(alarmId, userId);
     }
+
+    @Override
+    public int checkAllAlarms(String userId) throws Exception {
+        return alarmDAO.insertAllAlarmChecks(userId);
+    }
 }

@@ -409,3 +409,14 @@
     background: rgba(255,255,255,0.1);
     color: #dce8f5;
 }
+
+/* 모두 읽음 처리 버튼 비활성 */
+.btn-refresh-alarm:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+.btn-refresh-alarm:disabled:hover {
+    background: rgba(58,123,213,0.16);
+    color: #5a9ef5;
+    border-color: rgba(58,123,213,0.35);
+}

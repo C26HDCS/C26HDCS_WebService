@@ -23,6 +23,9 @@
             <if test="searchAlarmLevel != null and searchAlarmLevel != ''">
                 AND A.ALARM_LEVEL = #{searchAlarmLevel}
             </if>
+            <if test="searchUnreadOnly != null and searchUnreadOnly">
+                AND C.ALARM_ID IS NULL
+            </if>
             <if test="searchDateFrom != null and searchDateFrom != ''">
                 AND A.OCCURRED_AT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
             </if>
@@ -48,6 +51,7 @@
             resultType="int">
         SELECT COUNT(*)
         FROM TB_ALARM A
+        LEFT JOIN TB_ALARM_CHECK C ON C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{currentUserId}
         <include refid="alarmWhere"/>
     </select>
 
@@ -64,6 +68,18 @@
                CAST((SELECT COALESCE(MAX(ALARM_ID), 0) FROM TB_ALARM) AS VARCHAR) || ':' ||
                CAST((SELECT COUNT(*) FROM TB_ALARM_CHECK) AS VARCHAR)
     </select>
+
+    <!-- 모두 읽음 처리: 이 사용자가 아직 확인하지 않은 알람 전부를 한 번에 확인 기록으로 넣는다 -->
+    <insert id="insertAllAlarmChecks">
+        INSERT INTO TB_ALARM_CHECK (ALARM_ID, USER_ID, CHECKED_AT)
+        SELECT A.ALARM_ID, CAST(#{userId} AS VARCHAR), CURRENT_TIMESTAMP
+        FROM TB_ALARM A
+        WHERE NOT EXISTS (
+            SELECT 1 FROM TB_ALARM_CHECK C
+            WHERE C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{userId}
+        )
+        ON CONFLICT (ALARM_ID, USER_ID) DO NOTHING
+    </insert>
 
     <insert id="insertAlarmCheck">
         INSERT INTO TB_ALARM_CHECK (ALARM_ID, USER_ID, CHECKED_AT)
