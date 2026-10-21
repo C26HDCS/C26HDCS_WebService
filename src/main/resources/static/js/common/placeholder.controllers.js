@@ -19,6 +19,13 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         .then(function (res) { $scope.groupOptions = res.data; })
         .catch(function ()   { $scope.groupOptions = []; });
 
+    /* ── 장비 유형 선택지 (DB 값 그대로 사용) ── */
+    $scope.typeOptions = [];
+
+    $http.get(ctx + '/api/config/types')
+        .then(function (res) { $scope.typeOptions = res.data; })
+        .catch(function ()   { $scope.typeOptions = []; });
+
     /* ── 원본 / 표시용 데이터 ── */
     var allData = [];
     $scope.filteredList = [];

@@ -32,9 +32,7 @@
             <label>장비 유형</label>
             <select ng-model="search.deviceType">
                 <option value="">전체</option>
-                <option value="L">L 대역 안테나</option>
-                <option value="Ka">Ka 대역 안테나</option>
-                <option value="MODEM">모뎀</option>
+                <option ng-repeat="t in typeOptions" value="{{t}}">{{t}}</option>
             </select>
         </div>
         <div class="cfg-search-field">

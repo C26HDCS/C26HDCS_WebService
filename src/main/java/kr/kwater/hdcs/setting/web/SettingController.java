@@ -35,6 +35,11 @@ public class SettingController {
         return ResponseEntity.ok(settingService.getGroupNames());
     }
 
+    @GetMapping("/types")
+    public ResponseEntity<List<String>> getEquipTypes() throws Exception {
+        return ResponseEntity.ok(settingService.getEquipTypes());
+    }
+
     @PostMapping("/register/csv")
     public ResponseEntity<Map<String, Object>> registerFromCsv(
             @RequestBody List<Map<String, String>> rows) throws Exception {

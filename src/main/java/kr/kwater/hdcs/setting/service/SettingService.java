@@ -8,6 +8,7 @@ import kr.kwater.hdcs.setting.vo.DeviceConfigVO;
 public interface SettingService {
     List<DeviceConfigVO> getDeviceConfigList() throws Exception;
     List<String> getGroupNames() throws Exception;
+    List<String> getEquipTypes() throws Exception;
     int registerFromCsv(List<Map<String, String>> rows) throws Exception;
     int saveChanges(List<Map<String, Object>> items) throws Exception;
 

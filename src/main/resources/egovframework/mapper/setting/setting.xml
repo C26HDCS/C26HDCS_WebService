@@ -17,6 +17,15 @@
         ORDER BY sort_order, group_name
     </select>
 
+    <!-- 장비 유형 선택지 (뷰에 실제 존재하는 값 기준) -->
+    <select id="selectEquipTypes" resultType="string">
+        SELECT DISTINCT equip_type
+        FROM public.v_device_config
+        WHERE equip_type IS NOT NULL
+          AND equip_type &lt;&gt; ''
+        ORDER BY equip_type
+    </select>
+
     <!-- CSV 등록: 장비 조회 (device_name = equipId) -->
     <select id="selectDeviceForCsv" parameterType="string" resultType="map">
         SELECT device_id  AS "deviceId",

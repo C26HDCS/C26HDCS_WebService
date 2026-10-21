@@ -10,6 +10,7 @@ import kr.kwater.hdcs.setting.vo.DeviceConfigVO;
 public interface SettingDAO {
     List<DeviceConfigVO> selectDeviceConfigList();
     List<String> selectGroupNames();
+    List<String> selectEquipTypes();
     Map<String, Object> selectDeviceForCsv(String equipId);
     void updateStationById(Map<String, Object> data);
     void insertStation(Map<String, Object> data);

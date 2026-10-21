@@ -29,6 +29,11 @@ public class SettingServiceImpl implements SettingService {
     }
 
     @Override
+    public List<String> getEquipTypes() throws Exception {
+        return settingDAO.selectEquipTypes();
+    }
+
+    @Override
     @Transactional
     public int saveChanges(List<Map<String, Object>> items) throws Exception {
         if (items == null || items.isEmpty()) return 0;
