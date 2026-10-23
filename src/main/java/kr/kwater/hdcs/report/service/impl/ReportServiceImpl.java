@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.stereotype.Service;
 
+import kr.kwater.hdcs.log.service.LogService;
 import kr.kwater.hdcs.report.config.ReportProperties;
 import kr.kwater.hdcs.report.dao.ReportDAO;
 import kr.kwater.hdcs.report.service.ReportGenerator;
@@ -40,6 +41,10 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     private static final String[] TYPE_CODES = {"LOG", "EVENT", "ALARM", "DATA"};
     private static final String[] TYPE_LABELS = {"로그", "이벤트", "알람", "수신데이터"};
 
+    /** 리포트 수동 생성 이벤트 유형 (TB_EVENT.EVENT_TYPE). 자동 생성은 사용자가 없어 이벤트를 남기지 않는다. */
+    static final String EVENT_REPORT_CREATE_SUCCESS = "REPORT_CREATE_SUCCESS";
+    static final String EVENT_REPORT_CREATE_FAIL = "REPORT_CREATE_FAIL";
+
     private static final DateTimeFormatter COMPACT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
@@ -49,6 +54,7 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     private final ReportGenerator generator;
     private final ReportProperties props;
     private final PdfConverter pdfConverter;
+    private final LogService logService;
 
     @Override
     public List<ReportVO> getReportList(ReportVO vo) throws Exception {
@@ -136,7 +142,38 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
         LocalDate from = parseDate(req.getPeriodFrom(), "시작일");
         LocalDate to = parseDate(req.getPeriodTo(), "종료일");
         validatePeriod(from, to);
-        return generateReport(from, to, req.getDataTypes(), "MANUAL", userId);
+
+        // 사용자 이벤트(TB_EVENT)용 요약. 알 수 없는 유형 코드는 여기서 같은 메시지의 IllegalArgumentException 으로 걸러진다.
+        String types = String.join(",", selectedCodes(selectedTypes(req.getDataTypes())));
+
+        ReportVO created;
+        try {
+            created = generateReport(from, to, req.getDataTypes(), "MANUAL", userId);
+        } catch (IllegalArgumentException e) {
+            // 입력값 오류는 리포트 생성을 시도한 것이 아니므로 이벤트를 남기지 않는다.
+            throw e;
+        } catch (Exception e) {
+            recordCreateEvent(userId, EVENT_REPORT_CREATE_FAIL,
+                    "리포트 생성 실패 [기간 " + from + " ~ " + to + ", 유형 " + types + "]");
+            throw e;
+        }
+        recordCreateEvent(userId, EVENT_REPORT_CREATE_SUCCESS,
+                "리포트 생성 [" + created.getReportName() + " (" + created.getReportNo() + "), 기간 "
+                        + from + " ~ " + to + ", 유형 " + types + "]");
+        return created;
+    }
+
+    /**
+     * 리포트 생성 이벤트를 TB_EVENT 에 남긴다.
+     * 이 메서드는 호출 시점에 진행 중인 트랜잭션이 없으므로 저장 실패를 잡아도 안전하다.
+     * 이벤트 저장이 실패해도 이미 만들어진 리포트 결과는 그대로 돌려줘야 하므로 경고만 남긴다.
+     */
+    private void recordCreateEvent(String userId, String eventType, String message) {
+        try {
+            logService.saveEvent(userId, eventType, message);
+        } catch (RuntimeException e) {
+            log.warn("리포트 생성 이벤트 저장 실패: user={}, type={}", userId, eventType, e);
+        }
     }
 
     @Override

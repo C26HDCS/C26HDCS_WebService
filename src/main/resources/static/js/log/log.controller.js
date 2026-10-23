@@ -65,7 +65,9 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
     var EVENT_OPTIONS = [
         { value: 'LOGIN_SUCCESS', label: '로그인 성공', group: '이벤트' },
         { value: 'LOGIN_FAIL',    label: '로그인 실패', group: '이벤트' },
-        { value: 'LOGOUT',        label: '로그아웃',    group: '이벤트' }
+        { value: 'LOGOUT',        label: '로그아웃',    group: '이벤트' },
+        { value: 'REPORT_CREATE_SUCCESS', label: '리포트 생성 성공', group: '이벤트' },
+        { value: 'REPORT_CREATE_FAIL',    label: '리포트 생성 실패', group: '이벤트' }
     ];
 
     // 유형 선택 목록: 구분이 '로그'면 로그 레벨만, '이벤트'면 이벤트 유형만, '전체'면 둘 다 보여 준다.
@@ -131,15 +133,18 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'DEBUG':         'log-badge-debug',
             'LOGIN_SUCCESS': 'log-badge-info',
             'LOGIN_FAIL':    'log-badge-error',
-            'LOGOUT':        'log-badge-debug'
+            'LOGOUT':        'log-badge-debug',
+            'REPORT_CREATE_SUCCESS': 'log-badge-info',
+            'REPORT_CREATE_FAIL':    'log-badge-error'
         };
         return map[level] || 'log-badge-debug';
     };
 
     // 유형 배지 글자: 이벤트 유형의 결과 접미사(_SUCCESS/_FAIL)는 색(초록/빨강)으로 구분되므로 글자에서는 뺀다.
     // 예) LOGIN_SUCCESS → LOGIN(초록), LOGIN_FAIL → LOGIN(빨강)
+    // 리포트는 생성 외 이벤트가 없어 REPORT_CREATE_SUCCESS/FAIL 을 REPORT 로 줄여 보여 준다. (저장 값은 그대로)
     $scope.getLevelLabel = function (level) {
-        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '') : level;
+        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '').replace(/^REPORT_CREATE$/, 'REPORT') : level;
     };
 
     $scope.getTarget = function (item) {

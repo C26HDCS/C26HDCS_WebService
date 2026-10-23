@@ -163,13 +163,14 @@
     <div class="report-table-scroll">
     <table class="data-table report-table">
         <colgroup>
-            <col style="width:6%;">
-            <col style="width:10%;">
-            <col style="width:21%;">
-            <col style="width:20%;">
+            <col style="width:5%;">
             <col style="width:9%;">
-            <col style="width:15%;">
             <col style="width:19%;">
+            <col style="width:18%;">
+            <col style="width:8%;">
+            <col style="width:10%;">
+            <col style="width:14%;">
+            <col style="width:17%;">
         </colgroup>
         <thead>
             <tr>
@@ -177,6 +178,7 @@
                 <th>리포트 ID</th>
                 <th>리포트명</th>
                 <th>조회기간</th>
+                <th>생성자</th>
                 <th>생성방식</th>
                 <th>생성일시</th>
                 <th>다운로드</th>
@@ -184,10 +186,10 @@
         </thead>
         <tbody>
             <tr ng-if="loadError">
-                <td colspan="7" class="no-data">{{loadError}}</td>
+                <td colspan="8" class="no-data">{{loadError}}</td>
             </tr>
             <tr ng-if="!loadError && reportList.length === 0">
-                <td colspan="7" class="no-data">데이터가 없습니다.</td>
+                <td colspan="8" class="no-data">데이터가 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"
                 class="log-row-clickable"
@@ -197,6 +199,7 @@
                 <td>{{item.reportNo}}</td>
                 <td class="report-name-cell" title="{{item.reportName}}">{{item.reportName}}</td>
                 <td>{{item.periodFrom}} ~ {{item.periodTo}}</td>
+                <td>{{item.userId || 'SYSTEM'}}</td>
                 <td>
                     <span class="status-badge"
                           ng-class="item.generateType === 'AUTO' ? 'status-done' : 'status-wait'">
