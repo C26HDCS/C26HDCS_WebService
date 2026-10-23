@@ -24,6 +24,13 @@ import kr.kwater.hdcs.dashboard.vo.ObservationStationVO;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final kr.kwater.hdcs.dashboard.service.impl.LiveDashboardService liveDashboardService;
+
+    @GetMapping("/live")
+    public ResponseEntity<kr.kwater.hdcs.dashboard.vo.LiveDashboardVO> getLive() throws Exception {
+        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(liveDashboardService.snapshot());
+    }
 
     @GetMapping("/summary")
     public ResponseEntity<DashboardVO> getSummary() throws Exception {
