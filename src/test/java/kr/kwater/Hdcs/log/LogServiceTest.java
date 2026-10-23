@@ -151,6 +151,40 @@ class LogServiceTest {
         assertCounts(0, 0);
     }
 
+    @Test
+    void savesSystemEventWithoutUserAndShowsSystemAsTarget() throws Exception {
+        long id = service.saveSystemEvent("REPORT_CREATE_SUCCESS", "auto report");
+
+        assertThat(id).isPositive();
+        assertThat(jdbc.queryForObject("SELECT USER_ID FROM TB_EVENT WHERE ID = ?", String.class, id)).isNull();
+        assertThat(jdbc.queryForObject("SELECT ACTOR_USER_ID FROM TB_EVENT WHERE ID = ?", String.class, id))
+                .isEqualTo("SYSTEM");
+
+        LogVO filter = new LogVO();
+        filter.setSearchCondition("EVENT");
+        filter.setSearchLevel("REPORT_CREATE_SUCCESS");
+        List<LogVO> rows = service.getLogList(filter);
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).getId()).isEqualTo(id);
+        assertThat(rows.get(0).getCategory()).isEqualTo("EVENT");
+        assertThat(rows.get(0).getUserId()).isEqualTo("SYSTEM");
+        assertThat(rows.get(0).getMessage()).isEqualTo("auto report");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_USER", Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    void validatesSystemEventInput() {
+        for (String type : new String[]{null, "", " ", "x".repeat(31)}) {
+            assertThatThrownBy(() -> service.saveSystemEvent(type, "test"))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+        for (String message : new String[]{null, "", " ", "x".repeat(1001)}) {
+            assertThatThrownBy(() -> service.saveSystemEvent("TEST", message))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+        assertCounts(0, 0);
+    }
+
     private void assertCounts(int logs, int events) {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_LOG", Integer.class)).isEqualTo(logs);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_EVENT", Integer.class)).isEqualTo(events);

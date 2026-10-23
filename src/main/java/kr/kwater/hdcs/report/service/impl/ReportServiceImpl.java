@@ -41,7 +41,7 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     private static final String[] TYPE_CODES = {"LOG", "EVENT", "ALARM", "DATA"};
     private static final String[] TYPE_LABELS = {"로그", "이벤트", "알람", "수신데이터"};
 
-    /** 리포트 수동 생성 이벤트 유형 (TB_EVENT.EVENT_TYPE). 자동 생성은 사용자가 없어 이벤트를 남기지 않는다. */
+    /** 리포트 생성 이벤트 유형 (TB_EVENT.EVENT_TYPE). 수동 생성은 사용자 ID, 자동 생성은 대상 SYSTEM 으로 같은 유형을 쓴다. */
     static final String EVENT_REPORT_CREATE_SUCCESS = "REPORT_CREATE_SUCCESS";
     static final String EVENT_REPORT_CREATE_FAIL = "REPORT_CREATE_FAIL";
 
@@ -154,11 +154,11 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             throw e;
         } catch (Exception e) {
             recordCreateEvent(userId, EVENT_REPORT_CREATE_FAIL,
-                    "리포트 생성 실패 [기간 " + from + " ~ " + to + ", 유형 " + types + "]");
+                    "리포트 수동 생성 실패 [기간 " + from + " ~ " + to + ", 유형 " + types + "]");
             throw e;
         }
         recordCreateEvent(userId, EVENT_REPORT_CREATE_SUCCESS,
-                "리포트 생성 [" + created.getReportName() + " (" + created.getReportNo() + "), 기간 "
+                "리포트 수동 생성 [" + created.getReportName() + " (" + created.getReportNo() + "), 기간 "
                         + from + " ~ " + to + ", 유형 " + types + "]");
         return created;
     }
@@ -176,6 +176,18 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
         }
     }
 
+    /**
+     * 자동 생성처럼 로그인 사용자가 없는 리포트 생성 이벤트를 시스템 이벤트(대상 SYSTEM)로 남긴다.
+     * 자동 생성 경로에도 진행 중인 트랜잭션이 없으므로 저장 실패를 잡아도 안전하며, 실패해도 리포트 결과에는 영향을 주지 않는다.
+     */
+    private void recordSystemCreateEvent(String eventType, String message) {
+        try {
+            logService.saveSystemEvent(eventType, message);
+        } catch (RuntimeException e) {
+            log.warn("리포트 자동 생성 이벤트 저장 실패: type={}", eventType, e);
+        }
+    }
+
     @Override
     public ReportVO createAutoReport(LocalDate from, LocalDate to, List<String> dataTypes) throws Exception {
         if (from == null || to == null) {
@@ -189,7 +201,23 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             log.info("자동 리포트가 이미 있어 건너뜀: types={}, {} ~ {}", codes, from, to);
             return null;
         }
-        return generateReport(from, to, dataTypes, "AUTO", null);
+        ReportVO created;
+        try {
+            created = generateReport(from, to, dataTypes, "AUTO", null);
+        } catch (IllegalArgumentException e) {
+            // 입력값 오류는 리포트 생성을 시도한 것이 아니므로 이벤트를 남기지 않는다.
+            throw e;
+        } catch (Exception e) {
+            // 자동 생성은 사람이 보고 있지 않으므로 실패도 시스템 이벤트로 남긴다. (수동 생성 실패와 같은 유형, 대상은 SYSTEM)
+            recordSystemCreateEvent(EVENT_REPORT_CREATE_FAIL,
+                    "리포트 자동 생성 실패 [기간 " + from + " ~ " + to + ", 유형 " + codes + "]");
+            throw e;
+        }
+        // 사용자 이벤트와 같은 유형으로 남기되, 메시지의 '자동 생성'과 대상 SYSTEM 으로 수동 생성과 구분한다.
+        recordSystemCreateEvent(EVENT_REPORT_CREATE_SUCCESS,
+                "리포트 자동 생성 [" + created.getReportName() + " (" + created.getReportNo() + "), 기간 "
+                        + from + " ~ " + to + ", 유형 " + codes + "]");
+        return created;
     }
 
     /** 기간 검증. 수동·자동 생성이 같이 쓴다. */

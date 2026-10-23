@@ -16,6 +16,13 @@
         VALUES (#{userId}, #{userId}, #{level}, #{message}, LOCALTIMESTAMP)
     </insert>
 
+    <!-- 로그인 사용자가 없는 시스템 이벤트(자동 실행 작업 등): USER_ID 는 NULL, 행위자는 'SYSTEM' 으로 고정한다. -->
+    <insert id="insertSystemEvent" parameterType="kr.kwater.hdcs.log.vo.LogVO"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO TB_EVENT (USER_ID, ACTOR_USER_ID, EVENT_TYPE, MESSAGE, REG_DT)
+        VALUES (NULL, 'SYSTEM', #{level}, #{message}, LOCALTIMESTAMP)
+    </insert>
+
     <!--
         TB_LOG(장치 로그) + TB_EVENT(사용자 이벤트)를 UNION ALL로 합쳐
         "로그 및 이벤트 관리" 화면 하나에서 전체/로그/이벤트 필터로 조회한다.

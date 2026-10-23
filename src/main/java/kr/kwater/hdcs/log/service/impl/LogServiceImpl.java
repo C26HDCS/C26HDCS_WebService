@@ -60,6 +60,18 @@ public class LogServiceImpl extends EgovAbstractServiceImpl implements LogServic
         return savedId(logDAO.insertEvent(vo), vo);
     }
 
+    @Override
+    @Transactional
+    public long saveSystemEvent(String eventType, String message) {
+        validateText(eventType, "eventType", 30);
+        validateText(message, "message", 1000);
+
+        LogVO vo = new LogVO();
+        vo.setLevel(eventType);
+        vo.setMessage(message);
+        return savedId(logDAO.insertSystemEvent(vo), vo);
+    }
+
     private static void validateText(String value, String name, int maxLength) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(name + " is required");

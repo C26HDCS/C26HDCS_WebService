@@ -16,4 +16,6 @@ public interface LogDAO {
     int insertLog(LogVO vo);
 
     int insertEvent(LogVO vo);
+
+    int insertSystemEvent(LogVO vo);
 }

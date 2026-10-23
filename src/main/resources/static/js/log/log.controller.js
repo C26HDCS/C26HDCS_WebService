@@ -168,7 +168,7 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'STORAGE_SPACE_LOW': '공간 부족'
         };
         if (storageLabels[level]) return storageLabels[level];
-        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '') : level;
+        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '').replace(/^REPORT_CREATE$/, 'REPORT') : level;
     };
 
     $scope.getTarget = function (item) {
