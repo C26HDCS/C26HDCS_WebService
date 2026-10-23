@@ -83,6 +83,8 @@ logging:
     name: ${HDCS_WEB_LOG_DIR:logs}/hdcs-web-service.log
 
 hdcs:
+  pipeline-status:
+    interval-ms: 5000
   storage:
     cleanup:
       enabled: ${HDCS_STORAGE_CLEANUP_ENABLED:false}

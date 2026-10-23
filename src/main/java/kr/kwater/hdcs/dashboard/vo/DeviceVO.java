@@ -14,4 +14,5 @@ public class DeviceVO {
     private String createdAt;
     private String latestReceivedAt;
     private String latestReceivedStatus;
+    private java.util.List<PipelineComponentVO> pipelineComponents = java.util.List.of();
 }
