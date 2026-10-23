@@ -3,7 +3,7 @@
 
     <property name="LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
-    <property name="LOG_DIR" value="logs"/>
+    <springProperty name="LOG_DIR" source="hdcs.logging.directory" defaultValue="logs"/>
 
     <!-- 콘솔 출력: UTF-8 강제 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -16,9 +16,10 @@
     <!-- 파일 출력: UTF-8 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/hdcs-web-service.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/hdcs-web-service.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/hdcs-web-service.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>1828</maxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <charset>UTF-8</charset>
@@ -27,18 +28,21 @@
     </appender>
 
     <!-- 패키지별 로그 레벨 -->
-    <logger name="kr.kwater.hdcs"   level="DEBUG"/>
-    <logger name="egovframework"   level="DEBUG"/>
-    <logger name="org.egovframe"   level="DEBUG"/>
-    <logger name="org.mybatis"     level="DEBUG"/>
-    <logger name="org.apache.ibatis" level="DEBUG"/>
+    <logger name="hdcs.heartbeat" level="INFO"/>
+    <logger name="kr.kwater.hdcs"   level="INFO"/>
+    <logger name="egovframework"   level="INFO"/>
+    <logger name="org.egovframe"   level="INFO"/>
+    <logger name="org.mybatis"     level="WARN"/>
+    <logger name="org.apache.ibatis" level="WARN"/>
     <logger name="org.springframework" level="WARN"/>
 
     <!-- 기본 -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-    </root>
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
 
     <!-- 운영 프로파일: 콘솔 제거, 레벨 상향 -->
     <springProfile name="prod">

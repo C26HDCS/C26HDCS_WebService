@@ -84,7 +84,7 @@
     <!-- 기간 내 이벤트 상세 목록 -->
     <select id="selectEventDetails" resultType="kr.kwater.hdcs.report.vo.ReportEventRowVO">
         SELECT TO_CHAR(E.REG_DT, 'YYYY-MM-DD HH24:MI:SS') AS REG_DT,
-               E.USER_ID,
+               COALESCE(E.USER_ID, E.ACTOR_USER_ID) AS USER_ID,
                E.EVENT_TYPE,
                E.MESSAGE
         FROM TB_EVENT E

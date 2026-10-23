@@ -1,8 +1,9 @@
 # Common DB Log Service
 
 Inject the existing `kr.kwater.hdcs.log.service.LogService` into other Spring
-services. Reads and writes use the existing `tb_log` / `tb_event` tables; no
-schema migration or new HTTP write endpoint is required.
+services. Reads and writes use the existing `tb_log` / `tb_event` tables.
+Apply `log_audit_retention_postgresql.sql` before deploying the current version.
+See [LOG_RETENTION.md](LOG_RETENTION.md) for authentication audit, heartbeat and retention policy.
 
 ```java
 @Service
@@ -45,10 +46,13 @@ public class DeviceOperationService {
 - The existing log/event list API and report queries can read these rows.
   Existing services do not automatically emit DB records: call this service
   explicitly where a business operation succeeds or a device event occurs.
-  SLF4J/Logback file output remains separate and unchanged.
-- This module does not add a one-second heartbeat, asynchronous buffering,
-  five-year archival, deletion or retention jobs. Record real events; periodic
-  status logging and retention are separate operational policies.
+  SLF4J/Logback file output remains separate from database rows.
+- Authentication flows now use the separate `AuthAuditService` and durable
+  journal, which survives business rollbacks and retries DB writes after outages.
+  `LogMaintenance` supplies one-second file heartbeats and file fsync.
+  The DB migration, Logback policy and storage deletion guard enforce minimum
+  five-year retention. General `LogService` methods retain their synchronous
+  caller-transaction contract; they are not automatically spooled.
 
 ## Verification
 

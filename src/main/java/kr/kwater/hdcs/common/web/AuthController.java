@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import kr.kwater.hdcs.config.JwtTokenProvider;
+import kr.kwater.hdcs.log.service.AuthAuditService;
+import java.io.UncheckedIOException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +24,14 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthAuditService auditService;
 
     // 생성자를 통해 두 핵심 부품을 스프링으로부터 주입
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
+    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider,
+                          AuthAuditService auditService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.auditService = auditService;
     }
 
     @PostMapping("/api/login")
@@ -44,6 +49,7 @@ public class AuthController {
 
             // 인증 성공 시, JwtTokenProvider를 이용해 진짜 JWT 토큰을 발급
             String accessToken = jwtTokenProvider.createToken(authentication);
+            auditService.loginSuccess(authentication.getName());
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "로그인 성공!");
@@ -54,11 +60,36 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (AuthenticationException e) {
+            try {
+                auditService.loginFailure(username);
+            } catch (UncheckedIOException unavailable) {
+                return auditUnavailable();
+            }
             // 아이디나 비밀번호가 틀렸을 때 예외 처리 (401 에러)
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("message", "아이디 또는 비밀번호가 올바르지 않습니다.");
             return ResponseEntity.status(401).body(errorResponse);
+        } catch (UncheckedIOException unavailable) {
+            return auditUnavailable();
         }
+    }
+
+    @PostMapping("/api/logout")
+    public ResponseEntity<?> logout(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            auditService.logout(authentication.getName());
+            return ResponseEntity.noContent().build();
+        } catch (UncheckedIOException unavailable) {
+            return auditUnavailable();
+        }
+    }
+
+    private ResponseEntity<?> auditUnavailable() {
+        return ResponseEntity.status(503).body(Map.of("message", "이벤트 기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."));
     }
 
     /**

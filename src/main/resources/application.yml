@@ -71,16 +71,23 @@ management:
 logging:
   level:
     root: INFO
-    kr.kwater.hdcs: DEBUG
-    egovframework: DEBUG
+    kr.kwater.hdcs: INFO
+    egovframework: INFO
     org.springframework: WARN
-    org.mybatis: DEBUG
-    org.apache.ibatis: DEBUG
+    org.mybatis: WARN
+    org.apache.ibatis: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: logs/hdcs-external-web-service.log
+    name: ${HDCS_WEB_LOG_DIR:logs}/hdcs-web-service.log
+
+hdcs:
+  logging:
+    directory: ${HDCS_WEB_LOG_DIR:logs}
+    python-log-directory: ${HDCS_PYTHON_LOG_DIR:../C26HDCS_Python/logs}
+    # No automatic DB deletion unless explicitly enabled. Minimum retention is five calendar years.
+    purge-expired-enabled: ${HDCS_LOG_PURGE_EXPIRED:false}
 
 # JWT 설정
 jwt:

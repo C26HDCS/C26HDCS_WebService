@@ -21,11 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("로그인 시도 아이디: " + username); 
         UserVO user = userDAO.findByUserId(username);
-        System.out.println("DB 조회 결과: " + user);
         if (user == null) {
-            System.out.println("에러: DB에 해당 사용자가 없습니다!"); 
             throw new UsernameNotFoundException("사용할 수 없거나 존재하지 않는 계정입니다: " + username);
         }
 

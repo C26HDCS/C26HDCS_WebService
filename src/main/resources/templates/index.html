@@ -199,10 +199,25 @@
         window.location.href = ctx + '/mypage';
     }
 
-    function logout() {
-        localStorage.removeItem('accessToken');
-        document.getElementById('logout-overlay').style.display = 'block';
-        document.getElementById('logout-modal').style.display   = 'block';
+    async function logout() {
+        const button = document.querySelector('.btn-logout');
+        if (button.disabled) return;
+        button.disabled = true;
+        try {
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch(ctx + '/api/logout', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!response.ok) throw new Error('Logout audit failed');
+            localStorage.removeItem('accessToken');
+            document.getElementById('logout-overlay').style.display = 'block';
+            document.getElementById('logout-modal').style.display = 'block';
+        } catch (error) {
+            alert('로그아웃 기록을 저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.');
+        } finally {
+            button.disabled = false;
+        }
     }
 
     function confirmLogout() {

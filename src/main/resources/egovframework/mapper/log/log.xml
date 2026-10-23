@@ -12,8 +12,8 @@
 
     <insert id="insertEvent" parameterType="kr.kwater.hdcs.log.vo.LogVO"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
-        INSERT INTO TB_EVENT (USER_ID, EVENT_TYPE, MESSAGE, REG_DT)
-        VALUES (#{userId}, #{level}, #{message}, LOCALTIMESTAMP)
+        INSERT INTO TB_EVENT (USER_ID, ACTOR_USER_ID, EVENT_TYPE, MESSAGE, REG_DT)
+        VALUES (#{userId}, #{userId}, #{level}, #{message}, LOCALTIMESTAMP)
     </insert>
 
     <!--
@@ -41,7 +41,7 @@
         SELECT ID, 'EVENT' AS CATEGORY,
                CAST(NULL AS BIGINT) AS DEVICE_ID,
                CAST(NULL AS VARCHAR(100)) AS DEVICE_NAME,
-               USER_ID, EVENT_TYPE AS LEVEL, MESSAGE, REG_DT
+               COALESCE(USER_ID, ACTOR_USER_ID) AS USER_ID, EVENT_TYPE AS LEVEL, MESSAGE, REG_DT
         FROM TB_EVENT
     </sql>
 
@@ -68,7 +68,7 @@
                 AND REG_DT &lt; CAST(#{searchDateTo} AS TIMESTAMP) + INTERVAL '1 day'
             </if>
         </where>
-        ORDER BY REG_DT DESC
+        ORDER BY REG_DT DESC, ID DESC, CATEGORY
     </select>
 
     <select id="selectLogCount" parameterType="kr.kwater.hdcs.log.vo.LogVO"

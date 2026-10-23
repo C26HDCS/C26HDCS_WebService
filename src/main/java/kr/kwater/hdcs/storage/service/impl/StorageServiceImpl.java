@@ -30,6 +30,7 @@ import kr.kwater.hdcs.storage.vo.StorageDeviceVO;
 import kr.kwater.hdcs.storage.vo.StorageFileVO;
 import kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO;
 import kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO;
+import kr.kwater.hdcs.log.service.LogRetentionGuard;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
     private static final double DEFAULT_DANGER_PERCENT = 90.0;
 
     private final StorageDAO storageDAO;
+    private final LogRetentionGuard logRetentionGuard;
 
     @Override
     public List<StorageDeviceVO> getDevices() {
@@ -524,6 +526,11 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
     private void deleteSingleFile(File directory, String filePath, StorageDeleteResultVO result) {
         File target = toCanonicalFile(new File(filePath));
+
+        if (!logRetentionGuard.canDelete(target.toPath())) {
+            result.getSkippedPaths().add(filePath);
+            return;
+        }
 
         if (!target.exists() || !target.isFile()) {
             result.getSkippedPaths().add(filePath);
