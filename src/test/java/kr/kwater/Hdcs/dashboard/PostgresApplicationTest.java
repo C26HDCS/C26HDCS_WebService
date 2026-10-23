@@ -37,6 +37,8 @@ class PostgresApplicationTest {
         registry.add("spring.datasource.password",()->System.getenv().getOrDefault("HDCS_TEST_APP_PG_PASSWORD",""));
     }
     @Test void realApplicationProjectsTimeoutRecoveryAndMappingRetirement() throws Exception {
+        web.perform(get("/api/dashboard/live")).andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.message").exists());
         for (int run=0;run<2;run++) {
             for (String name:java.util.List.of("python_device_status_postgresql.sql","python_status_lifecycle_postgresql.sql")) {
                 try(var stream=new ClassPathResource("sql/"+name).getInputStream()) {

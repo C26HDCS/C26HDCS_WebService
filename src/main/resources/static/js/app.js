@@ -81,6 +81,56 @@ qosApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, 
         .otherwise({ redirectTo: '/dashboard' });
 }]);
 
+qosApp.factory('AuthSession', ['$window', function ($window) {
+    var redirecting = false;
+
+    function token() {
+        try { return $window.localStorage.getItem('accessToken'); }
+        catch (error) { return null; }
+    }
+
+    // This local check only schedules sign-in; the server verifies JWT signatures.
+    function valid() {
+        try {
+            var parts = (token() || '').split('.');
+            if (parts.length !== 3) return false;
+            var payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            while (payload.length % 4) payload += '=';
+            var claims = JSON.parse($window.atob(payload));
+            return typeof claims.exp === 'number' && isFinite(claims.exp) && claims.exp * 1000 > Date.now();
+        } catch (error) { return false; }
+    }
+
+    function expire() {
+        if (redirecting) return;
+        redirecting = true;
+        try { $window.localStorage.removeItem('accessToken'); } catch (error) {}
+        $window.location.replace(ctx + '/login');
+    }
+
+    function check() {
+        if (redirecting) return false;
+        if (valid()) return true;
+        expire();
+        return false;
+    }
+
+    function rejected(status) {
+        if (status === 401 || (status === 403 && !valid())) expire();
+    }
+
+    return { token: token, check: check, rejected: rejected };
+}]);
+
+qosApp.run(['AuthSession', '$interval', '$window', function (session, $interval, $window) {
+    session.check();
+    $interval(session.check, 1000);
+    $window.addEventListener('focus', session.check);
+    $window.addEventListener('storage', function (event) {
+        if (event.key === 'accessToken' || event.key === null) session.check();
+    });
+}]);
+
 /* ── HTTP 공통 헤더 설정 ───────────────────────────────── */
 qosApp.config(['$httpProvider', function ($httpProvider) {
     // Spring Security CSRF
@@ -90,13 +140,12 @@ qosApp.config(['$httpProvider', function ($httpProvider) {
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
     // JWT 토큰을 매 요청마다 자동으로 헤더에 넣는 인터셉터
-    $httpProvider.interceptors.push(['$q', '$window', function($q, $window) {
+    $httpProvider.interceptors.push(['$q', 'AuthSession', function($q, session) {
         return {
             // 서버로 요청을 보내기 직전에 가로채서 실행됨
             'request': function(config) {
-                // 브라우저 저장소에서 로그인할 때 저장해둔 토큰을 꺼냅니다.
-                // (주의: 로그인 화면에서 토큰을 저장할 때 쓴 이름과 동일해야 합니다. 예: 'jwtToken')
-                var token = $window.localStorage.getItem('accessToken');
+                if (!session.check()) return $q.reject({ status: 401, config: config });
+                var token = session.token();
                 
                 if (token) {
                     // 토큰이 있으면 헤더에 달아줍니다.
@@ -106,11 +155,7 @@ qosApp.config(['$httpProvider', function ($httpProvider) {
             },
             // 서버에서 에러 응답이 왔을 때 실행됨
             'responseError': function(rejection) {
-                // 401(인증 실패) 또는 403(권한 없음) 에러가 나면 콘솔에 찍고 로그인 화면으로 튕겨낼 수 있습니다.
-                if (rejection.status === 401 || rejection.status === 403) {
-                    console.error("인증 에러: 토큰이 없거나 만료되었습니다.");
-                    // $window.location.href = '/login'; // 실제 운영 시엔 주석을 풀어서 로그인 화면으로 돌려보냅니다.
-                }
+                session.rejected(rejection.status);
                 return $q.reject(rejection);
             }
         };
@@ -118,8 +163,8 @@ qosApp.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 /* ── 루트 컨트롤러 ────────────────────────────────────── */
-qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interval',
-    function ($scope, $route, $location, $http, $interval) {
+qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interval', 'AuthSession',
+    function ($scope, $route, $location, $http, $interval, session) {
 
     // 페이지 타이틀 동기화
     $scope.$on('$routeChangeSuccess', function () {
@@ -226,7 +271,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     }
 
     function connectStream() {
-        if (streamClosed) return;
+        if (streamClosed || !session.check()) return;
 
         var token = readToken();
         if (!token) {                       // 로그인 전이면 천천히 다시 확인
@@ -292,7 +337,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
             .catch(function (err) {
                 if (streamClosed) return;
                 if (err && (err.status === 401 || err.status === 403)) {
-                    // 토큰이 없거나 만료됨: 자주 재시도해도 소용없다.
+                    session.rejected(err.status);
                     scheduleReconnect(RETRY_MAX_MS);
                     return;
                 }
