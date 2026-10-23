@@ -70,7 +70,8 @@ class LogPolicyTest {
         Path logs = Path.of(properties.getDirectory());
         Files.createDirectories(logs);
         Path protectedFile = Files.writeString(logs.resolve("current.log"), "protected");
-        StorageServiceImpl service = new StorageServiceImpl(mock(StorageDAO.class), new LogRetentionGuard(properties));
+        StorageServiceImpl service = new StorageServiceImpl(mock(StorageDAO.class), new LogRetentionGuard(properties),
+                mock(kr.kwater.hdcs.storage.service.StorageAuditService.class));
         var result = service.deleteFiles(logs.toString(), List.of(protectedFile.toString()));
         assertThat(result.getDeletedCount()).isZero();
         assertThat(result.getSkippedCount()).isEqualTo(1);

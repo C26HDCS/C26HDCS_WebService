@@ -31,6 +31,7 @@ import kr.kwater.hdcs.storage.vo.StorageFileVO;
 import kr.kwater.hdcs.storage.vo.StorageRetentionPolicyVO;
 import kr.kwater.hdcs.storage.vo.StorageSpacePolicyVO;
 import kr.kwater.hdcs.log.service.LogRetentionGuard;
+import kr.kwater.hdcs.storage.service.StorageAuditService;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,7 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
     private final StorageDAO storageDAO;
     private final LogRetentionGuard logRetentionGuard;
+    private final StorageAuditService storageAudit;
 
     @Override
     public List<StorageDeviceVO> getDevices() {
@@ -103,8 +105,18 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         StorageDeleteResultVO result = new StorageDeleteResultVO();
         result.setRequestedCount(uniquePaths.size());
 
+        String actor = storageAudit.manualActor();
         for (String filePath : uniquePaths) {
-            deleteSingleFile(directory, filePath, result);
+            String operation = java.util.UUID.randomUUID().toString();
+            storageAudit.record(actor, "STORAGE_DELETE_REQUEST", "MANUAL op=" + operation + " path=" + filePath);
+            String outcome;
+            try {
+                outcome = deleteSingleFile(directory, filePath, result);
+            } catch (IllegalArgumentException | SecurityException ex) {
+                result.getSkippedPaths().add(filePath);
+                outcome = "STORAGE_DELETE_FAIL";
+            }
+            storageAudit.record(actor, outcome, "MANUAL op=" + operation + " path=" + filePath);
         }
 
         result.setDeletedCount(result.getDeletedPaths().size());
@@ -524,30 +536,37 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
         return value.trim();
     }
 
-    private void deleteSingleFile(File directory, String filePath, StorageDeleteResultVO result) {
-        File target = toCanonicalFile(new File(filePath));
+    private String deleteSingleFile(File directory, String filePath, StorageDeleteResultVO result) {
+        java.nio.file.Path requested = java.nio.file.Path.of(filePath).toAbsolutePath().normalize();
+        if (java.nio.file.Files.isSymbolicLink(requested)) {
+            result.getSkippedPaths().add(filePath);
+            return "STORAGE_DELETE_SKIPPED";
+        }
+        File target = toCanonicalFile(requested.toFile());
 
         if (!logRetentionGuard.canDelete(target.toPath())) {
             result.getSkippedPaths().add(filePath);
-            return;
+            return "STORAGE_DELETE_SKIPPED";
         }
 
         if (!target.exists() || !target.isFile()) {
             result.getSkippedPaths().add(filePath);
-            return;
+            return "STORAGE_DELETE_SKIPPED";
         }
 
         File parent = toCanonicalFile(target.getParentFile());
         if (!directory.equals(parent)) {
             result.getSkippedPaths().add(filePath);
-            return;
+            return "STORAGE_DELETE_SKIPPED";
         }
 
         try {
             java.nio.file.Files.delete(target.toPath());
             result.getDeletedPaths().add(target.getAbsolutePath());
+            return "STORAGE_DELETE_SUCCESS";
         } catch (IOException | SecurityException ex) {
             result.getSkippedPaths().add(filePath);
+            return "STORAGE_DELETE_FAIL";
         }
     }
 
