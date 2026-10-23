@@ -252,7 +252,7 @@ class StorageCleanupTest {
         Path pending = Path.of(logs.getDirectory()).resolve("audit-pending");
         try (var entries = Files.list(pending)) { assertThat(entries.count()).isEqualTo(1); }
         doNothing().when(store).insert(any());
-        journal.replay();
+        new AuditEventJournal(store, new com.fasterxml.jackson.databind.ObjectMapper(), logs).replay();
         try (var entries = Files.list(pending)) { assertThat(entries.count()).isZero(); }
     }
 

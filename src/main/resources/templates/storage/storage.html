@@ -265,7 +265,7 @@
                             <td colspan="5" class="no-data">삭제 대상 기준을 조회 중입니다.</td>
                         </tr>
                         <tr ng-show="!loadingDeleteTargets && deleteTargets.length === 0">
-                            <td colspan="5" class="no-data">등록된 삭제 대상 기준이 없습니다.</td>
+                            <td colspan="5" class="no-data">{{policyErrors.deleteTargets ? '삭제 대상 기준 조회 실패' : '등록된 삭제 대상 기준이 없습니다.'}}</td>
                         </tr>
                         <tr ng-repeat="target in deleteTargets"
                             ng-show="!loadingDeleteTargets"
@@ -436,7 +436,7 @@
                             <td colspan="5" class="no-data">보관 기간을 조회 중입니다.</td>
                         </tr>
                         <tr ng-show="!loadingRetentionPolicies && retentionPolicies.length === 0">
-                            <td colspan="5" class="no-data">등록된 보관 기간이 없습니다.</td>
+                            <td colspan="5" class="no-data">{{policyErrors.retentionPolicies ? '보관 기간 조회 실패' : '등록된 보관 기간이 없습니다.'}}</td>
                         </tr>
                         <tr ng-repeat="policy in retentionPolicies" ng-show="!loadingRetentionPolicies">
                             <td class="storage-name-cell" title="{{policy.description}}">
@@ -555,7 +555,7 @@
                             <td colspan="7" class="no-data">가용 공간 기준을 조회 중입니다.</td>
                         </tr>
                         <tr ng-show="!loadingSpacePolicies && spacePolicies.length === 0">
-                            <td colspan="7" class="no-data">등록된 가용 공간 기준이 없습니다.</td>
+                            <td colspan="7" class="no-data">{{policyErrors.spacePolicies ? '가용 공간 기준 조회 실패' : '등록된 가용 공간 기준이 없습니다.'}}</td>
                         </tr>
                         <tr ng-repeat="policy in spacePolicies" ng-show="!loadingSpacePolicies">
                             <td class="storage-name-cell" title="{{policy.description}}">

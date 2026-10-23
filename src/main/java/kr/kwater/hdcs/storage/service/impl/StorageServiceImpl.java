@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -127,13 +128,8 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
     @Override
     public List<StorageDeleteTargetVO> getDeleteTargets() {
-        try {
-            return storageDAO.selectDeleteTargetList().stream()
-                    .peek(this::setDisplayValues)
-                    .collect(Collectors.toList());
-        } catch (DataAccessException ex) {
-            return Collections.emptyList();
-        }
+        return storageDAO.selectDeleteTargetList().stream()
+                .peek(this::setDisplayValues).collect(Collectors.toList());
     }
 
     @Override
@@ -195,11 +191,7 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
     @Override
     public List<StorageRetentionPolicyVO> getRetentionPolicies() {
-        try {
-            return storageDAO.selectRetentionPolicyList();
-        } catch (DataAccessException ex) {
-            return Collections.emptyList();
-        }
+        return storageDAO.selectRetentionPolicyList();
     }
 
     @Override
@@ -212,7 +204,7 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
         try {
             storageDAO.insertRetentionPolicy(vo);
-        } catch (DataAccessException ex) {
+        } catch (DuplicateKeyException ex) {
             throw new IllegalArgumentException("이미 등록된 확장자입니다.", ex);
         }
 
@@ -264,7 +256,6 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
     @Override
     public List<StorageSpacePolicyVO> getSpacePolicies() {
-        try {
             List<StorageSpacePolicyVO> policies = storageDAO.selectSpacePolicyList();
             if (policies.isEmpty()) {
                 StorageSpacePolicyVO defaultPolicy = defaultSpacePolicy();
@@ -274,9 +265,6 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
             return policies.stream()
                     .peek(this::setDisplayValues)
                     .collect(Collectors.toList());
-        } catch (DataAccessException ex) {
-            return Collections.singletonList(setDisplayValues(defaultSpacePolicy()));
-        }
     }
 
     @Override
@@ -289,7 +277,7 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
 
         try {
             storageDAO.insertSpacePolicy(vo);
-        } catch (DataAccessException ex) {
+        } catch (DuplicateKeyException ex) {
             throw new IllegalArgumentException("이미 등록된 적용 경로입니다.", ex);
         }
 
@@ -459,12 +447,8 @@ public class StorageServiceImpl extends EgovAbstractServiceImpl implements Stora
     }
 
     private List<StorageSpacePolicyVO> selectSpacePoliciesSafely() {
-        try {
-            List<StorageSpacePolicyVO> policies = storageDAO.selectSpacePolicyList();
-            return policies.isEmpty() ? Collections.singletonList(defaultSpacePolicy()) : policies;
-        } catch (DataAccessException ex) {
-            return Collections.singletonList(defaultSpacePolicy());
-        }
+        List<StorageSpacePolicyVO> policies = storageDAO.selectSpacePolicyList();
+        return policies.isEmpty() ? Collections.singletonList(defaultSpacePolicy()) : policies;
     }
 
     private StorageSpacePolicyVO findPolicy(String rootPath, List<StorageSpacePolicyVO> policies) {

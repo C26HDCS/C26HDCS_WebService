@@ -28,9 +28,12 @@ public class LogMaintenance {
     private ScheduledExecutorService maintenance;
     private long lastTick;
     private long ticks;
+    @org.springframework.beans.factory.annotation.Value("${hdcs.background.enabled:true}")
+    private boolean backgroundEnabled = true;
 
     @PostConstruct
     public void start() {
+        if (!backgroundEnabled) return;
         heartbeat = Executors.newSingleThreadScheduledExecutor(r -> daemon(r, "log-heartbeat"));
         maintenance = Executors.newScheduledThreadPool(2, r -> daemon(r, "log-maintenance"));
         heartbeat.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);

@@ -7,8 +7,22 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: classpath:sql/schema.sql
-      data-locations: classpath:sql/data.sql
+      schema-locations:
+        - classpath:sql/application-schema.sql
+        - classpath:sql/storage_delete_target.sql
+        - classpath:sql/storage_retention_policy.sql
+        - classpath:sql/storage_space_policy.sql
+      data-locations: classpath:sql/application-data.sql
+
+hdcs:
+  background:
+    enabled: false
+  storage:
+    cleanup:
+      enabled: false
+report:
+  auto:
+    enabled: false
 
 logging:
   level:
