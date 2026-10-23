@@ -163,8 +163,8 @@ qosApp.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 /* ── 루트 컨트롤러 ────────────────────────────────────── */
-qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interval', 'AuthSession',
-    function ($scope, $route, $location, $http, $interval, session) {
+qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interval', 'AuthSession', 'alarmSound',
+    function ($scope, $route, $location, $http, $interval, session, alarmSound) {
 
     // 페이지 타이틀 동기화
     $scope.$on('$routeChangeSuccess', function () {
@@ -185,15 +185,38 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     $scope.notifList         = [];
     $scope.showNotifDropdown = false;
 
+    // 경고음: 읽지 않은 개수가 늘었을 때 1회만 울린다. (반복 없음, 끄기는 헤더 스피커 버튼)
+    $scope.soundEnabled = alarmSound.isEnabled();
+    $scope.soundBlocked = false;
+    alarmSound.onBlockedChange = function (v) {
+        $scope.$applyAsync(function () { $scope.soundBlocked = v; });
+    };
+
+    $scope.toggleAlarmSound = function () {
+        // 켜져 있는데 브라우저가 막은 상태면, 이번 클릭으로 잠금을 풀고 시험음을 낸다.
+        if ($scope.soundEnabled && $scope.soundBlocked) {
+            if (alarmSound.unlock()) alarmSound.play();
+            return;
+        }
+        $scope.soundEnabled = !$scope.soundEnabled;
+        alarmSound.setEnabled($scope.soundEnabled);
+        if ($scope.soundEnabled) { alarmSound.unlock(); alarmSound.play(); }
+    };
+
+    function setUnread(count) {
+        $scope.unreadCount = count;
+        alarmSound.observeUnread(count);
+    }
+
     $scope.loadUnreadCount = function () {
         $http.get(ctx + '/api/alarm/unread-count')
-            .then(function (res) { $scope.unreadCount = res.data.count; })
+            .then(function (res) { setUnread(res.data.count); })
             .catch(function () {});
     };
 
     // 알람 관리 화면(자식)에서 '모두 읽음 처리'를 했을 때 헤더 개수를 바로 맞춘다.
     $scope.$on('alarmAllChecked', function (event, unreadCount) {
-        $scope.unreadCount = unreadCount;
+        setUnread(unreadCount);
     });
 
     $scope.loadRecentNotifications = function () {
@@ -264,7 +287,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
         try { obj = JSON.parse(data); } catch (e) { return; }
         if (typeof obj.count !== 'number') return;
         $scope.$applyAsync(function () {
-            $scope.unreadCount = obj.count;
+            setUnread(obj.count);
             if ($scope.showNotifDropdown) $scope.loadRecentNotifications();
             $scope.$broadcast('alarmDataChanged');
         });
@@ -384,7 +407,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
             $http.post(ctx + '/api/alarm/' + item.id + '/check').then(function (res) {
                 item.checked = true;
                 $scope.detailAlarm.checked = true;
-                $scope.unreadCount = res.data.unreadCount;
+                setUnread(res.data.unreadCount);
                 // AppCtrl(부모)에서 AlarmCtrl(자식, ng-view 안)로 알려야 하므로 $broadcast 사용
                 $scope.$broadcast('alarmChecked', item.id);
             });

@@ -420,3 +420,16 @@
     color: #5a9ef5;
     border-color: rgba(58,123,213,0.35);
 }
+
+/* 헤더 알람 경고음 켜기/끄기 버튼 */
+.sound-toggle.sound-off {
+    opacity: .5;
+}
+.sound-toggle.sound-blocked {
+    color: #f5a623;
+    animation: sound-blocked-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sound-blocked-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .45; }
+}

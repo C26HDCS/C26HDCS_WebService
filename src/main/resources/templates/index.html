@@ -26,6 +26,18 @@
             <span class="system-name">수자원통신위성 수문자료 수집 시스템</span>
         </div>
         <div class="header-right">          
+            <button type="button" class="icon-btn sound-toggle"
+                    ng-class="{'sound-off': !soundEnabled, 'sound-blocked': soundEnabled && soundBlocked}"
+                    ng-click="toggleAlarmSound()"
+                    ng-attr-title="{{!soundEnabled ? '알람 경고음 꺼짐 (클릭하면 켭니다)' : (soundBlocked ? '브라우저가 소리를 막고 있습니다. 클릭하면 허용됩니다' : '알람 경고음 켜짐 (클릭하면 끕니다)')}}"
+                    aria-label="알람 경고음 켜기/끄기">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path ng-if="soundEnabled" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path ng-if="soundEnabled" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    <g ng-if="!soundEnabled"><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></g>
+                </svg>
+            </button>
             <div class="notification-wrap">
                 <button type="button" class="icon-btn" aria-label="알림" ng-click="toggleNotifDropdown($event)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -178,6 +190,7 @@
 <script th:src="@{/static/js/app.js}"></script>
 
 <script th:src="@{/static/js/common/http.factory.js}"></script>
+<script th:src="@{/static/js/common/alarm-sound.js}"></script>
 <script th:src="@{/static/js/common/placeholder.controllers.js}"></script>
 
 <script th:src="@{/static/js/dashboard/dashboard.controller.js}"></script>
