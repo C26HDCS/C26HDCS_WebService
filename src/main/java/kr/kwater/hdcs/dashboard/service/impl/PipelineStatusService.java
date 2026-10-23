@@ -13,11 +13,18 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PipelineStatusService {
     private final JdbcTemplate jdbc;
+    private volatile boolean schemaReady;
     private final kr.kwater.hdcs.common.DatabaseBackoff retry = new kr.kwater.hdcs.common.DatabaseBackoff();
     @org.springframework.beans.factory.annotation.Value("${hdcs.background.enabled:true}")
     private boolean backgroundEnabled = true;
 
     public void refresh() {
+        if (!schemaReady) {
+            schemaReady = Boolean.TRUE.equals(jdbc.queryForObject(
+                    "SELECT to_regprocedure('public.hdcs_prune_python_component_status()') IS NOT NULL",Boolean.class));
+            if (!schemaReady) throw new org.springframework.dao.DataAccessResourceFailureException(
+                    "Apply python_status_lifecycle_postgresql.sql before starting status monitoring");
+        }
         jdbc.queryForList("SELECT public.hdcs_prune_python_component_status()");
         List<Long> ids = jdbc.queryForList("SELECT DISTINCT device_id FROM public.v_python_component_health ORDER BY device_id", Long.class);
         for (Long id : ids) jdbc.queryForList("SELECT public.hdcs_refresh_python_device_status(?)", id);
