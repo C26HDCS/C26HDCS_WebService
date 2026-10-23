@@ -274,11 +274,14 @@ body {
 .notif-item-unread { background: rgba(58,123,213,0.06); }
 .notif-item-read .notif-item-message { color: #63788f; font-weight: 400; }
 .notif-dropdown-footer {
-    padding: 8px;
+    padding: 0;
     text-align: center;
     border-top: 1px solid rgba(255,255,255,0.07);
 }
+/* 푸터 영역 전체가 버튼이 되도록 가로 100%, 세로 여백도 버튼 안으로 넣는다. */
 .notif-view-all {
+    display: block;
+    width: 100%;
     background: none;
     border: none;
     color: #5a9ef5;
@@ -286,9 +289,10 @@ body {
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
-    padding: 4px 8px;
+    padding: 12px 8px;
+    border-radius: 0 0 10px 10px;
 }
-.notif-view-all:hover { color: #fff; }
+.notif-view-all:hover { color: #fff; background: rgba(255,255,255,0.06); }
 
 /* 기존 사용자 정보 유지 */
 .user-info {
