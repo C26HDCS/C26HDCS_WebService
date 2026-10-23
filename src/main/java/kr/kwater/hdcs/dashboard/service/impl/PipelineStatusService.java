@@ -13,18 +13,32 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PipelineStatusService {
     private final JdbcTemplate jdbc;
+    private volatile boolean schemaReady;
+    private final kr.kwater.hdcs.common.DatabaseBackoff retry = new kr.kwater.hdcs.common.DatabaseBackoff();
+    @org.springframework.beans.factory.annotation.Value("${hdcs.background.enabled:true}")
+    private boolean backgroundEnabled = true;
 
     public void refresh() {
-        List<Long> ids = jdbc.queryForList("SELECT DISTINCT device_id FROM public.tb_python_component_status ORDER BY device_id", Long.class);
+        if (!schemaReady) {
+            schemaReady = Boolean.TRUE.equals(jdbc.queryForObject(
+                    "SELECT to_regprocedure('public.hdcs_prune_python_component_status()') IS NOT NULL",Boolean.class));
+            if (!schemaReady) throw new org.springframework.dao.DataAccessResourceFailureException(
+                    "Apply python_status_lifecycle_postgresql.sql before starting status monitoring");
+        }
+        jdbc.queryForList("SELECT public.hdcs_prune_python_component_status()");
+        List<Long> ids = jdbc.queryForList("SELECT DISTINCT device_id FROM public.v_python_component_health ORDER BY device_id", Long.class);
         for (Long id : ids) jdbc.queryForList("SELECT public.hdcs_refresh_python_device_status(?)", id);
     }
 
     @Scheduled(fixedDelayString = "${hdcs.pipeline-status.interval-ms:5000}", initialDelay = 15000)
     public void checkTimeouts() {
-        try { refresh(); }
+        if (!backgroundEnabled || !retry.acquire()) return;
+        try { refresh(); retry.success(); }
         catch (org.springframework.dao.DataAccessException ex) {
-            log.error("PIPELINE_STATUS_CHECK_FAILED: apply python_device_status_postgresql.sql and check DB connectivity ({})",
-                    ex.getClass().getSimpleName());
+            log.error("PIPELINE_STATUS_CHECK_FAILED reason={} retry_ms={}", ex.getClass().getSimpleName(), retry.failure());
+        } catch (RuntimeException ex) {
+            retry.failure();
+            throw ex;
         }
     }
 

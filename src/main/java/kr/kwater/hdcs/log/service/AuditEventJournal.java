@@ -25,6 +25,7 @@ public class AuditEventJournal {
     private final AuditEventStore store;
     private final ObjectMapper mapper;
     private final Path pending;
+    private final kr.kwater.hdcs.common.DatabaseBackoff retry = new kr.kwater.hdcs.common.DatabaseBackoff();
 
     public AuditEventJournal(AuditEventStore store, ObjectMapper mapper, LogPolicyProperties properties) {
         this.store = store;
@@ -92,6 +93,7 @@ public class AuditEventJournal {
     }
 
     private boolean deliver(Path path, AuditEvent event) {
+        if (!retry.acquire()) return false;
         try {
             try {
                 store.insert(event);
@@ -100,9 +102,11 @@ public class AuditEventJournal {
                 if (!store.contains(event.recordKey())) throw duplicate;
             }
             Files.deleteIfExists(path);
+            retry.success();
             return true;
         } catch (RuntimeException | IOException ex) {
-            log.warn("Audit entry pending retry: key={}, reason={}", event.recordKey(), ex.getClass().getSimpleName());
+            log.warn("Audit entry pending retry: key={}, reason={}, retry_ms={}",
+                    event.recordKey(), ex.getClass().getSimpleName(), retry.failure());
             return false;
         }
     }

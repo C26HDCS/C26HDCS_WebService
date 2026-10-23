@@ -40,6 +40,10 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
     };
     $scope.policyTab = 'deleteTargets';
     $scope.errorMessage = '';
+    $scope.policyErrors = {};
+    function requestError(error, fallback) {
+        return error && error.data && typeof error.data.message === 'string' ? error.data.message : fallback;
+    }
 
     $scope.setPolicyTab = function (tab) {
         $scope.policyTab = tab;
@@ -257,12 +261,6 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
                 }
             })
             .catch(function () {
-                $scope.devices = [];
-                $scope.selectedDevice = null;
-                $scope.currentPath = '';
-                $scope.pathHistory = [];
-                $scope.files = [];
-                $scope.clearSelection();
                 $scope.errorMessage = '저장장치 정보를 조회하지 못했습니다.';
             })
             .finally(function () {
@@ -272,6 +270,7 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.loadDeleteTargets = function () {
         $scope.loadingDeleteTargets = true;
+        $scope.policyErrors.deleteTargets = false;
 
         $http.get(ctx + '/api/storage/delete-targets')
             .then(function (res) {
@@ -289,7 +288,7 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
                 }
             })
             .catch(function () {
-                $scope.deleteTargets = [];
+                $scope.policyErrors.deleteTargets = true;
                 $scope.errorMessage = '삭제 대상 기준을 조회하지 못했습니다.';
             })
             .finally(function () {
@@ -451,13 +450,14 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.loadRetentionPolicies = function () {
         $scope.loadingRetentionPolicies = true;
+        $scope.policyErrors.retentionPolicies = false;
 
         $http.get(ctx + '/api/storage/retention-policies')
             .then(function (res) {
                 $scope.retentionPolicies = res.data || [];
             })
             .catch(function () {
-                $scope.retentionPolicies = [];
+                $scope.policyErrors.retentionPolicies = true;
                 $scope.errorMessage = '파일 종류별 보관 기간을 조회하지 못했습니다.';
             })
             .finally(function () {
@@ -467,6 +467,7 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.loadSpacePolicies = function () {
         $scope.loadingSpacePolicies = true;
+        $scope.policyErrors.spacePolicies = false;
 
         $http.get(ctx + '/api/storage/space-policies')
             .then(function (res) {
@@ -476,7 +477,7 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
                 });
             })
             .catch(function () {
-                $scope.spacePolicies = [];
+                $scope.policyErrors.spacePolicies = true;
                 $scope.errorMessage = '가용 공간 기준을 조회하지 못했습니다.';
             })
             .finally(function () {
@@ -584,8 +585,8 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
             $scope.showingNewSpacePolicy = false;
             $scope.refreshSelectedDevice();
             alert('가용 공간 기준을 추가했습니다.');
-        }).catch(function () {
-            $scope.errorMessage = '가용 공간 기준을 추가하지 못했습니다. 경로가 존재하거나 이미 등록된 경로인지 확인해주세요.';
+        }).catch(function (error) {
+            $scope.errorMessage = requestError(error, '가용 공간 기준을 추가하지 못했습니다.');
         }).finally(function () {
             $scope.creatingSpacePolicy = false;
         });
@@ -649,8 +650,8 @@ qosApp.controller('StorageCtrl', ['$scope', '$http', function ($scope, $http) {
             $scope.resetNewRetentionPolicy();
             $scope.showingNewRetentionPolicy = false;
             alert('보관 기간 정책을 추가했습니다.');
-        }).catch(function () {
-            $scope.errorMessage = '보관 기간 정책을 추가하지 못했습니다. 이미 등록된 확장자인지 확인해주세요.';
+        }).catch(function (error) {
+            $scope.errorMessage = requestError(error, '보관 기간 정책을 추가하지 못했습니다.');
         }).finally(function () {
             $scope.creatingRetentionPolicy = false;
         });

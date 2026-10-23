@@ -33,6 +33,19 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
+            .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((request, response, exception) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"code\":\"AUTHENTICATION_REQUIRED\"}");
+                })
+                .accessDeniedHandler((request, response, exception) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"code\":\"ACCESS_DENIED\"}");
+                })
+            )
+
             // URL별 권한 설정
             .authorizeHttpRequests(auth -> auth
                 // 1. 누구나 접근 가능한 URL (인증 불필요)
@@ -48,7 +61,7 @@ public class SecurityConfig {
                     
                     // 화면(View) 이동을 위한 URL 라우팅 허용
                     "/dashboard", "/output", "/distribution", "/ftp", "/user", "/report",
-                    "/mypage", "/log", "/alarm", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
+                    "/mypage", "/log", "/alarm", "/config", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
                 ).permitAll()
                 
                 // 2. 인증(JWT 토큰)이 반드시 필요한 URL 명시적 설정 (옵션)

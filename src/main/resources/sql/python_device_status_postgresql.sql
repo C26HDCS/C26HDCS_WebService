@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.tb_python_component_status (
 CREATE INDEX IF NOT EXISTS idx_python_component_expiry ON public.tb_python_component_status(expires_at);
 
 CREATE OR REPLACE VIEW public.v_python_component_health AS
-SELECT s.*,
+SELECT s.device_id,s.data_kind,s.component,s.scope,s.status,s.detail,s.checked_at,s.expires_at,
        CASE WHEN expires_at IS NOT NULL AND expires_at < CURRENT_TIMESTAMP THEN 'ERROR' ELSE status END AS effective_status,
        (expires_at IS NOT NULL AND expires_at < CURRENT_TIMESTAMP) AS expired
 FROM public.tb_python_component_status s;
