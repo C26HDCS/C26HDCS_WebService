@@ -105,8 +105,8 @@
                 <td>
                     <span class="status-badge" ng-class="getLevelClass(item.alarmLevel)">{{item.alarmLevel}}</span>
                 </td>
-                <td>{{item.deviceName || item.deviceId || '-'}}</td>
-                <td class="alarm-message-cell">{{item.alarmMessage || '-'}}</td>
+                <td title="{{item.deviceName || item.deviceId || '-'}}">{{item.deviceName || item.deviceId || '-'}}</td>
+                <td class="alarm-message-cell" title="{{item.alarmMessage || '-'}}">{{item.alarmMessage || '-'}}</td>
                 <td>{{formatOccurredAt(item.occurredAt)}}</td>
             </tr>
         </tbody>

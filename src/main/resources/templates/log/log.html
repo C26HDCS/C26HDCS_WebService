@@ -105,8 +105,8 @@
                 <td>
                     <span class="status-badge" ng-class="getLevelClass(item.level)">{{getLevelLabel(item.level)}}</span>
                 </td>
-                <td>{{getTarget(item)}}</td>
-                <td class="log-message-cell">{{item.message}}</td>
+                <td title="{{getTarget(item)}}">{{getTarget(item)}}</td>
+                <td class="log-message-cell" title="{{item.message}}">{{item.message}}</td>
                 <td>{{formatRegDt(item.regDt)}}</td>
             </tr> 
         </tbody>
