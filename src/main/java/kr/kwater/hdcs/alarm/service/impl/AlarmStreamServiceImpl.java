@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class AlarmStreamServiceImpl implements AlarmStreamService {
 
     /** DB 변경 확인 주기 */
-    private static final long POLL_INTERVAL_MS = 3000L;
+    private static final long POLL_INTERVAL_MS = 1000L;
     /** 연결 유지 신호 주기. 끊어진 연결을 찾고, 프록시가 연결을 닫지 않게 한다. */
     private static final long HEARTBEAT_INTERVAL_MS = 20_000L;
     /** 연결 최대 유지 시간. 지나면 화면이 새 토큰으로 다시 연결한다. (토큰 유효시간 1시간보다 짧게) */

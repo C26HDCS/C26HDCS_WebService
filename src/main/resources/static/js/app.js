@@ -218,7 +218,11 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
         var obj;
         try { obj = JSON.parse(data); } catch (e) { return; }
         if (typeof obj.count !== 'number') return;
-        $scope.$applyAsync(function () { $scope.unreadCount = obj.count; });
+        $scope.$applyAsync(function () {
+            $scope.unreadCount = obj.count;
+            if ($scope.showNotifDropdown) $scope.loadRecentNotifications();
+            $scope.$broadcast('alarmDataChanged');
+        });
     }
 
     function connectStream() {

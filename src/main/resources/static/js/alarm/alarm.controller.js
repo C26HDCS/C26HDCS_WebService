@@ -60,7 +60,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.loadError = '';
 
-    $scope.load = function () {
+    $scope.load = function (keepPage) {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
 
@@ -81,7 +81,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
             .then(function (res) {
                 $scope.alarmList = res.data;
                 $scope.loadError = '';
-                $scope.currentPage = 1;
+                if (!keepPage) $scope.currentPage = 1;
                 updatePaging();
             })
             .catch(function () {
@@ -124,5 +124,6 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
         return item.checked ? 'alarm-row-read' : 'alarm-row-unread';
     };
 
+    $scope.$on('alarmDataChanged', function () { $scope.load(true); });
     $scope.load();
 }]);
