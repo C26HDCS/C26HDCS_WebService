@@ -17,6 +17,16 @@ spring:
     url: jdbc:postgresql://182.231.98.135:2345/c26hdcs
     username: c26hdcs
     password: C26hdcs@1234
+    hikari:
+      maximum-pool-size: ${HDCS_DB_POOL_MAX:4}
+      minimum-idle: 0
+      connection-timeout: 3000
+      validation-timeout: 1000
+      initialization-fail-timeout: -1
+      idle-timeout: 30000
+  jdbc:
+    template:
+      query-timeout: 5s
 
   h2:
     console:

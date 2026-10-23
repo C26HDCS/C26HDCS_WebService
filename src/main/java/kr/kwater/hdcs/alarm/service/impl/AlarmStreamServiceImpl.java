@@ -47,16 +47,20 @@ public class AlarmStreamServiceImpl implements AlarmStreamService {
 
     /** 마지막으로 확인한 알람 테이블 상태 값 */
     private volatile String lastSignature;
+    private final kr.kwater.hdcs.common.DatabaseBackoff retry = new kr.kwater.hdcs.common.DatabaseBackoff();
+    @org.springframework.beans.factory.annotation.Value("${hdcs.background.enabled:true}")
+    private boolean backgroundEnabled = true;
 
     @PostConstruct
     public void start() {
+        if (!backgroundEnabled) return;
         // 다른 예약 작업에 밀리지 않도록 전용 스레드를 쓴다.
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "alarm-sse");
             t.setDaemon(true);
             return t;
         });
-        scheduler.scheduleWithFixedDelay(() -> safely(this::pollChanges),
+        scheduler.scheduleWithFixedDelay(this::pollWithBackoff,
                 POLL_INTERVAL_MS, POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
         scheduler.scheduleWithFixedDelay(() -> safely(this::sendHeartbeat),
                 HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
@@ -122,14 +126,17 @@ public class AlarmStreamServiceImpl implements AlarmStreamService {
         if (signature == null || signature.equals(lastSignature)) {
             return;
         }
-        lastSignature = signature;
-
         for (String userId : emitters.keySet()) {
-            try {
-                publishUnreadCount(userId, alarmDAO.selectUnreadCount(userId));
-            } catch (Exception e) {
-                log.warn("알림 개수 전송 실패: user={}", userId, e);
-            }
+            publishUnreadCount(userId, alarmDAO.selectUnreadCount(userId));
+        }
+        lastSignature = signature;
+    }
+
+    public void pollWithBackoff() {
+        if (!retry.acquire()) return;
+        try { pollChanges(); retry.success(); }
+        catch (RuntimeException ex) {
+            log.warn("ALARM_POLL_FAILED reason={} retry_ms={}", ex.getClass().getSimpleName(), retry.failure());
         }
     }
 

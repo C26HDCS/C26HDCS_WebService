@@ -26,6 +26,8 @@ class LogbackPolicyTest {
         environment.setActiveProfiles("prod");
         LogbackLoggingSystem system = new LogbackLoggingSystem(getClass().getClassLoader());
         try {
+            system.cleanUp();
+            ((LoggerContext) LoggerFactory.getILoggerFactory()).reset();
             system.beforeInitialize();
             system.initialize(new LoggingInitializationContext(environment), "classpath:logback-spring.xml", null);
             LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
