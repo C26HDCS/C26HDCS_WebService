@@ -31,8 +31,6 @@ public class DashboardServiceImpl extends EgovAbstractServiceImpl implements Das
         vo.setNormal(dashboardDAO.selectNormalCount());
         vo.setFault(dashboardDAO.selectFaultCount());
         vo.setWarn(dashboardDAO.selectWarnCount());
-        vo.setActiveAlgorithms(dashboardDAO.selectActiveAlgorithmCount());
-        vo.setPendingAlarms(dashboardDAO.selectPendingAlarmCount());
         vo.setSystemStatus("정상");
         return vo;
     }

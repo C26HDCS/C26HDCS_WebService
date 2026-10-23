@@ -6,21 +6,22 @@
         <div class="dash-status-left">
             <span class="dash-section-label">시스템 상태 모니터링</span>
             <button class="dash-total-btn">
-                전체 장비&nbsp;<strong>{{summary.totalDevices}}</strong>
+                전체 장비&nbsp;<strong>{{statusLoaded ? summary.totalDevices : '-'}}</strong>
             </button>
             <span class="dash-status-item">
                 <span class="dash-dot dot-normal"></span>
-                정상&nbsp;<strong>{{summary.normal}}</strong>
+                정상&nbsp;<strong>{{statusLoaded ? summary.normal : '-'}}</strong>
             </span>
             <span class="dash-status-item">
                 <span class="dash-dot dot-fault"></span>
-                장애&nbsp;<strong>{{summary.fault}}</strong>
+                장애&nbsp;<strong>{{statusLoaded ? summary.fault : '-'}}</strong>
             </span>
             <span class="dash-status-item">
                 <span class="dash-dot dot-warn"></span>
-                경고&nbsp;<strong>{{summary.warn}}</strong>
+                경고&nbsp;<strong>{{statusLoaded ? summary.warn : '-'}}</strong>
             </span>
             <span class="dash-timestamp">{{currentTime}}</span>
+            <span class="status-fault" role="status" ng-if="statusError">{{statusError}}</span>
         </div>
 
         <div class="dash-status-right">
@@ -61,7 +62,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-if="devices.length === 0">
-                                    <td colspan="6" class="no-data">전체 장비 리스트가 없습니다.</td>
+                                    <td colspan="6" class="no-data">{{statusError || (statusLoaded ? '전체 장비 리스트가 없습니다.' : '상태 조회 중')}}</td>
                                 </tr>
                                 <tr ng-repeat="d in devices track by d.deviceId"
                                     class="device-row"
@@ -178,11 +179,15 @@
                     <!-- 박스 공통 스타일 -->
                     <!-- Row 1: L대역 / Ka대역 -->
                     <rect x="50"  y="20" width="100" height="38" rx="5"
-                          fill="#19273c" stroke="rgba(90,158,245,0.5)" stroke-width="1.2"/>
+                          fill="#19273c" ng-attr-stroke="{{statusColor(bandStatus('DCS'))}}" stroke-width="2">
+                        <title>L 대역 자료 처리: {{statusLabel(bandStatus('DCS'))}}</title>
+                    </rect>
                     <text x="100" y="44" text-anchor="middle" fill="#dce8f5" font-size="13" font-family="'Open Sans','Malgun Gothic',sans-serif" font-weight="600">L 대역</text>
 
                     <rect x="270" y="20" width="100" height="38" rx="5"
-                          fill="#19273c" stroke="rgba(90,158,245,0.5)" stroke-width="1.2"/>
+                          fill="#19273c" ng-attr-stroke="{{statusColor(bandStatus('KA'))}}" stroke-width="2">
+                        <title>Ka 대역 자료 처리: {{statusLabel(bandStatus('KA'))}}</title>
+                    </rect>
                     <text x="320" y="44" text-anchor="middle" fill="#dce8f5" font-size="13" font-family="'Open Sans','Malgun Gothic',sans-serif" font-weight="600">Ka 대역</text>
 
                     <!-- Row 2: 방화벽 -->
@@ -274,6 +279,21 @@
 
         <!-- 구분선 + 수신 이력 -->
         <hr class="dev-modal-divider">
+
+        <div ng-if="selectedDevice.pipelineComponents.length">
+            <div class="dev-modal-history-title">자료 처리 동작 상태</div>
+            <table class="dev-modal-history-table pipeline-status-table">
+                <thead><tr><th>구분 / 모듈</th><th>상태</th><th>상세 / 점검 시각</th></tr></thead>
+                <tbody>
+                    <tr ng-repeat="c in selectedDevice.pipelineComponents track by $index">
+                        <td>{{c.dataKind}} / {{componentLabel(c.component)}}<br>{{c.scope}}</td>
+                        <td ng-style="{color: statusColor(c.status)}">{{statusLabel(c.status)}}</td>
+                        <td>{{c.expired ? '상태 갱신 시간 초과' : c.detail}}<br>{{c.checkedAt | date:'yyyy-MM-dd HH:mm:ss':'+0900'}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr class="dev-modal-divider">
+        </div>
 
         <div class="dev-modal-history-title">최근 데이터 수신 및 처리 이력</div>
 

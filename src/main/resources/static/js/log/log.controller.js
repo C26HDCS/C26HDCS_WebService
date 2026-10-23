@@ -66,6 +66,13 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
         { value: 'LOGIN_SUCCESS', label: '로그인 성공', group: '이벤트' },
         { value: 'LOGIN_FAIL',    label: '로그인 실패', group: '이벤트' },
         { value: 'LOGOUT',        label: '로그아웃',    group: '이벤트' },
+        { value: 'STORAGE_DELETE_REQUEST', label: '파일 삭제 요청', group: '이벤트' },
+        { value: 'STORAGE_DELETE_SUCCESS', label: '파일 삭제 완료', group: '이벤트' },
+        { value: 'STORAGE_DELETE_FAIL', label: '파일 삭제 실패', group: '이벤트' },
+        { value: 'STORAGE_DELETE_SKIPPED', label: '파일 삭제 제외', group: '이벤트' },
+        { value: 'STORAGE_CLEANUP_DONE', label: '공간 정리 완료', group: '이벤트' },
+        { value: 'STORAGE_CLEANUP_FAIL', label: '공간 점검 실패', group: '이벤트' },
+        { value: 'STORAGE_SPACE_LOW', label: '가용 공간 부족', group: '이벤트' },
         { value: 'REPORT_CREATE_SUCCESS', label: '리포트 생성 성공', group: '이벤트' },
         { value: 'REPORT_CREATE_FAIL',    label: '리포트 생성 실패', group: '이벤트' }
     ];
@@ -134,6 +141,13 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'LOGIN_SUCCESS': 'log-badge-info',
             'LOGIN_FAIL':    'log-badge-error',
             'LOGOUT':        'log-badge-debug',
+            'STORAGE_DELETE_REQUEST': 'log-badge-info',
+            'STORAGE_DELETE_SUCCESS': 'log-badge-info',
+            'STORAGE_DELETE_FAIL': 'log-badge-error',
+            'STORAGE_DELETE_SKIPPED': 'log-badge-warn',
+            'STORAGE_CLEANUP_DONE': 'log-badge-info',
+            'STORAGE_CLEANUP_FAIL': 'log-badge-error',
+            'STORAGE_SPACE_LOW': 'log-badge-warn',
             'REPORT_CREATE_SUCCESS': 'log-badge-info',
             'REPORT_CREATE_FAIL':    'log-badge-error'
         };
@@ -144,7 +158,17 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
     // 예) LOGIN_SUCCESS → LOGIN(초록), LOGIN_FAIL → LOGIN(빨강)
     // 리포트는 생성 외 이벤트가 없어 REPORT_CREATE_SUCCESS/FAIL 을 REPORT 로 줄여 보여 준다. (저장 값은 그대로)
     $scope.getLevelLabel = function (level) {
-        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '').replace(/^REPORT_CREATE$/, 'REPORT') : level;
+        var storageLabels = {
+            'STORAGE_DELETE_REQUEST': '삭제 요청',
+            'STORAGE_DELETE_SUCCESS': '삭제 완료',
+            'STORAGE_DELETE_FAIL': '삭제 실패',
+            'STORAGE_DELETE_SKIPPED': '삭제 제외',
+            'STORAGE_CLEANUP_DONE': '정리 완료',
+            'STORAGE_CLEANUP_FAIL': '점검 실패',
+            'STORAGE_SPACE_LOW': '공간 부족'
+        };
+        if (storageLabels[level]) return storageLabels[level];
+        return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '') : level;
     };
 
     $scope.getTarget = function (item) {

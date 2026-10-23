@@ -83,6 +83,15 @@ logging:
     name: ${HDCS_WEB_LOG_DIR:logs}/hdcs-web-service.log
 
 hdcs:
+  pipeline-status:
+    interval-ms: 5000
+  storage:
+    cleanup:
+      enabled: ${HDCS_STORAGE_CLEANUP_ENABLED:false}
+      directory: ${HDCS_STORAGE_CLEANUP_DIR:}
+      interval-ms: ${HDCS_STORAGE_CLEANUP_INTERVAL_MS:60000}
+      initial-delay-ms: 60000
+      max-files-per-run: 100
   logging:
     directory: ${HDCS_WEB_LOG_DIR:logs}
     python-log-directory: ${HDCS_PYTHON_LOG_DIR:../C26HDCS_Python/logs}

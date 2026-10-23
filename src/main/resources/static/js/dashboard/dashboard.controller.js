@@ -9,6 +9,35 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
     $scope.equipPanelCollapsed = true;
     $scope.selectedDevice  = null;
     $scope.deviceModalOpen = false;
+    $scope.statusLoaded = false;
+    $scope.statusError = '';
+    $scope.lastStatusCheckedAt = null;
+
+    $scope.bandStatus = function (kind) {
+        if (!$scope.statusLoaded) return 'UNKNOWN';
+        var states = [];
+        $scope.devices.forEach(function (device) {
+            var components = device.pipelineComponents || [];
+            components.forEach(function (component) {
+                if (component.dataKind === kind) states.push(component.status);
+            });
+        });
+        if (!states.length) return 'UNKNOWN';
+        if (states.indexOf('ERROR') >= 0) return 'ERROR';
+        if (states.indexOf('WARNING') >= 0) return 'WARNING';
+        return 'NORMAL';
+    };
+    $scope.statusColor = function (status) {
+        return { NORMAL: '#28b67a', WARNING: '#e2ad36', ERROR: '#ec6262' }[status] || '#85909d';
+    };
+    $scope.componentLabel = function (component) {
+        if (component === 'MONITOR') return '수신 감시';
+        if (component === 'DELIVERY') return '자료 전송';
+        if (component === 'DCS_SENDER_RUNTIME' || component === 'KA_SENDER_RUNTIME') return '전송기';
+        if (component === 'DCS_RECEIVER_RUNTIME' || component === 'KA_RECEIVER_RUNTIME') return '수신기';
+        if (component === 'DCS_MONITOR_RUNTIME' || component === 'KA_MONITOR_RUNTIME') return '감시기';
+        return component;
+    };
 
     $scope.toggleEquipPanel = function () {
         $scope.equipPanelCollapsed = !$scope.equipPanelCollapsed;
@@ -18,6 +47,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         if (status === 'NORMAL')  return '정상';
         if (status === 'WARNING') return '경고';
         if (status === 'ERROR')   return '장애';
+        if (status === 'UNKNOWN') return '정보 없음';
         return status || '-';
     };
 
@@ -53,20 +83,39 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
             ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + ' KST';
     }
     updateTime();
-    $interval(updateTime, 1000);
-
-    $http.get(ctx + '/api/dashboard/summary')
-        .then(function (res) {
-            $scope.summary = res.data;
-        })
-        .catch(function () {
-            $scope.summary = { totalDevices: 80, normal: 75, fault: 5, warn: 5 };
-        });
-
-    $http.get(ctx + '/api/dashboard/devices')
-        .then(function (res) {
-            $scope.devices = res.data;
-        });
+    var clockTimer = $interval(updateTime, 1000);
+    var destroyed = false;
+    var refreshing = false;
+    function refreshStatus() {
+        if (destroyed || refreshing) return;
+        refreshing = true;
+        $http.get(ctx + '/api/dashboard/live', { cache: false })
+            .then(function (res) {
+                if (destroyed) return;
+                if (!res.data || !res.data.summary || !Array.isArray(res.data.devices)) throw new Error('Invalid status response');
+                $scope.summary = res.data.summary;
+                $scope.devices = res.data.devices;
+                $scope.statusLoaded = true;
+                $scope.statusError = '';
+                $scope.lastStatusCheckedAt = res.data.checkedAt;
+                if ($scope.selectedDevice) {
+                    var updated = $scope.devices.find(function (d) { return d.deviceId === $scope.selectedDevice.deviceId; });
+                    if (updated) $scope.selectedDevice = updated;
+                }
+            })
+            .catch(function () {
+                if (!destroyed) $scope.statusError = '상태 갱신 실패';
+            })
+            .finally(function () { refreshing = false; });
+    }
+    refreshStatus();
+    var statusTimer = $interval(refreshStatus, 5000);
+    $scope.$on('$destroy', function () {
+        destroyed = true;
+        $interval.cancel(clockTimer);
+        $interval.cancel(statusTimer);
+        if (cesiumViewer && !cesiumViewer.isDestroyed()) cesiumViewer.destroy();
+    });
 
     // ── CesiumJS 지도 초기화 (CesiumMapManager.ts 설정값 적용) ──
     var ION_TOKEN          = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmYWJlYjRmYy03ZTAxLTRjMDAtYTA3NC0wNTg2M2RiOThkNTIiLCJpZCI6MjIyMTkxLCJpYXQiOjE3MTgzNTI0MjJ9.Ieo02cB_7Iin7ed4IN_Vnv0ivyuXkNBHduWnFFVm7hw';

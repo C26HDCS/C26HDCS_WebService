@@ -12,12 +12,6 @@ import kr.kwater.hdcs.dashboard.vo.ObservationStationVO;
 @Mapper
 public interface DashboardDAO {
 
-    int selectActiveAlgorithmCount();
-
-    int selectPendingAlarmCount();
-
-    int selectTotalQualityCount();
-
     int selectTotalDeviceCount();
 
     int selectNormalCount();

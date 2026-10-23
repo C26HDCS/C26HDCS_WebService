@@ -46,8 +46,8 @@ public class AuditEventJournal {
             }
             Files.move(temporary, ready, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
-            // Do not issue a token or report logout success if no durable record exists.
-            throw new UncheckedIOException("Cannot persist authentication audit journal", ex);
+            // Callers must not start audited actions without a durable request record.
+            throw new UncheckedIOException("Cannot persist audit journal", ex);
         }
         deliver(ready, event);
     }
@@ -113,7 +113,10 @@ public class AuditEventJournal {
             throw new IllegalArgumentException("Invalid audit record key");
         }
         if (event.actor() == null || event.actor().isBlank() || event.actor().codePointCount(0, event.actor().length()) > 50
-                || event.type() == null || !List.of("LOGIN_SUCCESS", "LOGIN_FAIL", "LOGOUT").contains(event.type())
+                || event.type() == null || !List.of("LOGIN_SUCCESS", "LOGIN_FAIL", "LOGOUT",
+                    "STORAGE_DELETE_REQUEST", "STORAGE_DELETE_SUCCESS", "STORAGE_DELETE_FAIL",
+                    "STORAGE_DELETE_SKIPPED", "STORAGE_CLEANUP_DONE", "STORAGE_CLEANUP_FAIL",
+                    "STORAGE_SPACE_LOW").contains(event.type())
                 || event.message() == null || event.message().length() > 1000 || event.occurredAt() == null) {
             throw new IllegalArgumentException("Invalid audit fields");
         }
