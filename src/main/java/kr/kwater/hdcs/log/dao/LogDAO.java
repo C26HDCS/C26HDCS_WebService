@@ -12,4 +12,8 @@ public interface LogDAO {
     List<LogVO> selectLogList(LogVO vo);
 
     int selectLogCount(LogVO vo);
+
+    int insertLog(LogVO vo);
+
+    int insertEvent(LogVO vo);
 }

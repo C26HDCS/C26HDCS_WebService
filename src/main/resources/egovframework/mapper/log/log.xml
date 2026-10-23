@@ -4,6 +4,18 @@
 
 <mapper namespace="kr.kwater.hdcs.log.dao.LogDAO">
 
+    <insert id="insertLog" parameterType="kr.kwater.hdcs.log.vo.LogVO"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO TB_LOG (DEVICE_ID, LEVEL, MESSAGE, REG_DT)
+        VALUES (#{deviceId}, #{level}, #{message}, LOCALTIMESTAMP)
+    </insert>
+
+    <insert id="insertEvent" parameterType="kr.kwater.hdcs.log.vo.LogVO"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO TB_EVENT (USER_ID, EVENT_TYPE, MESSAGE, REG_DT)
+        VALUES (#{userId}, #{level}, #{message}, LOCALTIMESTAMP)
+    </insert>
+
     <!--
         TB_LOG(장치 로그) + TB_EVENT(사용자 이벤트)를 UNION ALL로 합쳐
         "로그 및 이벤트 관리" 화면 하나에서 전체/로그/이벤트 필터로 조회한다.
