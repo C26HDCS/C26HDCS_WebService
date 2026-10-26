@@ -27,7 +27,7 @@
                     LIKE '%' || UPPER(#{searchReportNo}) || '%' ESCAPE '\'
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND R.REPORT_NAME LIKE '%' || #{searchKeyword} || '%'
+                AND R.REPORT_NAME LIKE '%' || #{searchKeyword} || '%' ESCAPE '\'
             </if>
             <if test="searchGenerateType != null and searchGenerateType != ''">
                 AND R.GENERATE_TYPE = #{searchGenerateType}

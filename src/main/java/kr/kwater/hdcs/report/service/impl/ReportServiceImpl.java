@@ -59,6 +59,7 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     @Override
     public List<ReportVO> getReportList(ReportVO vo) throws Exception {
         vo.setSearchReportNo(escapeLike(vo.getSearchReportNo()));
+        vo.setSearchKeyword(escapeLike(vo.getSearchKeyword()));
         List<ReportVO> list = reportDAO.selectReportList(vo);
         for (ReportVO item : list) {
             item.setFileExists(hasFile(item.getFilePath()));

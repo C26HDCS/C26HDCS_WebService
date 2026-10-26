@@ -185,6 +185,27 @@ class LogServiceTest {
         assertCounts(0, 0);
     }
 
+    @Test
+    void treatsPercentAndUnderscoreInKeywordAsPlainCharacters() throws Exception {
+        service.saveLog(75L, LogLevel.INFO, "100% done");
+        service.saveLog(75L, LogLevel.INFO, "a_b ok");
+        service.saveLog(75L, LogLevel.INFO, "axb ok");
+        service.saveLog(75L, LogLevel.INFO, "path C:\\temp");
+
+        assertThat(keywordCount("%")).isEqualTo(1);
+        assertThat(keywordCount("_")).isEqualTo(1);
+        assertThat(keywordCount("a_b")).isEqualTo(1);
+        assertThat(keywordCount("\\")).isEqualTo(1);
+        assertThat(keywordCount("ok")).isEqualTo(2);
+    }
+
+    private int keywordCount(String keyword) throws Exception {
+        LogVO filter = new LogVO();
+        filter.setSearchKeyword(keyword);
+        assertThat(service.getLogList(filter)).hasSize(service.getLogCount(filter));
+        return service.getLogCount(filter);
+    }
+
     private void assertCounts(int logs, int events) {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_LOG", Integer.class)).isEqualTo(logs);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM TB_EVENT", Integer.class)).isEqualTo(events);
