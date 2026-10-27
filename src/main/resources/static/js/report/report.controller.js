@@ -156,8 +156,64 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
             return;
         }
 
+        var payload = { periodFrom: from, periodTo: to, dataTypes: dataTypes };
+
+        // 같은 기간·유형의 리포트가 이미 있으면 바로 만들지 않고 확인 모달을 띄운다.
+        // 확인 요청 자체가 실패해도 생성을 막지는 않는다. (중복 확인은 안내용)
         $scope.generating = true;
-        $http.post(ctx + '/api/report', { periodFrom: from, periodTo: to, dataTypes: dataTypes })
+        $http.get(ctx + '/api/report/list')
+            .then(function (res) {
+                var dups = findDuplicates(payload, res.data || []);
+                if (dups.length === 0) {
+                    submitGenerate(payload);
+                    return;
+                }
+                $scope.generating = false;
+                $scope.dupMatches   = dups;
+                $scope.dupInfo      = { from: from, to: to, types: dataTypes.join(',') };
+                pendingPayload      = payload;
+                $scope.showDupModal = true;
+            })
+            .catch(function () {
+                submitGenerate(payload);
+            });
+    };
+
+    // ── 같은 조건(기간·데이터 유형) 중복 확인 ──
+    $scope.showDupModal = false;
+    $scope.dupMatches   = [];
+    $scope.dupInfo      = null;
+    var pendingPayload  = null;
+
+    // 기간이 같고 데이터 유형 구성이 같은(순서 무관) 기존 리포트를 찾는다. 수동·자동 생성분을 모두 본다.
+    function findDuplicates(payload, list) {
+        var want = payload.dataTypes.slice().sort().join(',');
+        return list.filter(function (r) {
+            if (r.periodFrom !== payload.periodFrom || r.periodTo !== payload.periodTo) return false;
+            var have = (r.dataTypes || '').split(',')
+                .map(function (c) { return c.trim(); })
+                .filter(function (c) { return c; })
+                .sort().join(',');
+            return have === want;
+        });
+    }
+
+    $scope.confirmDupGenerate = function () {
+        var payload = pendingPayload;
+        $scope.showDupModal = false;
+        pendingPayload = null;
+        if (payload) submitGenerate(payload);
+    };
+
+    $scope.cancelDupGenerate = function () {
+        $scope.showDupModal = false;
+        $scope.dupMatches   = [];
+        pendingPayload      = null;
+    };
+
+    function submitGenerate(payload) {
+        $scope.generating = true;
+        $http.post(ctx + '/api/report', payload)
             .then(function (res) {
                 $scope.generating = false;
                 alert('리포트가 생성되었습니다.\n' + res.data.reportNo + ' · ' + res.data.reportName);
@@ -176,7 +232,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
                 var msg = err && err.data && err.data.message;
                 alert(msg || '리포트 생성 중 오류가 발생했습니다.');
             });
-    };
+    }
 
     // 새로 생성된 리포트 행 강조 (몇 초 뒤 자동으로 사라진다)
     var HIGHLIGHT_MS = 3500;

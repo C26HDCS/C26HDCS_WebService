@@ -393,3 +393,58 @@
         <button class="btn-modal-cancel" ng-click="closeDetailModal()">닫기</button>
     </div>
 </div>
+
+<!-- ── 중복 리포트 생성 확인 모달 ── -->
+<div class="log-modal-overlay" ng-show="showDupModal" ng-click="cancelDupGenerate()"></div>
+
+<div class="log-modal report-dup-modal" ng-show="showDupModal">
+    <div class="log-modal-header">
+        <span class="log-modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            같은 조건의 리포트가 있습니다
+        </span>
+        <button class="log-modal-close" ng-click="cancelDupGenerate()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="report-dup-body">
+        <p class="report-dup-lead">
+            같은 조건으로 만든 리포트가 이미 <strong>{{dupMatches.length}}건</strong> 있습니다.
+        </p>
+
+        <div class="report-dup-cond">
+            <div class="report-dup-cond-row">
+                <span class="report-dup-cond-label">조회 기간</span>
+                <span class="report-dup-cond-value">{{dupInfo.from}} ~ {{dupInfo.to}}</span>
+            </div>
+            <div class="report-dup-cond-row">
+                <span class="report-dup-cond-label">데이터 유형</span>
+                <span class="report-dup-cond-value">{{getDataTypeLabels(dupInfo.types).join(', ')}}</span>
+            </div>
+        </div>
+
+        <ul class="report-dup-list">
+            <li ng-repeat="m in dupMatches | limitTo:3">
+                <span class="report-dup-no">{{m.reportNo}}</span>
+                <span class="report-dup-name" title="{{m.reportName}}">{{m.reportName}}</span>
+                <span class="report-dup-meta">{{m.generateType === 'AUTO' ? '자동' : '수동'}} · {{formatRegDt(m.regDt)}}</span>
+            </li>
+        </ul>
+        <p class="report-dup-more" ng-if="dupMatches.length > 3">외 {{dupMatches.length - 3}}건</p>
+    </div>
+
+    <div class="log-modal-footer">
+        <button class="btn-modal-cancel" ng-click="cancelDupGenerate()">취소</button>
+        <button class="btn-modal-submit" ng-click="confirmDupGenerate()">생성</button>
+    </div>
+</div>
