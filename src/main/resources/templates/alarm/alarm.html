@@ -17,7 +17,7 @@
     <div class="alarm-search-fields">
 
         <div class="alarm-search-field">
-            <label>알람 유형</label>
+            <label>유형</label>
             <select ng-model="searchAlarmType">
                 <option value="">전체</option>
                 <option value="시스템">시스템</option>
@@ -28,13 +28,19 @@
         </div>
 
         <div class="alarm-search-field">
-            <label>알람 등급</label>
+            <label>등급</label>
             <select ng-model="searchAlarmLevel">
                 <option value="">전체</option>
                 <option value="HIGH">HIGH</option>
                 <option value="MEDIUM">MEDIUM</option>
                 <option value="LOW">LOW</option>
             </select>
+        </div>
+
+        <div class="alarm-search-field">
+            <label>장비·메시지</label>
+            <input type="text" ng-model="searchKeyword" placeholder="장비명 또는 메시지 입력"
+                   ng-keydown="$event.which === 13 && load()">
         </div>
 
         <div class="alarm-search-field">

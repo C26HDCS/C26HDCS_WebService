@@ -11,6 +11,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
     $scope.alarmList       = [];
     $scope.searchAlarmType  = '';
     $scope.searchAlarmLevel = '';
+    $scope.searchKeyword    = '';   // 장비명 또는 메시지
     $scope.searchReadStatus = '';   // '' (전체) / 'UNREAD' (안 읽은 알람)
     $scope.searchDateFrom   = '';
     $scope.searchDateTo     = '';
@@ -77,6 +78,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
         var params = {
             searchAlarmType:  $scope.searchAlarmType,
             searchAlarmLevel: $scope.searchAlarmLevel,
+            searchKeyword:    $scope.searchKeyword,
             searchDateFrom:   fromStr,
             searchDateTo:     toStr
         };

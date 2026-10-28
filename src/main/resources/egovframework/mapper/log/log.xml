@@ -52,6 +52,11 @@
         FROM TB_EVENT
     </sql>
 
+    <!-- 검색어에 들어 있는 % _ \ 는 와일드카드가 아니라 글자로 찾도록 이스케이프한다. -->
+    <sql id="keywordPattern">
+        REPLACE(REPLACE(REPLACE(#{searchKeyword}, '\', '\\'), '%', '\%'), '_', '\_')
+    </sql>
+
     <select id="selectLogList" parameterType="kr.kwater.hdcs.log.vo.LogVO"
             resultMap="logResultMap">
         SELECT ID, CATEGORY, DEVICE_ID, DEVICE_NAME, USER_ID, LEVEL, MESSAGE, REG_DT
@@ -66,7 +71,9 @@
                 AND LEVEL = #{searchLevel}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND MESSAGE LIKE '%' || REPLACE(REPLACE(REPLACE(#{searchKeyword}, '\', '\\'), '%', '\%'), '_', '\_') || '%' ESCAPE '\'
+                AND (MESSAGE     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+                  OR USER_ID     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+                  OR DEVICE_NAME LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\')
             </if>
             <if test="searchDateFrom != null and searchDateFrom != ''">
                 AND REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
@@ -92,7 +99,9 @@
                 AND LEVEL = #{searchLevel}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
-                AND MESSAGE LIKE '%' || REPLACE(REPLACE(REPLACE(#{searchKeyword}, '\', '\\'), '%', '\%'), '_', '\_') || '%' ESCAPE '\'
+                AND (MESSAGE     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+                  OR USER_ID     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+                  OR DEVICE_NAME LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\')
             </if>
             <if test="searchDateFrom != null and searchDateFrom != ''">
                 AND REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)

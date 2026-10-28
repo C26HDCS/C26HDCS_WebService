@@ -28,6 +28,11 @@
         C.ALARM_ID IS NULL AND <include refid="visibleCondition"/>
     </sql>
 
+    <!-- 검색어에 들어 있는 % _ \ 는 와일드카드가 아니라 글자로 찾도록 이스케이프한다. -->
+    <sql id="keywordPattern">
+        REPLACE(REPLACE(REPLACE(#{searchKeyword}, '\', '\\'), '%', '\%'), '_', '\_')
+    </sql>
+
     <sql id="alarmWhere">
         <where>
             <include refid="visibleCondition"/>
@@ -36,6 +41,10 @@
             </if>
             <if test="searchAlarmLevel != null and searchAlarmLevel != ''">
                 AND A.ALARM_LEVEL = #{searchAlarmLevel}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (D.DEVICE_NAME   LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+                  OR A.ALARM_MESSAGE LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\')
             </if>
             <if test="searchUnreadOnly != null and searchUnreadOnly">
                 AND <include refid="unreadCondition"/>
@@ -66,6 +75,7 @@
             resultType="int">
         SELECT COUNT(*)
         FROM TB_ALARM A
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
         LEFT JOIN TB_ALARM_CHECK C ON C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{currentUserId}
         LEFT JOIN TB_USER U ON U.USER_ID = #{currentUserId}
         <include refid="alarmWhere"/>
