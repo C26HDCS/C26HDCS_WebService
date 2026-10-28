@@ -96,7 +96,10 @@
             <tr ng-if="loadError">
                 <td colspan="6" class="no-data">{{loadError}}</td>
             </tr>
-            <tr ng-if="!loadError && pagedList.length === 0">
+            <tr ng-if="loading && !loadError && pagedList.length === 0">
+                <td colspan="6" class="no-data list-loading"><span class="list-spinner"></span>불러오는 중...</td>
+            </tr>
+            <tr ng-if="!loading && !loadError && pagedList.length === 0">
                 <td colspan="6" class="no-data">이력이 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"

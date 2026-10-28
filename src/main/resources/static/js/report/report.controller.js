@@ -282,6 +282,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
             return;
         }
 
+        $scope.loading = true;
         $http.get(ctx + '/api/report/list', {
             params: {
                 searchReportNo:     $scope.searchReportNo || '',
@@ -304,7 +305,8 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
                 $scope.reportList = [];
                 $scope.currentPage = 1;
                 updatePaging();
-            });
+            })
+            .finally(function () { $scope.loading = false; });
     };
 
     // ── 상세 정보 모달 ──

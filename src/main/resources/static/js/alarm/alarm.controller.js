@@ -82,6 +82,8 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
         };
         if ($scope.searchReadStatus === 'UNREAD') params.searchUnreadOnly = true;
 
+        // 15초 폴링·SSE 로 인한 백그라운드 갱신(keepPage)에는 로딩 표시를 하지 않는다.
+        if (!keepPage) $scope.loading = true;
         $http.get(ctx + '/api/alarm/list', { params: params })
             .then(function (res) {
                 $scope.alarmList = res.data;
@@ -94,7 +96,8 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
                 $scope.alarmList = [];
                 $scope.currentPage = 1;
                 updatePaging();
-            });
+            })
+            .finally(function () { $scope.loading = false; });
     };
 
     // 안 읽은 알람을 모두 읽음 처리

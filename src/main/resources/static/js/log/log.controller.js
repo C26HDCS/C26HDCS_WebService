@@ -105,6 +105,7 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             return;
         }
 
+        $scope.loading = true;
         $http.get(ctx + '/api/log/list', {
             params: {
                 searchCondition: $scope.filterCategory,
@@ -125,7 +126,8 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
                 $scope.logList = [];
                 $scope.currentPage = 1;
                 updatePaging();
-            });
+            })
+            .finally(function () { $scope.loading = false; });
     };
 
     // 구분(로그/이벤트) 배지
