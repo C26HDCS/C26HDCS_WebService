@@ -65,6 +65,8 @@
         </svg>
         조회
     </button>
+
+    <div class="form-error" ng-if="searchError">{{searchError}}</div>
 </div>
 
 <!-- ── 테이블 영역 ── -->
@@ -162,6 +164,31 @@
 
     </div>
 
+</div>
+
+<!-- ── 모두 읽음 처리 확인 모달 ── -->
+<div class="log-modal-overlay" ng-show="showCheckAllModal" ng-click="cancelCheckAll()"></div>
+
+<div class="log-modal alarm-confirm-modal" ng-show="showCheckAllModal">
+    <div class="log-modal-header">
+        <span class="log-modal-title">모두 읽음 처리</span>
+        <button class="log-modal-close" ng-click="cancelCheckAll()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="alarm-confirm-body">
+        안 읽은 알람 <strong>{{unreadCount}}건</strong>을 모두 읽음 처리할까요?
+    </div>
+
+    <div class="log-modal-footer">
+        <button class="btn-modal-cancel" ng-click="cancelCheckAll()">취소</button>
+        <button class="btn-modal-submit" ng-click="confirmCheckAll()">읽음 처리</button>
+    </div>
 </div>
 
 <!-- 알람 상세 팝업은 index.html(AppCtrl)에 공통으로 정의되어 있어 여기서는 openDetailModal(item) 호출만 함 -->

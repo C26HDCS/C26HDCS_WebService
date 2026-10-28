@@ -1,6 +1,6 @@
 'use strict';
 
-qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
+qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $http, toast) {
 
     // 헤더 알림 드롭다운 등 다른 곳에서 확인 처리된 알람을 이 목록에도 반영 (페이지 유지, 재조회 없음)
     $scope.$on('alarmChecked', function (event, alarmId) {
@@ -60,12 +60,17 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
 
     $scope.loadError = '';
 
+    // 입력 검증 안내: 검색 영역 안에 문구로 보여 주고, 날짜를 고치면 지운다.
+    $scope.searchError = '';
+    $scope.$watchGroup(['searchDateFrom', 'searchDateTo'], function () { $scope.searchError = ''; });
+
     $scope.load = function (keepPage) {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
 
+        $scope.searchError = '';
         if (fromStr && toStr && fromStr > toStr) {
-            alert('시작일은 종료일보다 클 수 없습니다.');
+            $scope.searchError = '시작일은 종료일보다 클 수 없습니다.';
             return;
         }
 
@@ -94,10 +99,21 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
 
     // 안 읽은 알람을 모두 읽음 처리
     $scope.checkingAll = false;
+    $scope.showCheckAllModal = false;
 
+    // '모두 읽음 처리' 버튼: 바로 처리하지 않고 확인 모달을 띄운다.
     $scope.checkAll = function () {
         if ($scope.checkingAll || !$scope.unreadCount) return;
-        if (!confirm('안 읽은 알람 ' + $scope.unreadCount + '건을 모두 읽음 처리할까요?')) return;
+        $scope.showCheckAllModal = true;
+    };
+
+    $scope.cancelCheckAll = function () {
+        $scope.showCheckAllModal = false;
+    };
+
+    $scope.confirmCheckAll = function () {
+        $scope.showCheckAllModal = false;
+        if ($scope.checkingAll) return;
 
         $scope.checkingAll = true;
         $http.post(ctx + '/api/alarm/check-all')
@@ -111,7 +127,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', function ($scope, $http) {
                 }
             })
             .catch(function () {
-                alert('모두 읽음 처리 중 오류가 발생했습니다.');
+                toast.error('모두 읽음 처리 중 오류가 발생했습니다.');
             })
             .finally(function () {
                 $scope.checkingAll = false;

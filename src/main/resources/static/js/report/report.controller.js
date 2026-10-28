@@ -1,6 +1,6 @@
 'use strict';
 
-qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope, $http, $timeout) {
+qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', function ($scope, $http, $timeout, toast) {
     $scope.reportList = [];
     $scope.searchReportNo = '';
     $scope.searchKeyword = '';
@@ -120,8 +120,13 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
         $scope.gen.typeLog = $scope.gen.typeEvent = $scope.gen.typeAlarm = $scope.gen.typeData = on;
     };
 
+    // 입력 검증 안내: 생성 영역 안에 문구로 보여 주고, 입력을 고치면 지운다.
+    $scope.genError = '';
+    $scope.$watch('gen', function () { $scope.genError = ''; }, true);
+
     $scope.resetGen = function () {
         $scope.gen = emptyGen();
+        $scope.genError = '';
     };
 
     $scope.generateReport = function () {
@@ -129,20 +134,21 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
 
         var from = toDateStr($scope.gen.dateFrom);
         var to   = toDateStr($scope.gen.dateTo);
+        $scope.genError = '';
         if (!from || !to) {
-            alert('조회 기간(시작일, 종료일)을 선택해 주세요.');
+            $scope.genError = '조회 기간(시작일, 종료일)을 선택해 주세요.';
             return;
         }
         if (from > to) {
-            alert('시작일은 종료일보다 클 수 없습니다.');
+            $scope.genError = '시작일은 종료일보다 클 수 없습니다.';
             return;
         }
         if (to > todayStr()) {
-            alert('종료일은 오늘 이후로 선택할 수 없습니다.');
+            $scope.genError = '종료일은 오늘 이후로 선택할 수 없습니다.';
             return;
         }
         if (daysBetween(from, to) > MAX_PERIOD_DAYS) {
-            alert('조회 기간은 최대 ' + MAX_PERIOD_DAYS + '일까지 선택할 수 있습니다.');
+            $scope.genError = '조회 기간은 최대 ' + MAX_PERIOD_DAYS + '일까지 선택할 수 있습니다.';
             return;
         }
 
@@ -152,7 +158,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
         if ($scope.gen.typeAlarm) dataTypes.push('ALARM');
         if ($scope.gen.typeData)  dataTypes.push('DATA');
         if (dataTypes.length === 0) {
-            alert('데이터 유형을 1개 이상 선택해 주세요.');
+            $scope.genError = '데이터 유형을 1개 이상 선택해 주세요.';
             return;
         }
 
@@ -216,7 +222,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
         $http.post(ctx + '/api/report', payload)
             .then(function (res) {
                 $scope.generating = false;
-                alert('리포트가 생성되었습니다.\n' + res.data.reportNo + ' · ' + res.data.reportName);
+                toast.success('리포트가 생성되었습니다.', res.data.reportNo + ' · ' + res.data.reportName);
                 $scope.resetGen();
                 // 검색 조건에 걸려 새 리포트가 목록에서 빠지지 않도록 검색 조건을 비우고, 새 행을 강조한다.
                 $scope.searchReportNo = '';
@@ -230,7 +236,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
             .catch(function (err) {
                 $scope.generating = false;
                 var msg = err && err.data && err.data.message;
-                alert(msg || '리포트 생성 중 오류가 발생했습니다.');
+                toast.error(msg || '리포트 생성 중 오류가 발생했습니다.');
             });
     }
 
@@ -263,11 +269,16 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
 
     $scope.loadError = '';
 
+    // 입력 검증 안내: 검색 영역 안에 문구로 보여 주고, 날짜를 고치면 지운다.
+    $scope.searchError = '';
+    $scope.$watchGroup(['searchDateFrom', 'searchDateTo'], function () { $scope.searchError = ''; });
+
     $scope.load = function (newReportId) {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
+        $scope.searchError = '';
         if (fromStr && toStr && fromStr > toStr) {
-            alert('시작일은 종료일보다 클 수 없습니다.');
+            $scope.searchError = '시작일은 종료일보다 클 수 없습니다.';
             return;
         }
 
@@ -331,7 +342,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
             })
             .catch(function (err) {
                 var msg = err && err.data && err.data.message;
-                alert(msg || '리포트 상세 정보를 불러오지 못했습니다.');
+                toast.error(msg || '리포트 상세 정보를 불러오지 못했습니다.');
                 if (err && err.status === 404) $scope.load();
             });
     };
@@ -375,11 +386,11 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', function ($scope
                     reader.onload = function () {
                         var msg = fallback;
                         try { msg = JSON.parse(reader.result).message || fallback; } catch (e) {}
-                        $scope.$applyAsync(function () { alert(msg); });
+                        toast.error(msg);
                     };
                     reader.readAsText(err.data);
                 } else {
-                    alert(fallback);
+                    toast.error(fallback);
                 }
             })
             .finally(function () {

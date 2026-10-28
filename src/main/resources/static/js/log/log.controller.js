@@ -91,12 +91,17 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.onCategoryChange = refreshLevelOptions;
     refreshLevelOptions();
 
+    // 입력 검증 안내: 검색 영역 안에 문구로 보여 주고, 날짜를 고치면 지운다.
+    $scope.searchError = '';
+    $scope.$watchGroup(['searchDateFrom', 'searchDateTo'], function () { $scope.searchError = ''; });
+
     $scope.load = function () {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
 
+        $scope.searchError = '';
         if (fromStr && toStr && fromStr > toStr) {
-            alert('시작일은 종료일보다 클 수 없습니다.');
+            $scope.searchError = '시작일은 종료일보다 클 수 없습니다.';
             return;
         }
 
@@ -151,7 +156,11 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'REPORT_CREATE_SUCCESS': 'log-badge-info',
             'REPORT_CREATE_FAIL':    'log-badge-error'
         };
-        return map[level] || 'log-badge-debug';
+        if (map[level]) return map[level];
+        // 목록에 없는 새 이벤트 유형은 결과 접미사로 색을 정한다.
+        if (/_FAIL$/.test(level || ''))    return 'log-badge-error';
+        if (/_SUCCESS$/.test(level || '')) return 'log-badge-info';
+        return 'log-badge-debug';
     };
 
     // 유형 배지 글자: 이벤트 유형의 결과 접미사(_SUCCESS/_FAIL)는 색(초록/빨강)으로 구분되므로 글자에서는 뺀다.

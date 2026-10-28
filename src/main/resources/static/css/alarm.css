@@ -433,3 +433,20 @@
     0%, 100% { opacity: 1; }
     50%      { opacity: .45; }
 }
+
+/* 모두 읽음 처리 확인 모달 */
+.alarm-confirm-modal {
+    width: 400px;
+    max-width: calc(100vw - 32px);
+}
+.alarm-confirm-body {
+    padding: 22px 22px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #dce8f5;
+    text-align: center;
+}
+.alarm-confirm-body strong {
+    color: #f5a623;
+    font-weight: 700;
+}
