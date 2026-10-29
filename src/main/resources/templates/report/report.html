@@ -32,7 +32,7 @@
     <div class="report-gen-body">
 
         <div class="report-gen-group">
-            <span class="report-gen-label">기간 선택</span>
+            <span class="report-gen-label">조회 기간</span>
             <div class="date-range">
                 <input type="date" class="report-date-input" ng-model="gen.dateFrom"
                        ng-attr-min="{{genFromMin()}}" ng-attr-max="{{genFromMax()}}">
@@ -135,9 +135,9 @@
         <div class="user-search-field">
             <label>생성일시</label>
             <div class="date-range">
-                <input type="date" ng-model="searchDateFrom">
+                <input type="date" ng-model="searchDateFrom" ng-attr-max="{{searchFromMax()}}">
                 <span class="date-sep">~</span>
-                <input type="date" ng-model="searchDateTo">
+                <input type="date" ng-model="searchDateTo" ng-attr-min="{{searchToMin()}}">
             </div>
         </div>
 

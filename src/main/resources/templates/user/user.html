@@ -27,7 +27,7 @@
             <label>가입일시</label>
             <div class="date-range">
                 <input type="date" ng-model="searchDateFrom"
-                       max="{{today}}">
+                       ng-attr-max="{{searchFromMax()}}">
                 <span class="date-sep">~</span>
                 <input type="date" ng-model="searchDateTo"
                        ng-attr-min="{{toDateStr(searchDateFrom) || undefined}}"

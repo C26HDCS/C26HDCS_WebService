@@ -60,6 +60,12 @@ qosApp.controller('UserCtrl', ['$scope', '$http', function ($scope, $http) {
     // 오늘 날짜 (YYYY-MM-DD) — max date 제한용
     $scope.today = toDateStr(new Date());
 
+    // 시작일: 종료일이 정해져 있으면 그 날짜(오늘 이전)까지만 선택 가능. 종료일의 min 은 html 에서 시작일로 건다.
+    $scope.searchFromMax = function () {
+        var to = toDateStr($scope.searchDateTo);
+        return (to && to < $scope.today) ? to : $scope.today;
+    };
+
     $scope.applySearch = function () {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);

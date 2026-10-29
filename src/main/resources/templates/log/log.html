@@ -44,9 +44,9 @@
         <div class="log-search-field">
             <label>발생일시</label>
             <div class="log-date-range">
-                <input type="date" ng-model="searchDateFrom">
+                <input type="date" ng-model="searchDateFrom" ng-attr-max="{{searchFromMax()}}">
                 <span class="log-date-sep">~</span>
-                <input type="date" ng-model="searchDateTo">
+                <input type="date" ng-model="searchDateTo" ng-attr-min="{{searchToMin()}}">
             </div>
         </div>
 

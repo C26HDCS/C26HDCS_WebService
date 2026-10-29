@@ -95,6 +95,10 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.searchError = '';
     $scope.$watchGroup(['searchDateFrom', 'searchDateTo'], function () { $scope.searchError = ''; });
 
+    // 조회 기간: 종료일은 시작일보다 앞설 수 없고, 시작일은 종료일보다 뒤일 수 없게 달력에서 막는다.
+    $scope.searchFromMax = function () { return toDateStr($scope.searchDateTo); };
+    $scope.searchToMin   = function () { return toDateStr($scope.searchDateFrom); };
+
     $scope.load = function () {
         var fromStr = toDateStr($scope.searchDateFrom);
         var toStr   = toDateStr($scope.searchDateTo);
