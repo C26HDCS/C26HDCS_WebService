@@ -1,6 +1,7 @@
 package kr.kwater.hdcs.alarm.web;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -58,6 +59,11 @@ public class AlarmController {
 
     @PostMapping("/{id}/check")
     public ResponseEntity<?> check(@PathVariable("id") Long id) throws Exception {
+        // 없는 알람 번호는 DB 외래키 오류(500)가 아니라 404 로 알린다.
+        if (!alarmService.existsAlarm(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "존재하지 않는 알람입니다."));
+        }
         String userId = currentUserId();
         alarmService.checkAlarm(id, userId);
         int unreadCount = alarmService.getUnreadCount(userId);

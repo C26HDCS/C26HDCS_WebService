@@ -32,6 +32,11 @@ public class AlarmServiceImpl extends EgovAbstractServiceImpl implements AlarmSe
     }
 
     @Override
+    public boolean existsAlarm(Long alarmId) throws Exception {
+        return alarmId != null && alarmDAO.selectAlarmExists(alarmId) > 0;
+    }
+
+    @Override
     public void checkAlarm(Long alarmId, String userId) throws Exception {
         alarmDAO.insertAlarmCheck(alarmId, userId);
     }

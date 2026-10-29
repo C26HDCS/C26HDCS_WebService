@@ -23,4 +23,7 @@ public interface AlarmDAO {
     int insertAllAlarmChecks(@Param("userId") String userId);
 
     void insertAlarmCheck(@Param("alarmId") Long alarmId, @Param("userId") String userId);
+
+    /** 해당 번호의 알람이 있으면 1, 없으면 0 */
+    int selectAlarmExists(@Param("alarmId") Long alarmId);
 }

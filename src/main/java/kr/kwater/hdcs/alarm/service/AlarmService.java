@@ -12,6 +12,9 @@ public interface AlarmService {
 
     int getUnreadCount(String currentUserId) throws Exception;
 
+    /** 해당 번호의 알람이 존재하는지 */
+    boolean existsAlarm(Long alarmId) throws Exception;
+
     void checkAlarm(Long alarmId, String userId) throws Exception;
 
     /** 이 사용자가 아직 확인하지 않은 알람을 모두 확인 처리하고, 처리한 건수를 돌려준다. */

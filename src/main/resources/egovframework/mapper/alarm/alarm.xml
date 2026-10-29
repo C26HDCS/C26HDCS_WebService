@@ -110,6 +110,10 @@
         ON CONFLICT (ALARM_ID, USER_ID) DO NOTHING
     </insert>
 
+    <select id="selectAlarmExists" resultType="int">
+        SELECT COUNT(*) FROM TB_ALARM WHERE ALARM_ID = #{alarmId}
+    </select>
+
     <insert id="insertAlarmCheck">
         INSERT INTO TB_ALARM_CHECK (ALARM_ID, USER_ID, CHECKED_AT)
         VALUES (#{alarmId}, #{userId}, CURRENT_TIMESTAMP)

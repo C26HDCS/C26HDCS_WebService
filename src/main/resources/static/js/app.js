@@ -410,6 +410,12 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
                 setUnread(res.data.unreadCount);
                 // AppCtrl(부모)에서 AlarmCtrl(자식, ng-view 안)로 알려야 하므로 $broadcast 사용
                 $scope.$broadcast('alarmChecked', item.id);
+            }).catch(function (err) {
+                // 그 사이 삭제된 알람(404): 목록과 안 읽은 개수를 서버 기준으로 다시 맞춘다.
+                if (err && err.status === 404) {
+                    $scope.loadUnreadCount();
+                    $scope.$broadcast('alarmDataChanged');
+                }
             });
         }
     };
