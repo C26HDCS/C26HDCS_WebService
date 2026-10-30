@@ -31,6 +31,10 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+.user-search-panel:not(.report-search-panel) {
+    padding: 20px 24px; 
+}
+
 .user-search-fields {
     display: flex;
     gap: 22px;
