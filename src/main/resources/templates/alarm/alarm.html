@@ -110,7 +110,8 @@
             <tr ng-repeat="item in pagedList"
                 class="alarm-row-clickable"
                 ng-class="rowClass(item)"
-                ng-click="openDetailModal(item)">
+                ng-click="openDetailModal(item)"
+                key-activate="openDetailModal(item)">
                 <td>{{(currentPage - 1) * pageSize + $index + 1}}</td>
                 <td>{{item.alarmType}}</td>
                 <td>
@@ -178,7 +179,7 @@
 <!-- ── 모두 읽음 처리 확인 모달 ── -->
 <div class="log-modal-overlay" ng-show="showCheckAllModal" ng-click="cancelCheckAll()"></div>
 
-<div class="log-modal alarm-confirm-modal" ng-show="showCheckAllModal">
+<div class="log-modal alarm-confirm-modal" ng-show="showCheckAllModal" modal-a11y="showCheckAllModal" modal-close="cancelCheckAll()">
     <div class="log-modal-header">
         <span class="log-modal-title">모두 읽음 처리</span>
         <button class="log-modal-close" ng-click="cancelCheckAll()">

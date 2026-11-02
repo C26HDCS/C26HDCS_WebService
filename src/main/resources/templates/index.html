@@ -192,6 +192,7 @@
 <script th:src="@{/static/js/common/http.factory.js}"></script>
 <script th:src="@{/static/js/common/alarm-sound.js}"></script>
 <script th:src="@{/static/js/common/toast.js}"></script>
+<script th:src="@{/static/js/common/a11y.js}"></script>
 <script th:src="@{/static/js/common/placeholder.controllers.js}"></script>
 
 <script th:src="@{/static/js/dashboard/dashboard.controller.js}"></script>
@@ -282,7 +283,7 @@
 <!-- ── 알람 상세 팝업 (헤더 알림/알람 관리 화면 공통) ── -->
 <div class="alarm-modal-overlay" ng-cloak ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
 
-<div class="alarm-modal alarm-detail-modal" ng-cloak ng-show="showDetailModal">
+<div class="alarm-modal alarm-detail-modal" ng-cloak ng-show="showDetailModal" modal-a11y="showDetailModal" modal-close="closeDetailModal()">
     <div class="alarm-modal-header">
         <span class="alarm-modal-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"

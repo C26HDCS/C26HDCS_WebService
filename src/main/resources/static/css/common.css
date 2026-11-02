@@ -719,3 +719,12 @@ body {
 
 /* AngularJS 가 실행되기 전에 숨겨야 할 요소가 잠깐 보이는 것을 막는다 (ng-cloak 속성이 있는 요소) */
 [ng-cloak], .ng-cloak { display: none !important; }
+
+/* 키보드로 열 수 있는 목록 행(key-activate): Tab 으로 포커스가 오면 테두리를 보여 준다 */
+[key-activate]:focus-visible {
+    outline: 2px solid #3a7bd5;
+    outline-offset: -2px;
+    background: rgba(58,123,213,0.07);
+}
+/* 모달 창 자체가 포커스를 받을 때는 테두리를 그리지 않는다 */
+[modal-a11y]:focus { outline: none; }

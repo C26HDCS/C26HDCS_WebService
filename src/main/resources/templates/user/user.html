@@ -98,7 +98,8 @@
             </tr>
             <tr ng-repeat="item in pagedList"
                 class="user-row-clickable"
-                ng-click="openDetailModal(item)">
+                ng-click="openDetailModal(item)"
+                key-activate="openDetailModal(item)">
                 <td>{{(currentPage - 1) * pageSize + $index + 1}}</td>
                 <td>{{item.userId}}</td>
                 <td>{{item.name}}</td>
@@ -200,7 +201,7 @@
 <!-- ── 사용자 상세 모달 ── -->
 <div class="user-modal-overlay" ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
 
-<div class="user-modal user-detail-modal" ng-show="showDetailModal">
+<div class="user-modal user-detail-modal" ng-show="showDetailModal" modal-a11y="showDetailModal" modal-close="closeDetailModal()">
     <div class="user-modal-header">
         <span class="user-modal-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -291,7 +292,7 @@
 <!-- ── 사용자 등록 모달 ── -->
 <div class="user-modal-overlay" ng-show="showRegisterModal" ng-click="closeRegisterModal()"></div>
 
-<div class="user-modal" ng-show="showRegisterModal">
+<div class="user-modal" ng-show="showRegisterModal" modal-a11y="showRegisterModal" modal-close="closeRegisterModal()">
     <div class="user-modal-header">
         <span class="user-modal-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -387,7 +388,7 @@
 <!-- ── 사용자 수정 모달 ── -->
 <div class="user-modal-overlay" ng-show="showEditModal" ng-click="closeEditModal()"></div>
 
-<div class="user-modal" ng-show="showEditModal">
+<div class="user-modal" ng-show="showEditModal" modal-a11y="showEditModal" modal-close="closeEditModal()">
     <div class="user-modal-header">
         <span class="user-modal-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -457,7 +458,7 @@
 <!-- ── 수정 완료 알림 모달 ── -->
 <div class="user-modal-overlay" ng-show="showUpdateSuccessModal" ng-click="closeUpdateSuccessModal()"></div>
 
-<div class="user-modal user-modal-confirm" ng-show="showUpdateSuccessModal">
+<div class="user-modal user-modal-confirm" ng-show="showUpdateSuccessModal" modal-a11y="showUpdateSuccessModal" modal-close="closeUpdateSuccessModal()">
     <div class="user-modal-header">
         <span class="user-modal-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -499,7 +500,7 @@
 <!-- ── 사용자 삭제 확인 모달 ── -->
 <div class="user-modal-overlay" ng-show="showDeleteModal" ng-click="closeDeleteModal()"></div>
 
-<div class="user-modal user-modal-confirm" ng-show="showDeleteModal">
+<div class="user-modal user-modal-confirm" ng-show="showDeleteModal" modal-a11y="showDeleteModal" modal-close="closeDeleteModal()">
     <div class="user-modal-header">
         <span class="user-modal-title user-modal-title-danger">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
