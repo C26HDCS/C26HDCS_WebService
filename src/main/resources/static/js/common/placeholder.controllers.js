@@ -272,13 +272,22 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         document.getElementById('csvFileInput').click();
     };
 
+    // 파일 내용을 글자로 읽는다. UTF-8을 먼저 시도하고, UTF-8이 아니면(엑셀 기본 "CSV" 저장은 CP949) EUC-KR(CP949)로 다시 읽는다.
+    function decodeCsvBytes(buffer) {
+        try {
+            return new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+        } catch (e) {
+            return new TextDecoder('euc-kr').decode(buffer);
+        }
+    }
+
     $scope.onFileSelect = function (input) {
         if (!input.files || !input.files[0]) return;
         var file = input.files[0];
         var reader = new FileReader();
         reader.onload = function (e) {
             $scope.$apply(function () {
-                var result = parseCsvText(e.target.result);
+                var result = parseCsvText(decodeCsvBytes(e.target.result));
                 if (result.error) {
                     $scope.registerError = result.error;
                     $scope.csvRows       = [];
@@ -291,8 +300,18 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
             });
             input.value = '';
         };
-        reader.readAsText(file, 'UTF-8');
+        reader.readAsArrayBuffer(file);
     };
+
+    // 쉼표 / 탭 / 세미콜론 중 첫 줄에 가장 많이 나오는 것을 구분자로 본다.
+    function detectDelimiter(line) {
+        var best = ',', bestCount = 0;
+        [',', '\t', ';'].forEach(function (d) {
+            var n = line.split(d).length - 1;
+            if (n > bestCount) { best = d; bestCount = n; }
+        });
+        return best;
+    }
 
     function parseCsvText(text) {
         text = text.replace(/^﻿/, '');
@@ -300,7 +319,10 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         if (lines.length < 2) {
             return { error: '데이터가 없습니다. 헤더 포함 최소 2행이 필요합니다.' };
         }
-        var headers = lines[0].split(',').map(function (h) { return h.trim(); });
+
+        // 첫 줄이 헤더
+        var delim   = detectDelimiter(lines[0]);
+        var headers = lines[0].split(delim).map(function (h) { return h.trim(); });
         var equipIdx = -1, obsIdx = -1, nameIdx = -1;
         headers.forEach(function (h, i) {
             if (h === '장비ID' || h === 'device_name' || h === 'equipId') equipIdx = i;
@@ -310,11 +332,12 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         if (equipIdx === -1 || nameIdx === -1) {
             return { error: '헤더 형식 오류. 장비ID, 관측소표시명 컬럼이 필요합니다.' };
         }
+
         var rows = [];
         for (var i = 1; i < lines.length; i++) {
-            var cols        = lines[i].split(',');
+            var cols        = lines[i].split(delim);
             var equipId     = (cols[equipIdx] || '').trim();
-            var obsCode     = obsIdx >= 0 ? (cols[obsIdx]  || '').trim() : '';
+            var obsCode     = obsIdx >= 0 ? (cols[obsIdx] || '').trim() : '';
             var displayName = (cols[nameIdx]  || '').trim();
             if (!equipId || !displayName) continue;
             rows.push({ equipId: equipId, obsCode: obsCode, displayName: displayName });
