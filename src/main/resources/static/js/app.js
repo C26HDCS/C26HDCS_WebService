@@ -220,7 +220,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     });
 
     $scope.loadRecentNotifications = function () {
-        $http.get(ctx + '/api/alarm/list', { params: { limit: NOTIF_PREVIEW_SIZE } })
+        $http.get(ctx + '/api/alarm/list', { params: { limit: NOTIF_PREVIEW_SIZE, searchUnreadOnly: true } })
             .then(function (res) { $scope.notifList = res.data; })
             .catch(function () { $scope.notifList = []; });
     };
@@ -407,6 +407,8 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
             $http.post(ctx + '/api/alarm/' + item.id + '/check').then(function (res) {
                 item.checked = true;
                 $scope.detailAlarm.checked = true;
+                // 미리보기에는 안 읽은 알람만 남기므로, 확인한 알람은 목록에서 뺀다.
+                $scope.notifList = $scope.notifList.filter(function (n) { return n.id !== item.id; });
                 setUnread(res.data.unreadCount);
                 // AppCtrl(부모)에서 AlarmCtrl(자식, ng-view 안)로 알려야 하므로 $broadcast 사용
                 $scope.$broadcast('alarmChecked', item.id);
