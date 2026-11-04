@@ -15,6 +15,7 @@ import kr.kwater.hdcs.report.vo.ReportVO;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Collections;
@@ -45,7 +46,7 @@ public class ReportAutoScheduler {
 
     @Scheduled(cron = "${report.auto.cron:0 0 0 * * MON}", zone = "${report.auto.zone:Asia/Seoul}")
     public void runWeekly() {
-        generateLastWeek(LocalDate.now(zone()));
+        generateLastWeek(referenceDate());
     }
 
     // 서버가 월요일에 꺼져 있었을 때를 대비해, 시작할 때 지난주 리포트가 없으면 만든다.
@@ -55,7 +56,7 @@ public class ReportAutoScheduler {
             return;
         }
         // 서버 시작이 늦어지지 않도록 별도 스레드에서 실행한다.
-        CompletableFuture.runAsync(() -> generateLastWeek(LocalDate.now(zone())));
+        CompletableFuture.runAsync(() -> generateLastWeek(referenceDate()));
     }
 
     // 기준일(today)의 지난주 월~일 리포트를 설정된 유형별로 만든다.
@@ -79,6 +80,14 @@ public class ReportAutoScheduler {
                 }
             }
         }
+    }
+
+    /**
+     * 기준일. 서버·DB 시계가 약간 빨라/느려 월요일 00:00 실행이 일요일 23:59에 시작되는 경우가 있어,
+     * 시계를 1시간 앞당겨 본 날짜를 쓴다. (일요일 23:00 이후면 월요일로 보아 방금 끝나는 주를 만든다)
+     */
+    private LocalDate referenceDate() {
+        return LocalDateTime.now(zone()).plusHours(1).toLocalDate();
     }
 
     private ZoneId zone() {
