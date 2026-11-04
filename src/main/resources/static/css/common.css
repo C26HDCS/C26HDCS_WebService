@@ -205,16 +205,24 @@ body {
     align-items: center;
 }
 
-/* 알림이 있을 경우 표시되는 빨간색 동그라미 */
+/* 알림이 있을 경우 표시되는 빨간색 숫자 배지 (9 초과는 9+) */
 .notification-dot {
     position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 8px;
-    height: 8px;
-    background-color: #e74c3c; /* 빨간색 (배지 색상 참고) */
-    border-radius: 50%;
+    top: -6px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    background-color: #e74c3c;
+    color: #fff;
+    border-radius: 8px;
     border: 2px solid #1a2535; /* 헤더 배경색과 맞춰서 아이콘과 분리된 느낌을 줌 */
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 12px;
+    text-align: center;
+    pointer-events: none;      /* 배지를 눌러도 아이콘 버튼이 눌리도록 */
     z-index: 10;
 }
 
