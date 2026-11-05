@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS tb_event (
     actor_user_id VARCHAR(50), record_key VARCHAR(36) UNIQUE, event_type VARCHAR(30), message VARCHAR(1000), reg_dt TIMESTAMP);
 CREATE TABLE IF NOT EXISTS tb_alarm (
     alarm_id BIGSERIAL PRIMARY KEY, device_id BIGINT REFERENCES tb_device,
-    alarm_type VARCHAR(50), alarm_level VARCHAR(20), alarm_message VARCHAR(500), occurred_at TIMESTAMP);
+    alarm_type VARCHAR(50), alarm_level VARCHAR(20), alarm_message VARCHAR(500), occurred_at TIMESTAMP,
+    action_yn CHAR(1) DEFAULT 'N' NOT NULL, action_user_id VARCHAR(50), action_at TIMESTAMP);
 CREATE TABLE IF NOT EXISTS tb_alarm_check (
     alarm_id BIGINT REFERENCES tb_alarm, user_id VARCHAR(50) REFERENCES tb_user,
     checked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(alarm_id,user_id));

@@ -13,6 +13,9 @@
         <result column="ALARM_MESSAGE" property="alarmMessage"/>
         <result column="OCCURRED_AT"   property="occurredAt"/>
         <result column="IS_CHECKED"    property="checked"/>
+        <result column="ACTION_YN"      property="actionYn"/>
+        <result column="ACTION_USER_ID" property="actionUserId"/>
+        <result column="ACTION_AT"      property="actionAt"/>
     </resultMap>
 
     <!--
@@ -46,6 +49,12 @@
                 AND (D.DEVICE_NAME   LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
                   OR A.ALARM_MESSAGE LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\')
             </if>
+            <if test="searchActionYn == 'Y'.toString()">
+                AND A.ACTION_YN = 'Y'
+            </if>
+            <if test="searchActionYn == 'N'.toString()">
+                AND COALESCE(A.ACTION_YN, 'N') &lt;&gt; 'Y'
+            </if>
             <if test="searchUnreadOnly != null and searchUnreadOnly">
                 AND <include refid="unreadCondition"/>
             </if>
@@ -61,7 +70,8 @@
     <select id="selectAlarmList" parameterType="kr.kwater.hdcs.alarm.vo.AlarmVO"
             resultMap="alarmResultMap">
         SELECT A.ALARM_ID, A.DEVICE_ID, D.DEVICE_NAME, A.ALARM_TYPE, A.ALARM_LEVEL, A.ALARM_MESSAGE, A.OCCURRED_AT,
-               CASE WHEN C.ALARM_ID IS NULL THEN false ELSE true END AS IS_CHECKED
+               CASE WHEN C.ALARM_ID IS NULL THEN false ELSE true END AS IS_CHECKED,
+               COALESCE(A.ACTION_YN, 'N') AS ACTION_YN, A.ACTION_USER_ID, A.ACTION_AT
         FROM TB_ALARM A
         LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
         LEFT JOIN TB_ALARM_CHECK C ON C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{currentUserId}
@@ -93,7 +103,8 @@
     <select id="selectAlarmSignature" resultType="string">
         SELECT CAST((SELECT COUNT(*) FROM TB_ALARM) AS VARCHAR) || ':' ||
                CAST((SELECT COALESCE(MAX(ALARM_ID), 0) FROM TB_ALARM) AS VARCHAR) || ':' ||
-               CAST((SELECT COUNT(*) FROM TB_ALARM_CHECK) AS VARCHAR)
+               CAST((SELECT COUNT(*) FROM TB_ALARM_CHECK) AS VARCHAR) || ':' ||
+               CAST((SELECT COUNT(*) FROM TB_ALARM WHERE ACTION_YN = 'Y') AS VARCHAR)
     </select>
 
     <!-- 모두 읽음 처리: 이 사용자가 아직 확인하지 않은 알람 전부를 한 번에 확인 기록으로 넣는다 -->
@@ -109,6 +120,23 @@
         )
         ON CONFLICT (ALARM_ID, USER_ID) DO NOTHING
     </insert>
+
+    <select id="selectAlarmById" resultMap="alarmResultMap">
+        SELECT A.ALARM_ID, A.DEVICE_ID, D.DEVICE_NAME, A.ALARM_TYPE, A.ALARM_LEVEL, A.ALARM_MESSAGE, A.OCCURRED_AT,
+               false AS IS_CHECKED,
+               COALESCE(A.ACTION_YN, 'N') AS ACTION_YN, A.ACTION_USER_ID, A.ACTION_AT
+        FROM TB_ALARM A
+        LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
+        WHERE A.ALARM_ID = #{alarmId}
+    </select>
+
+    <!-- 조치완료: 아직 조치되지 않은 알람만 바꾼다. 이미 조치된 알람은 0행이라 처리자·일시가 덮어써지지 않는다. -->
+    <update id="updateAlarmAction">
+        UPDATE TB_ALARM
+        SET ACTION_YN = 'Y', ACTION_USER_ID = #{userId}, ACTION_AT = CURRENT_TIMESTAMP
+        WHERE ALARM_ID = #{alarmId}
+          AND COALESCE(ACTION_YN, 'N') &lt;&gt; 'Y'
+    </update>
 
     <select id="selectAlarmExists" resultType="int">
         SELECT COUNT(*) FROM TB_ALARM WHERE ALARM_ID = #{alarmId}

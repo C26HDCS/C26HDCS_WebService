@@ -423,7 +423,53 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     };
 
     $scope.closeDetailModal = function () {
+        $scope.showActionConfirm = false;
         $scope.showDetailModal = false;
         $scope.detailAlarm = {};
+    };
+
+    // 상세 팝업의 '조치완료' 버튼. 알람당 1건이라 누가 눌러도 되고, 이미 처리된 알람이면 처리자·일시만 보여 준다.
+    $scope.actioning = false;
+    $scope.showActionConfirm = false;
+
+    // '조치완료' 버튼은 바로 처리하지 않고 확인 모달을 먼저 띄운다.
+    $scope.openActionConfirm = function () {
+        var alarm = $scope.detailAlarm;
+        if (!alarm || !alarm.id || $scope.actioning || alarm.actionYn === 'Y') return;
+        $scope.showActionConfirm = true;
+    };
+
+    $scope.cancelActionConfirm = function () {
+        $scope.showActionConfirm = false;
+    };
+
+    $scope.actionAlarm = function () {
+        $scope.showActionConfirm = false;
+        var alarm = $scope.detailAlarm;
+        if (!alarm || !alarm.id || $scope.actioning || alarm.actionYn === 'Y') return;
+
+        $scope.actioning = true;
+        alarm.actionError = '';
+        $http.post(ctx + '/api/alarm/' + alarm.id + '/action').then(function (res) {
+            var info = res.data;
+            alarm.checked = true;
+            alarm.actionYn = info.actionYn;
+            alarm.actionUserId = info.actionUserId;
+            alarm.actionAt = info.actionAt;
+            $scope.notifList = $scope.notifList.filter(function (n) { return n.id !== alarm.id; });
+            setUnread(info.unreadCount);
+            $scope.$broadcast('alarmActioned', alarm.id, info);
+        }).catch(function (err) {
+            if (err && err.status === 404) {
+                // 그 사이 삭제된 알람: 목록과 안 읽은 개수를 서버 기준으로 다시 맞춘다.
+                alarm.actionError = '이미 삭제된 알람입니다.';
+                $scope.loadUnreadCount();
+                $scope.$broadcast('alarmDataChanged');
+            } else {
+                alarm.actionError = '조치완료 처리 중 오류가 발생했습니다. 다시 시도해 주세요.';
+            }
+        }).finally(function () {
+            $scope.actioning = false;
+        });
     };
 }]);

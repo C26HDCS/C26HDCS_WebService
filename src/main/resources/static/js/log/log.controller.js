@@ -74,7 +74,8 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
         { value: 'STORAGE_CLEANUP_FAIL', label: '공간 점검 실패', group: '이벤트' },
         { value: 'STORAGE_SPACE_LOW', label: '가용 공간 부족', group: '이벤트' },
         { value: 'REPORT_CREATE_SUCCESS', label: '리포트 생성 성공', group: '이벤트' },
-        { value: 'REPORT_CREATE_FAIL',    label: '리포트 생성 실패', group: '이벤트' }
+        { value: 'REPORT_CREATE_FAIL',    label: '리포트 생성 실패', group: '이벤트' },
+        { value: 'ALARM_ACTION',          label: '알람 조치완료',    group: '이벤트' }
     ];
 
     // 유형 선택 목록: 구분이 '로그'면 로그 레벨만, '이벤트'면 이벤트 유형만, '전체'면 둘 다 보여 준다.
@@ -160,7 +161,8 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'STORAGE_CLEANUP_FAIL': 'log-badge-error',
             'STORAGE_SPACE_LOW': 'log-badge-warn',
             'REPORT_CREATE_SUCCESS': 'log-badge-info',
-            'REPORT_CREATE_FAIL':    'log-badge-error'
+            'REPORT_CREATE_FAIL':    'log-badge-error',
+            'ALARM_ACTION':          'log-badge-info'
         };
         if (map[level]) return map[level];
         // 목록에 없는 새 이벤트 유형은 결과 접미사로 색을 정한다.
@@ -180,7 +182,8 @@ qosApp.controller('LogCtrl', ['$scope', '$http', function ($scope, $http) {
             'STORAGE_DELETE_SKIPPED': '삭제 제외',
             'STORAGE_CLEANUP_DONE': '정리 완료',
             'STORAGE_CLEANUP_FAIL': '점검 실패',
-            'STORAGE_SPACE_LOW': '공간 부족'
+            'STORAGE_SPACE_LOW': '공간 부족',
+            'ALARM_ACTION': '알람 조치'
         };
         if (storageLabels[level]) return storageLabels[level];
         return level ? String(level).replace(/_(SUCCESS|FAIL)$/, '').replace(/^REPORT_CREATE$/, 'REPORT') : level;

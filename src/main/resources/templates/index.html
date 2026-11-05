@@ -336,12 +336,54 @@
                 <span class="alarm-detail-label">발생일시</span>
                 <span class="alarm-detail-value">{{formatOccurredAt(detailAlarm.occurredAt)}}</span>
             </div>
+            <div class="alarm-detail-row">
+                <span class="alarm-detail-label">조치 상태</span>
+                <span class="alarm-detail-value">
+                    <span class="status-badge" ng-class="detailAlarm.actionYn === 'Y' ? 'status-done' : 'status-wait'">{{detailAlarm.actionYn === 'Y' ? '조치완료' : '미조치'}}</span>
+                </span>
+            </div>
+            <div class="alarm-detail-row" ng-if="detailAlarm.actionYn === 'Y'">
+                <span class="alarm-detail-label">조치자</span>
+                <span class="alarm-detail-value">{{detailAlarm.actionUserId || '-'}}</span>
+            </div>
+            <div class="alarm-detail-row" ng-if="detailAlarm.actionYn === 'Y'">
+                <span class="alarm-detail-label">조치일시</span>
+                <span class="alarm-detail-value">{{formatOccurredAt(detailAlarm.actionAt)}}</span>
+            </div>
+            <div class="form-error" ng-if="detailAlarm.actionError">{{detailAlarm.actionError}}</div>
         </div>
 
     </div>
 
     <div class="alarm-modal-footer">
+        <button class="btn-modal-submit" ng-if="detailAlarm.actionYn !== 'Y'"
+                ng-disabled="actioning" ng-click="openActionConfirm()">조치완료</button>
         <button class="btn-modal-cancel" ng-click="closeDetailModal()">닫기</button>
+    </div>
+</div>
+
+<!-- ── 조치완료 확인 모달 (알람 상세 팝업 위에 겹쳐 뜬다) ── -->
+<div class="alarm-modal-overlay alarm-action-overlay" ng-cloak ng-show="showActionConfirm" ng-click="cancelActionConfirm()"></div>
+
+<div class="alarm-modal alarm-confirm-modal alarm-action-modal" ng-cloak ng-show="showActionConfirm"
+     modal-a11y="showActionConfirm" modal-close="cancelActionConfirm()">
+    <div class="alarm-modal-header">
+        <span class="alarm-modal-title">조치완료 처리</span>
+        <button class="alarm-modal-close" ng-click="cancelActionConfirm()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="alarm-confirm-body">
+        이 알람을 <strong>조치완료</strong>로 처리할까요?<br>
+        <span class="alarm-confirm-sub">처리자와 일시가 기록되고, 모든 사용자에게 조치완료로 표시됩니다.</span>
+    </div>
+    <div class="alarm-modal-footer">
+        <button class="btn-modal-cancel" ng-click="cancelActionConfirm()">취소</button>
+        <button class="btn-modal-submit" ng-disabled="actioning" ng-click="actionAlarm()">조치완료</button>
     </div>
 </div>
 

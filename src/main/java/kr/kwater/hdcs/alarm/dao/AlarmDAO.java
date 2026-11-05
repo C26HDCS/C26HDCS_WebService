@@ -24,6 +24,12 @@ public interface AlarmDAO {
 
     void insertAlarmCheck(@Param("alarmId") Long alarmId, @Param("userId") String userId);
 
+    /** 알람 한 건 조회 (조치 상태 포함) */
+    AlarmVO selectAlarmById(@Param("alarmId") Long alarmId);
+
+    /** 아직 조치되지 않은 알람을 조치완료로 바꾼다. 바뀐 행 수(이미 조치된 알람이면 0)를 돌려준다. */
+    int updateAlarmAction(@Param("alarmId") Long alarmId, @Param("userId") String userId);
+
     /** 해당 번호의 알람이 있으면 1, 없으면 0 */
     int selectAlarmExists(@Param("alarmId") Long alarmId);
 }

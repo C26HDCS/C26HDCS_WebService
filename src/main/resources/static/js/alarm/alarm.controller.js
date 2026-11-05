@@ -8,11 +8,23 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
         if (found) found.checked = true;
     });
 
+    // 상세 팝업에서 조치완료 처리한 알람을 이 목록에도 반영 (페이지 유지, 재조회 없음)
+    $scope.$on('alarmActioned', function (event, alarmId, info) {
+        var found = $scope.alarmList.filter(function (a) { return a.id === alarmId; })[0];
+        if (found) {
+            found.checked = true;
+            found.actionYn = 'Y';
+            found.actionUserId = info.actionUserId;
+            found.actionAt = info.actionAt;
+        }
+    });
+
     $scope.alarmList       = [];
     $scope.searchAlarmType  = '';
     $scope.searchAlarmLevel = '';
     $scope.searchKeyword    = '';   // 장비명 또는 메시지
     $scope.searchReadStatus = '';   // '' (전체) / 'UNREAD' (안 읽은 알람)
+    $scope.searchActionYn   = '';   // '' (전체) / 'N' (미조치) / 'Y' (조치완료)
     $scope.searchDateFrom   = '';
     $scope.searchDateTo     = '';
 
@@ -83,6 +95,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
             searchAlarmType:  $scope.searchAlarmType,
             searchAlarmLevel: $scope.searchAlarmLevel,
             searchKeyword:    $scope.searchKeyword,
+            searchActionYn:   $scope.searchActionYn,
             searchDateFrom:   fromStr,
             searchDateTo:     toStr
         };

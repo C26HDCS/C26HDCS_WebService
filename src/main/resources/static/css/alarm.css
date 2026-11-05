@@ -455,3 +455,13 @@
     color: #f5a623;
     font-weight: 700;
 }
+
+/* 조치완료 확인 모달: 알람 상세 팝업(z-index 1000/1001) 위에 겹쳐 뜬다 */
+.alarm-action-overlay { z-index: 1100; }
+.alarm-action-modal   { z-index: 1101; }
+.alarm-confirm-sub {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: #8aa8c4;
+}

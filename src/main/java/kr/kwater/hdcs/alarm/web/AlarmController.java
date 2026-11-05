@@ -72,6 +72,27 @@ public class AlarmController {
         return ResponseEntity.ok(Map.of("unreadCount", unreadCount));
     }
 
+    /** 알람 조치완료 (알람당 1건, 누구든 가능). 이미 조치된 알람이면 바꾸지 않고 현재 상태만 돌려준다. */
+    @PostMapping("/{id}/action")
+    public ResponseEntity<?> action(@PathVariable("id") Long id) throws Exception {
+        if (!alarmService.existsAlarm(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "존재하지 않는 알람입니다."));
+        }
+        String userId = currentUserId();
+        int changed = alarmService.actionAlarm(id, userId);
+        AlarmVO alarm = alarmService.getAlarm(id);
+        int unreadCount = alarmService.getUnreadCount(userId);
+        // 읽음 기록이 함께 생길 수 있으므로 같은 사용자의 다른 탭·PC 헤더 개수도 맞춘다.
+        alarmStreamService.publishUnreadCount(userId, unreadCount);
+        return ResponseEntity.ok(Map.of(
+                "changed", changed > 0,
+                "actionYn", alarm.getActionYn(),
+                "actionUserId", alarm.getActionUserId() == null ? "" : alarm.getActionUserId(),
+                "actionAt", alarm.getActionAt() == null ? "" : alarm.getActionAt(),
+                "unreadCount", unreadCount));
+    }
+
     /** 이 사용자의 안 읽은 알람을 모두 확인 처리 */
     @PostMapping("/check-all")
     public ResponseEntity<?> checkAll() throws Exception {
