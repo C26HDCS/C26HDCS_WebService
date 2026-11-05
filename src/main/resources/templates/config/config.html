@@ -36,7 +36,7 @@
             </select>
         </div>
         <div class="cfg-search-field">
-            <label>그룹</label>
+            <label>유역</label>
             <select ng-model="search.group">
                 <option value="">전체</option>
                 <option ng-repeat="g in groupOptions" value="{{g}}">{{g}}</option>
@@ -47,7 +47,7 @@
             <select ng-model="search.configStatus">
                 <option value="">전체</option>
                 <option value="설정완료">설정완료</option>
-                <option value="그룹 미설정">그룹 미설정</option>
+                <option value="그룹 미설정">유역 미설정</option>
                 <option value="표시명 미설정">표시명 미설정</option>
             </select>
         </div>
@@ -62,7 +62,7 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            그룹 관리
+            유역 관리
         </button>
         <button class="btn-cfg-search" ng-click="applySearch()">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
@@ -100,7 +100,7 @@
                 <th style="width:140px;">관측소 고유코드</th>
                 <th style="width:160px;">NMS 장비명</th>
                 <th>관측소 표시명</th>
-                <th style="width:120px;">그룹</th>
+                <th style="width:120px;">유역</th>
                 <th style="width:90px;">NMS 상태</th>
                 <th style="width:110px;">설정 상태</th>
             </tr>
@@ -149,7 +149,7 @@
                     <span ng-class="getNmsStatusClass(item.nmsStatus)">{{item.nmsStatus}}</span>
                 </td>
                 <td>
-                    <span ng-class="getConfigStatusClass(item.configStatus)">{{item.configStatus}}</span>
+                    <span ng-class="getConfigStatusClass(item.configStatus)">{{configStatusLabel(item.configStatus)}}</span>
                 </td>
             </tr>
         </tbody>
@@ -217,7 +217,7 @@
     </button>
 </div>
 
-<!-- ── 그룹 관리 모달 ── -->
+<!-- ── 유역 관리 모달 ── -->
 <div class="user-modal-overlay" ng-show="showGroupModal" ng-click="closeGroupModal()"></div>
 
 <div class="user-modal cfg-group-modal" ng-show="showGroupModal">
@@ -231,7 +231,7 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            그룹 관리
+            유역 관리
         </span>
         <button class="user-modal-close" ng-click="closeGroupModal()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -246,14 +246,14 @@
         <table class="cfg-table">
             <thead>
                 <tr>
-                    <th style="text-align:left; padding-left:12px;">그룹명</th>
+                    <th style="text-align:left; padding-left:12px;">유역명</th>
                     <th style="width:80px;">장비 수</th>
                     <th style="width:130px;"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-if="groupList.length === 0">
-                    <td colspan="3" class="cfg-no-data">등록된 그룹이 없습니다.</td>
+                    <td colspan="3" class="cfg-no-data">등록된 유역이 없습니다.</td>
                 </tr>
                 <tr ng-repeat="g in groupList">
                     <td style="text-align:left; padding-left:12px;">
@@ -300,9 +300,9 @@
             </tbody>
         </table>
 
-        <!-- 새 그룹 추가 -->
+        <!-- 새 유역 추가 -->
         <div class="cfg-group-add-row">
-            <input type="text" ng-model="newGroupName" placeholder="새 그룹명 입력"
+            <input type="text" ng-model="newGroupName" placeholder="새 유역명 입력"
                    class="cfg-name-input"
                    ng-keyup="$event.keyCode === 13 && addGroup()">
             <button class="btn-modal-submit cfg-group-add-btn"
@@ -375,7 +375,8 @@
     <div class="cfg-register-body">
         <p class="cfg-register-desc">
             CSV 파일을 업로드하여 관측소 표시명을 일괄 등록합니다.<br>
-            파일 형식: <code>장비ID, 관측소코드, 관측소표시명</code> (첫 행은 헤더)<br>
+            파일 형식: <code>장비ID, 관측소코드, 관측소표시명, 유역</code> (첫 행은 헤더, 유역은 선택)<br>
+            유역: <strong style="color:#dce8f5;">{{watershedOptions.join(', ')}}</strong> (칸을 비우면 미설정)<br>
             장비ID는 목록의 <strong style="color:#dce8f5;">장비 ID</strong> 컬럼 값과 일치해야 합니다.
         </p>
 
@@ -427,6 +428,7 @@
                         <th>장비ID</th>
                         <th>관측소코드</th>
                         <th>관측소표시명</th>
+                        <th>유역</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -435,9 +437,10 @@
                         <td>{{row.equipId}}</td>
                         <td class="cfg-code-cell">{{row.obsCode || '-'}}</td>
                         <td>{{row.displayName}}</td>
+                        <td>{{row.groupName === undefined ? '-' : (row.groupName || '미설정')}}</td>
                     </tr>
                     <tr ng-if="csvRows.length > 5">
-                        <td colspan="4" class="cfg-csv-more">... 외 {{csvRows.length - 5}}건</td>
+                        <td colspan="5" class="cfg-csv-more">... 외 {{csvRows.length - 5}}건</td>
                     </tr>
                 </tbody>
             </table>
@@ -499,12 +502,16 @@
                     <span class="cfg-dup-tag" ng-if="d.same">변경 없음</span>
                 </div>
                 <div class="cfg-dup-diff" ng-if="!d.same">
-                    <div ng-if="d.oldName !== d.newName">
+                    <div ng-if="d.hadStation && d.oldName !== d.newName">
                         표시명: {{d.oldName || '(없음)'}} → <strong>{{d.newName}}</strong>
                     </div>
-                    <div ng-if="d.oldCode !== d.newCode">
+                    <div ng-if="d.hadStation && d.oldCode !== d.newCode">
                         관측소코드: {{d.oldCode || '(없음)'}} →
                         <strong ng-class="{'cfg-dup-warn': !d.newCode}">{{d.newCode || '(비어 있음)'}}</strong>
+                    </div>
+                    <div ng-if="d.groupSpecified && d.oldGroup !== d.newGroup">
+                        유역: {{d.oldGroup || '(미설정)'}} →
+                        <strong ng-class="{'cfg-dup-warn': !d.newGroup}">{{d.newGroup || '(미설정)'}}</strong>
                     </div>
                 </div>
             </li>
@@ -590,7 +597,7 @@
                 NMS {{ detailItem.nmsStatus }}
             </span>
             <span class="cfg-detail-badge-cfg" ng-class="getConfigStatusClass(detailItem.configStatus)">
-                {{ detailItem.configStatus }}
+                {{ configStatusLabel(detailItem.configStatus) }}
             </span>
         </div>
 
@@ -617,7 +624,7 @@
                 <span class="user-detail-value">{{detailItem.displayName || '-'}}</span>
             </div>
             <div class="user-detail-row">
-                <span class="user-detail-label">그룹</span>
+                <span class="user-detail-label">유역</span>
                 <span class="user-detail-value">{{detailItem.groupName || '미설정'}}</span>
             </div>
             <div class="user-detail-row">

@@ -42,18 +42,24 @@ public class SettingController {
 
     /** CSV 등록 전 중복 확인 (DB 변경 없음) */
     @PostMapping("/register/csv/check")
-    public ResponseEntity<Map<String, Object>> checkCsvDuplicates(
-            @RequestBody List<Map<String, String>> rows) throws Exception {
-        return ResponseEntity.ok(settingService.checkCsvDuplicates(rows));
+    public ResponseEntity<?> checkCsvDuplicates(@RequestBody List<Map<String, String>> rows) throws Exception {
+        try {
+            return ResponseEntity.ok(settingService.checkCsvDuplicates(rows));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/register/csv")
-    public ResponseEntity<Map<String, Object>> registerFromCsv(
-            @RequestBody List<Map<String, String>> rows) throws Exception {
-        int count = settingService.registerFromCsv(rows);
-        Map<String, Object> result = new HashMap<>();
-        result.put("count", count);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> registerFromCsv(@RequestBody List<Map<String, String>> rows) throws Exception {
+        try {
+            int count = settingService.registerFromCsv(rows);
+            Map<String, Object> result = new HashMap<>();
+            result.put("count", count);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/save")
@@ -79,7 +85,7 @@ public class SettingController {
             Map<String, String> err = new HashMap<>();
             String msg = e.getMessage();
             err.put("message", (msg != null && msg.contains("uq_tb_device_group_name"))
-                    ? "이미 존재하는 그룹명입니다." : (msg != null ? msg : "추가 중 오류가 발생했습니다."));
+                    ? "이미 존재하는 유역명입니다." : (msg != null ? msg : "추가 중 오류가 발생했습니다."));
             return ResponseEntity.badRequest().body(err);
         }
     }
@@ -94,7 +100,7 @@ public class SettingController {
             Map<String, String> err = new HashMap<>();
             String msg = e.getMessage();
             err.put("message", (msg != null && msg.contains("uq_tb_device_group_name"))
-                    ? "이미 존재하는 그룹명입니다." : (msg != null ? msg : "수정 중 오류가 발생했습니다."));
+                    ? "이미 존재하는 유역명입니다." : (msg != null ? msg : "수정 중 오류가 발생했습니다."));
             return ResponseEntity.badRequest().body(err);
         }
     }

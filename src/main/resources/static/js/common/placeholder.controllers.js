@@ -12,7 +12,9 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         configStatus: ''
     };
 
-    /* ── 그룹 선택지 ── */
+    /* ── 유역(그룹) 선택지 ── */
+    // CSV 등록에서 사용할 수 있는 유역
+    $scope.watershedOptions = ['영산강', '영산강서해', '영산강남해', '탐진강'];
     $scope.groupOptions = [];
 
     $http.get(ctx + '/api/config/groups')
@@ -110,6 +112,11 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     };
 
     /* ── 설정 상태 CSS 클래스 (뷰 config_status 값 직접 사용) ── */
+    // 설정 상태 문구는 DB 뷰가 만들어 준다. 화면에서는 '그룹'을 '유역'으로 바꿔 보여 준다.
+    $scope.configStatusLabel = function (status) {
+        return (status || '').replace('그룹', '유역');
+    };
+
     $scope.getConfigStatusClass = function (configStatus) {
         if (configStatus === '설정완료') return 'cfg-status-done';
         return 'cfg-status-partial';
@@ -154,7 +161,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.showDetailModal = false;
     };
 
-    /* ── 그룹 관리 모달 ── */
+    /* ── 유역(그룹) 관리 모달 ── */
     $scope.showGroupModal = false;
     $scope.groupList      = [];
     $scope.newGroupName   = '';
@@ -326,11 +333,12 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         // 첫 줄이 헤더
         var delim   = detectDelimiter(lines[0]);
         var headers = lines[0].split(delim).map(function (h) { return h.trim(); });
-        var equipIdx = -1, obsIdx = -1, nameIdx = -1;
+        var equipIdx = -1, obsIdx = -1, nameIdx = -1, groupIdx = -1;
         headers.forEach(function (h, i) {
             if (h === '장비ID' || h === 'device_name' || h === 'equipId') equipIdx = i;
             if (h === '관측소코드' || h === 'obs_code'   || h === 'obsCode')   obsIdx   = i;
             if (h === '관측소표시명' || h === 'display_name' || h === 'displayName') nameIdx = i;
+            if (h === '유역') groupIdx = i;   // 선택 컬럼
         });
         if (equipIdx === -1 || nameIdx === -1) {
             return { error: '헤더 형식 오류. 장비ID, 관측소표시명 컬럼이 필요합니다.' };
@@ -343,14 +351,22 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
             var obsCode     = obsIdx >= 0 ? (cols[obsIdx] || '').trim() : '';
             var displayName = (cols[nameIdx]  || '').trim();
             if (!equipId || !displayName) continue;
-            rows.push({ equipId: equipId, obsCode: obsCode, displayName: displayName });
+            var row = { equipId: equipId, obsCode: obsCode, displayName: displayName };
+            if (groupIdx >= 0) {
+                // 유역 컬럼이 있으면 빈칸은 '미설정'. 목록에 없는 유역은 여기서 알려 준다.
+                row.groupName = (cols[groupIdx] || '').trim();
+                if (row.groupName && $scope.watershedOptions.indexOf(row.groupName) === -1) {
+                    return { error: (i + 1) + '행: 등록되지 않은 유역입니다. (' + row.groupName + ')\n사용 가능: ' + $scope.watershedOptions.join(', ') };
+                }
+            }
+            rows.push(row);
         }
         if (!rows.length) return { error: '유효한 데이터가 없습니다.' };
         return { rows: rows };
     }
 
     $scope.downloadTemplate = function () {
-        var csv  = '﻿장비ID,관측소코드,관측소표시명\n';
+        var csv  = '﻿장비ID,관측소코드,관측소표시명,유역\n';
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         var url  = URL.createObjectURL(blob);
         var a    = document.createElement('a');
@@ -379,9 +395,9 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
                     doRegister();
                 }
             })
-            .catch(function () {
+            .catch(function (res) {
                 $scope.registerLoading = false;
-                $scope.registerError   = '중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.';
+                $scope.registerError   = (res.data && res.data.message) || '중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.';
             });
     };
 
@@ -409,9 +425,9 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
                     $scope.registerError = '일치하는 장비를 찾을 수 없습니다. 장비ID가 목록의 장비 ID와 정확히 일치하는지 확인해주세요.';
                 }
             })
-            .catch(function () {
+            .catch(function (res) {
                 $scope.registerLoading = false;
-                $scope.registerError   = '등록 중 오류가 발생했습니다. 다시 시도해주세요.';
+                $scope.registerError   = (res.data && res.data.message) || '등록 중 오류가 발생했습니다. 다시 시도해주세요.';
             });
     }
 

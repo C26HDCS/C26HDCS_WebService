@@ -40,9 +40,11 @@
         SELECT d.device_id  AS "deviceId",
                d.station_id AS "stationId",
                s.name       AS "oldName",
-               s.obs_code   AS "oldCode"
+               s.obs_code   AS "oldCode",
+               g.group_name AS "oldGroup"
         FROM public.tb_device d
         LEFT JOIN public.tb_observation_station s ON s.station_id = d.station_id
+        LEFT JOIN public.tb_device_group g ON g.group_id = d.group_id
         WHERE d.device_name = #{equipId}
         LIMIT 1
     </select>
@@ -96,7 +98,7 @@
     <!-- 장비 그룹 업데이트 -->
     <update id="updateDeviceGroup" parameterType="map">
         UPDATE public.tb_device
-        SET group_id = #{groupId}
+        SET group_id = #{groupId,jdbcType=INTEGER}
         WHERE device_id = #{deviceId}
     </update>
 

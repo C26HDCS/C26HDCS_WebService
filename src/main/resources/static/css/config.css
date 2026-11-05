@@ -393,6 +393,7 @@
     padding: 10px 14px;
     margin-top: 4px;
     margin-bottom: 4px;
+    white-space: pre-line;   /* 메시지 안의 줄바꿈(\n)을 그대로 보여 준다 */
 }
 
 /* 그룹 관리 모달 */
