@@ -40,6 +40,13 @@ public class SettingController {
         return ResponseEntity.ok(settingService.getEquipTypes());
     }
 
+    /** CSV 등록 전 중복 확인 (DB 변경 없음) */
+    @PostMapping("/register/csv/check")
+    public ResponseEntity<Map<String, Object>> checkCsvDuplicates(
+            @RequestBody List<Map<String, String>> rows) throws Exception {
+        return ResponseEntity.ok(settingService.checkCsvDuplicates(rows));
+    }
+
     @PostMapping("/register/csv")
     public ResponseEntity<Map<String, Object>> registerFromCsv(
             @RequestBody List<Map<String, String>> rows) throws Exception {

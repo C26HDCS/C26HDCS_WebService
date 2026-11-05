@@ -1,8 +1,12 @@
 package kr.kwater.hdcs.setting.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -114,6 +118,54 @@ public class SettingServiceImpl implements SettingService {
             throw new IllegalStateException("장비 " + count + "대가 배정된 그룹은 삭제할 수 없습니다. 먼저 장비의 그룹을 변경해주세요.");
         }
         settingDAO.deleteGroup(groupId);
+    }
+
+    @Override
+    public Map<String, Object> checkCsvDuplicates(List<Map<String, String>> rows) throws Exception {
+        // 같은 장비ID가 여러 번 있으면 마지막 행이 등록되므로, 장비ID마다 마지막 행 기준으로 한 건으로 센다.
+        Map<String, Map<String, Object>> found = new LinkedHashMap<>();   // 중복 (기존 관측소 있음)
+        Set<String> newIds      = new HashSet<>();                        // 신규 (장비는 있으나 관측소 없음)
+        Set<String> notFoundIds = new HashSet<>();                        // 일치하는 장비 없음
+        if (rows != null) {
+            for (Map<String, String> row : rows) {
+                String equipId     = row.get("equipId");
+                String displayName = row.get("displayName");
+                if (equipId == null || equipId.isEmpty()) continue;
+                if (displayName == null || displayName.isEmpty()) continue;
+
+                found.remove(equipId);
+                newIds.remove(equipId);
+                notFoundIds.remove(equipId);
+
+                Map<String, Object> info = settingDAO.selectDeviceStationForCsv(equipId);
+                if (info == null) { notFoundIds.add(equipId); continue; }
+                if (info.get("stationId") == null) { newIds.add(equipId); continue; }
+
+                String oldName = nullToEmpty(info.get("oldName"));
+                String oldCode = nullToEmpty(info.get("oldCode"));
+                String newCode = nullToEmpty(row.get("obsCode"));
+
+                Map<String, Object> item = new HashMap<>();
+                item.put("equipId", equipId);
+                item.put("oldName", oldName);
+                item.put("oldCode", oldCode);
+                item.put("newName", displayName);
+                item.put("newCode", newCode);
+                item.put("same", oldName.equals(displayName) && oldCode.equals(newCode));
+                found.put(equipId, item);
+            }
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("duplicates", new ArrayList<>(found.values()));
+        result.put("duplicateCount", found.size());
+        result.put("newCount", newIds.size());
+        result.put("notFoundCount", notFoundIds.size());
+        result.put("total", found.size() + newIds.size() + notFoundIds.size());
+        return result;
+    }
+
+    private static String nullToEmpty(Object v) {
+        return v == null ? "" : v.toString();
     }
 
     @Override

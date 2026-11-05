@@ -247,6 +247,9 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     /* ── 환경설정 CSV 일괄등록 모달 ── */
     $scope.showRegisterModal        = false;
     $scope.showRegisterSuccessModal = false;
+    $scope.showRegisterDupModal     = false;
+    $scope.dupItems                 = [];
+    $scope.dupSummary               = {};
     $scope.csvRows                  = [];
     $scope.csvPreview               = [];
     $scope.registerError            = '';
@@ -359,10 +362,42 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         URL.revokeObjectURL(url);
     };
 
+    // '등록' 버튼: 먼저 서버에 중복 확인을 요청하고, 이미 등록된 장비가 있으면 확인 모달을 띄운다.
     $scope.submitRegister = function () {
         if (!$scope.csvRows.length || $scope.registerLoading) return;
         $scope.registerLoading = true;
         $scope.registerError   = '';
+        $http.post(ctx + '/api/config/register/csv/check', $scope.csvRows)
+            .then(function (res) {
+                var dups = res.data.duplicates || [];
+                if (dups.length > 0) {
+                    $scope.dupItems = dups;
+                    $scope.dupSummary = res.data;
+                    $scope.showRegisterDupModal = true;
+                    $scope.registerLoading = false;
+                } else {
+                    doRegister();
+                }
+            })
+            .catch(function () {
+                $scope.registerLoading = false;
+                $scope.registerError   = '중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.';
+            });
+    };
+
+    $scope.cancelRegisterDup = function () {
+        $scope.showRegisterDupModal = false;
+        $scope.dupItems = [];
+    };
+
+    $scope.confirmRegisterDup = function () {
+        $scope.showRegisterDupModal = false;
+        $scope.dupItems = [];
+        $scope.registerLoading = true;
+        doRegister();
+    };
+
+    function doRegister() {
         $http.post(ctx + '/api/config/register/csv', $scope.csvRows)
             .then(function (res) {
                 $scope.registerLoading = false;
@@ -378,7 +413,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
                 $scope.registerLoading = false;
                 $scope.registerError   = '등록 중 오류가 발생했습니다. 다시 시도해주세요.';
             });
-    };
+    }
 
     $scope.load();
 }]);

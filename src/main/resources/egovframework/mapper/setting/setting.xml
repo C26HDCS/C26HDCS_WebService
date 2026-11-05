@@ -35,6 +35,18 @@
         LIMIT 1
     </select>
 
+    <!-- CSV 등록 중복 확인: 장비에 연결된 관측소의 기존 표시명·코드까지 함께 조회 -->
+    <select id="selectDeviceStationForCsv" parameterType="string" resultType="map">
+        SELECT d.device_id  AS "deviceId",
+               d.station_id AS "stationId",
+               s.name       AS "oldName",
+               s.obs_code   AS "oldCode"
+        FROM public.tb_device d
+        LEFT JOIN public.tb_observation_station s ON s.station_id = d.station_id
+        WHERE d.device_name = #{equipId}
+        LIMIT 1
+    </select>
+
     <!-- 기존 관측소 이름·코드 업데이트 -->
     <update id="updateStationById" parameterType="map">
         UPDATE public.tb_observation_station

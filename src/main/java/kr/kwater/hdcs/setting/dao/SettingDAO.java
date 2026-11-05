@@ -12,6 +12,7 @@ public interface SettingDAO {
     List<String> selectGroupNames();
     List<String> selectEquipTypes();
     Map<String, Object> selectDeviceForCsv(String equipId);
+    Map<String, Object> selectDeviceStationForCsv(String equipId);
     void updateStationById(Map<String, Object> data);
     void insertStation(Map<String, Object> data);
     void updateDeviceStationId(Map<String, Object> data);

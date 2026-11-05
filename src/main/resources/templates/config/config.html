@@ -458,6 +458,65 @@
     </div>
 </div>
 
+<!-- ── CSV 등록 중복 확인 모달 (등록 모달 위에 겹쳐 뜬다) ── -->
+<div class="user-modal-overlay" ng-show="showRegisterDupModal" ng-click="cancelRegisterDup()"></div>
+
+<div class="user-modal cfg-dup-modal" ng-show="showRegisterDupModal" modal-a11y="showRegisterDupModal" modal-close="cancelRegisterDup()">
+    <div class="user-modal-header">
+        <span class="user-modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            이미 등록된 장비가 있습니다
+        </span>
+        <button class="user-modal-close" ng-click="cancelRegisterDup()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="cfg-dup-body">
+        <p class="cfg-dup-summary">
+            전체 <strong>{{dupSummary.total}}건</strong> 중
+            중복 <strong>{{dupSummary.duplicateCount}}건</strong>,
+            신규 <strong>{{dupSummary.newCount}}건</strong><span ng-if="dupSummary.notFoundCount > 0">,
+            일치하는 장비 없음 <strong>{{dupSummary.notFoundCount}}건</strong>(건너뜀)</span>
+        </p>
+        <p class="cfg-dup-lead">
+            관측소가 이미 연결된 장비가 <strong>{{dupItems.length}}건</strong> 있습니다.<br>
+            덮어쓰면 아래 값으로 바뀝니다. 취소하면 아무것도 등록되지 않습니다.
+        </p>
+
+        <ul class="cfg-dup-list">
+            <li ng-repeat="d in dupItems">
+                <div class="cfg-dup-id">{{d.equipId}}
+                    <span class="cfg-dup-tag" ng-if="d.same">변경 없음</span>
+                </div>
+                <div class="cfg-dup-diff" ng-if="!d.same">
+                    <div ng-if="d.oldName !== d.newName">
+                        표시명: {{d.oldName || '(없음)'}} → <strong>{{d.newName}}</strong>
+                    </div>
+                    <div ng-if="d.oldCode !== d.newCode">
+                        관측소코드: {{d.oldCode || '(없음)'}} →
+                        <strong ng-class="{'cfg-dup-warn': !d.newCode}">{{d.newCode || '(비어 있음)'}}</strong>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="user-modal-footer">
+        <button class="btn-modal-cancel" ng-click="cancelRegisterDup()">취소</button>
+        <button class="btn-modal-submit" ng-click="confirmRegisterDup()">덮어쓰고 등록</button>
+    </div>
+</div>
+
 <!-- ── 등록 완료 알림 모달 ── -->
 <div class="user-modal-overlay" ng-show="showRegisterSuccessModal" ng-click="closeRegisterSuccessModal()"></div>
 
