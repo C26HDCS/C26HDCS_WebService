@@ -301,9 +301,9 @@
 </div>
 
 <!-- ── 리포트 상세 정보 모달 ── -->
-<div class="log-modal-overlay" ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
+<div class="log-modal-overlay" ng-class="{'report-over-dup': showDupModal}" ng-show="showDetailModal" ng-click="closeDetailModal()"></div>
 
-<div class="log-modal log-detail-modal report-detail-modal" ng-show="showDetailModal" modal-a11y="showDetailModal" modal-close="closeDetailModal()">
+<div class="log-modal log-detail-modal report-detail-modal" ng-class="{'report-over-dup': showDupModal}" ng-show="showDetailModal" modal-a11y="showDetailModal" modal-close="closeDetailModal()">
     <div class="log-modal-header">
         <span class="log-modal-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -441,13 +441,14 @@
         </div>
 
         <ul class="report-dup-list">
-            <li ng-repeat="m in dupMatches | limitTo:3">
+            <li ng-repeat="m in dupMatches" class="report-dup-item"
+                ng-click="openDetailModal(m)" key-activate="openDetailModal(m)" aria-label="리포트 상세 보기">
                 <span class="report-dup-no">{{m.reportNo}}</span>
                 <span class="report-dup-name" title="{{m.reportName}}">{{m.reportName}}</span>
                 <span class="report-dup-meta">{{m.generateType === 'AUTO' ? '자동' : '수동'}} · {{formatRegDt(m.regDt)}}</span>
             </li>
         </ul>
-        <p class="report-dup-more" ng-if="dupMatches.length > 3">외 {{dupMatches.length - 3}}건</p>
+        <p class="report-dup-more">리포트를 누르면 상세 정보로 이동 후 다운로드할 수 있습니다.</p>
     </div>
 
     <div class="log-modal-footer">

@@ -544,7 +544,8 @@
     padding: 0;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
-    overflow: hidden;
+    max-height: 124px;            /* 약 3건 높이. 그 이상은 스크롤 */
+    overflow-y: auto;
 }
 .report-dup-list li {
     display: flex;
@@ -557,6 +558,14 @@
 }
 .report-dup-list li:last-child {
     border-bottom: none;
+}
+.report-dup-item {
+    cursor: pointer;
+}
+.report-dup-item:hover,
+.report-dup-item:focus-visible {
+    background: rgba(90,158,245,0.12);
+    outline: none;
 }
 .report-dup-no {
     flex: 0 0 auto;
@@ -578,5 +587,9 @@
     margin: 8px 0 0;
     font-size: 12px;
     color: #8aa8c4;
-    text-align: right;
+    text-align: left;
 }
+
+/* 중복 확인 모달 위에서 상세 모달을 열 때: 중복 모달(1000/1001)보다 위에 겹쳐 뜬다 */
+.log-modal-overlay.report-over-dup { z-index: 1100; }
+.log-modal.report-over-dup         { z-index: 1101; }
