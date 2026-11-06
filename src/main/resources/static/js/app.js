@@ -30,6 +30,7 @@ qosApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, 
         })
         .when('/user', {
             templateUrl: ctx + '/user',
+            adminOnly:   true,
             controller:  'UserCtrl',
             title:       '사용자 관리'
         })
@@ -50,11 +51,13 @@ qosApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, 
         })
         .when('/config', {
             templateUrl: ctx + '/config',
+            adminOnly:   true,
             controller:  'ConfigCtrl',
             title:       '환경설정 관리'
         })
         .when('/storage', {
             templateUrl: ctx + '/storage',
+            adminOnly:   true,
             controller:  'StorageCtrl',
             title:       '저장장치 관리'
         })
@@ -101,6 +104,23 @@ qosApp.factory('AuthSession', ['$window', function ($window) {
         } catch (error) { return false; }
     }
 
+    // 화면 표시용 권한 판별. 토큰 위조는 서버가 막으므로 여기서는 메뉴/화면 이동 제어에만 쓴다.
+    var cachedToken = null, cachedAdmin = false;
+    function isAdmin() {
+        var t = token();
+        if (t !== cachedToken) {
+            cachedToken = t;
+            cachedAdmin = false;
+            try {
+                var payload = (t || '').split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                while (payload.length % 4) payload += '=';
+                var auth = JSON.parse($window.atob(payload)).auth || '';
+                cachedAdmin = String(auth).split(',').indexOf('ROLE_ADMIN') !== -1;
+            } catch (error) {}
+        }
+        return cachedAdmin;
+    }
+
     function expire() {
         if (redirecting) return;
         redirecting = true;
@@ -119,7 +139,7 @@ qosApp.factory('AuthSession', ['$window', function ($window) {
         if (status === 401 || (status === 403 && !valid())) expire();
     }
 
-    return { token: token, check: check, rejected: rejected };
+    return { token: token, check: check, rejected: rejected, isAdmin: isAdmin };
 }]);
 
 qosApp.run(['AuthSession', '$interval', '$window', function (session, $interval, $window) {
@@ -128,6 +148,25 @@ qosApp.run(['AuthSession', '$interval', '$window', function (session, $interval,
     $window.addEventListener('focus', session.check);
     $window.addEventListener('storage', function (event) {
         if (event.key === 'accessToken' || event.key === null) session.check();
+    });
+}]);
+
+/* ── 권한별 화면 접근 제어 ─────────────────────────────────
+   adminOnly 라우트는 관리자만 들어갈 수 있다. (서버 API도 별도로 ADMIN 만 허용) */
+qosApp.run(['$rootScope', '$location', 'AuthSession', 'toast', function ($rootScope, $location, session, toast) {
+    function deny() {
+        toast.error('접근 권한이 없습니다.', '관리자만 사용할 수 있는 메뉴입니다.');
+        $location.path('/dashboard').replace();
+    }
+    $rootScope.$on('$routeChangeStart', function (event, next) {
+        if (next && next.adminOnly && !session.isAdmin()) {
+            event.preventDefault();
+            deny();
+        }
+    });
+    // 화면 조각 요청이 서버에서 403 으로 거절된 경우
+    $rootScope.$on('$routeChangeError', function (event, current, previous, rejection) {
+        if (rejection && rejection.status === 403) deny();
     });
 }]);
 
@@ -172,6 +211,9 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
             $scope.pageTitle = $route.current.title;
         }
     });
+
+    // 관리자 여부 (메뉴 표시용)
+    $scope.isAdmin = function () { return session.isAdmin(); };
 
     // 사이드바 활성 상태 판별
     $scope.isActive = function (path) {

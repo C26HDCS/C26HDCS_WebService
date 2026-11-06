@@ -98,7 +98,7 @@
                     <span class="menu-text">GUI대시보드</span>
                 </a>
             </li>
-            <li ng-class="{active: isActive('/config')}">
+            <li ng-if="isAdmin()" ng-class="{active: isActive('/config')}">
                 <a href="config">
                     <span class="menu-icon-wrap">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -108,7 +108,7 @@
                     <span class="menu-text">환경설정관리</span>
                 </a>
             </li>
-            <li ng-class="{active: isActive('/storage')}">
+            <li ng-if="isAdmin()" ng-class="{active: isActive('/storage')}">
                 <a href="storage">
                     <span class="menu-icon-wrap">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -138,7 +138,7 @@
                     <span class="menu-text">알람관리</span>
                 </a>
             </li>
-            <li ng-class="{active: isActive('/user')}">
+            <li ng-if="isAdmin()" ng-class="{active: isActive('/user')}">
                 <a href="user">
                     <span class="menu-icon-wrap">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

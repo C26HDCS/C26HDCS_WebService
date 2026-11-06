@@ -7,6 +7,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,12 +35,44 @@ public class ReportController {
 
     @GetMapping("/list")
     public ResponseEntity<List<ReportVO>> getList(ReportVO vo) throws Exception {
+        // 일반 사용자는 시스템이 자동 생성한 리포트만 볼 수 있다. 요청 파라미터와 상관없이 서버에서 고정한다.
+        if (!isAdmin()) {
+            vo.setSearchGenerateType("AUTO");
+        }
         return ResponseEntity.ok(reportService.getReportList(vo));
+    }
+
+    private boolean isAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    /**
+     * 일반 사용자가 자동 생성이 아닌(수동 생성) 리포트에 접근하려 하면 403 응답을 돌려준다. 접근 가능하면 null.
+     * 목록만 걸러서는 ID 를 직접 넣어 우회할 수 있어 상세·다운로드에도 같은 검사를 한다.
+     */
+    private ResponseEntity<?> denyIfManual(Long reportId) {
+        if (isAdmin()) return null;
+        try {
+            ReportVO vo = reportService.getReportDetail(reportId);
+            if (!"AUTO".equals(vo.getGenerateType())) {
+                return ResponseEntity.status(403).body(Map.of("code", "ACCESS_DENIED", "message", "접근 권한이 없습니다."));
+            }
+            return null;
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("리포트 권한 확인 실패: id={}", reportId, e);
+            return ResponseEntity.status(500).body(Map.of("message", "리포트 조회 중 오류가 발생했습니다."));
+        }
     }
 
     /** 리포트 상세 조회 */
     @GetMapping("/{reportId}")
     public ResponseEntity<?> getDetail(@PathVariable Long reportId) {
+        ResponseEntity<?> denied = denyIfManual(reportId);
+        if (denied != null) return denied;
         try {
             return ResponseEntity.ok(reportService.getReportDetail(reportId));
         } catch (IllegalArgumentException e) {
@@ -53,6 +86,8 @@ public class ReportController {
     /** 리포트 Word(.docx) 파일 다운로드 */
     @GetMapping("/{reportId}/download/word")
     public ResponseEntity<?> downloadWord(@PathVariable Long reportId) {
+        ResponseEntity<?> denied = denyIfManual(reportId);
+        if (denied != null) return denied;
         try {
             return fileResponse(reportService.getReportDownload(reportId),
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
@@ -67,6 +102,8 @@ public class ReportController {
     /** 리포트 PDF 파일 다운로드 (최초 요청 시 Word 파일을 변환해서 저장한다) */
     @GetMapping("/{reportId}/download/pdf")
     public ResponseEntity<?> downloadPdf(@PathVariable Long reportId) {
+        ResponseEntity<?> denied = denyIfManual(reportId);
+        if (denied != null) return denied;
         try {
             return fileResponse(reportService.getReportPdfDownload(reportId), MediaType.APPLICATION_PDF_VALUE);
         } catch (IllegalArgumentException e) {

@@ -2,6 +2,7 @@ package kr.kwater.hdcs.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,6 +49,11 @@ public class SecurityConfig {
 
             // URL별 권한 설정
             .authorizeHttpRequests(auth -> auth
+                // 0. 관리자 전용 화면(partial) 요청. SPA가 화면 조각을 가져올 때(X-Requested-With 헤더)만 검사한다.
+                //    주소창 직접 접속은 SPA 껍데기만 내려가고, 화면 이동은 프론트 라우트 가드가 막는다.
+                //    (permitAll 보다 먼저 선언해야 한다)
+                .requestMatchers(SecurityConfig::isAdminPartialRequest).hasRole("ADMIN")
+
                 // 1. 누구나 접근 가능한 URL (인증 불필요)
                 .antMatchers(
                     "/", "/index", "/error",
@@ -64,9 +70,10 @@ public class SecurityConfig {
                     "/mypage", "/log", "/alarm", "/config", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
                 ).permitAll()
                 
-                // 2. 인증(JWT 토큰)이 반드시 필요한 URL 명시적 설정 (옵션)
-                // /api/user/** 밑으로 들어오는 모든 API는 인증을 요구함
-                .antMatchers("/api/user/**").authenticated() 
+                // 2. 관리자(ADMIN) 전용 API: 환경설정/저장장치/사용자 관리, 리포트 수동 생성
+                //    일반 사용자(USER)는 토큰이 있어도 403
+                .antMatchers("/api/user/**", "/api/config/**", "/api/storage/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/report", "/api/report/**").hasRole("ADMIN")
 
                 // 3. 그 외에 명시되지 않은 모든 요청도 기본적으로 인증 필요
                 .anyRequest().authenticated()
@@ -80,6 +87,14 @@ public class SecurityConfig {
             .addFilterBefore(new AccessTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /** 관리자 전용 화면 경로 (SPA partial 요청에만 권한을 검사한다) */
+    private static final java.util.Set<String> ADMIN_PAGES = java.util.Set.of("/user", "/config", "/storage");
+
+    private static boolean isAdminPartialRequest(javax.servlet.http.HttpServletRequest request) {
+        return "XMLHttpRequest".equals(request.getHeader("X-Requested-With"))
+                && ADMIN_PAGES.contains(request.getServletPath());
     }
 
     @Bean
