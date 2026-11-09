@@ -45,7 +45,7 @@ import java.util.List;
  * 홍수통제소 양식(template)이 확정되기 전까지의 임시 본문 구성이다.
  * 양식이 정해지면 이 클래스의 본문 작성부만 교체하면 된다.
  */
-@Component
+/** 한글(.hwpx) 형식으로 바뀌면서 더 이상 사용하지 않는다. (빈으로 등록하지 않음) */
 public class WordReportGenerator implements ReportGenerator {
 
     private static final String FONT = "맑은 고딕";
@@ -357,6 +357,13 @@ public class WordReportGenerator implements ReportGenerator {
         for (int w : widths) {
             grid.addNewGridCol().setW(BigInteger.valueOf(w));
         }
+        // 다른 표와 같은 연한 회색 테두리 (지정하지 않으면 기본값인 진한 검정 테두리가 된다)
+        t.setInsideHBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.SINGLE, 4, 0, "999999");
+        t.setInsideVBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.SINGLE, 4, 0, "999999");
+        t.setTopBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.SINGLE, 4, 0, "999999");
+        t.setBottomBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.SINGLE, 4, 0, "999999");
+        t.setLeftBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.SINGLE, 4, 0, "999999");
+        t.setRightBorder(org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType.SINGLE, 4, 0, "999999");
         for (int i = 0; i < kv.length; i++) {
             fill(t.getRow(i).getCell(0), kv[i][0], true, C, widths[0], LABEL_FILL);
             fill(t.getRow(i).getCell(1), kv[i][1], false, L, widths[1], null);

@@ -52,8 +52,13 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     private final UserDAO userDAO;
     private final ReportDataCollector collector;
     private final ReportGenerator generator;
+    /** PDF 변환 원본(LibreOffice 방식)으로 쓰는 Word 파일 생성기. 다운로드 대상이 아니라 내부용이다. */
+    private final WordReportGenerator wordGenerator = new WordReportGenerator();
     private final ReportProperties props;
     private final PdfConverter pdfConverter;
+    private final DocxToHwpxConverter docxToHwpx;
+    /** 예전 Word 리포트를 한글로 변환하는 동안 같은 파일을 동시에 변환하지 않도록 하는 잠금 */
+    private final Object hwpxConvertLock = new Object();
     private final LogService logService;
 
     @Override
@@ -118,15 +123,39 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     }
 
     @Override
+    public ReportDownload getReportHwpxDownload(Long reportId) throws Exception {
+        ReportDownload source = getReportDownload(reportId);
+        String sourceName = source.getPath().getFileName().toString();
+        if (!sourceName.toLowerCase().endsWith(".docx")) {
+            return source;
+        }
+
+        // 예전 Word 리포트: 같은 폴더에 한글 파일을 만들어 두고(최초 1회) 그 파일을 돌려준다.
+        Path hwpx = source.getPath().resolveSibling(replaceExtension(sourceName, "hwpx"));
+        synchronized (hwpxConvertLock) {
+            if (!(Files.isRegularFile(hwpx) && Files.size(hwpx) > 0)) {
+                try {
+                    docxToHwpx.convert(source.getPath(), hwpx);
+                } catch (IOException | RuntimeException e) {
+                    log.error("예전 리포트 한글 변환 실패: id={}, file={}", reportId, source.getPath(), e);
+                    throw new IllegalStateException("예전 리포트를 한글 형식으로 변환하지 못했습니다. 관리자에게 문의해 주세요.");
+                }
+                log.info("예전 리포트 한글 변환 완료: {} -> {}", sourceName, hwpx.getFileName());
+            }
+        }
+        return new ReportDownload(replaceExtension(source.getFileName(), "hwpx"), hwpx, Files.size(hwpx));
+    }
+
+    @Override
     public ReportDownload getReportPdfDownload(Long reportId) throws Exception {
-        ReportDownload docx = getReportDownload(reportId);
+        ReportDownload source = getReportDownload(reportId);
 
-        // PDF는 Word 파일과 같은 폴더에 같은 이름(확장자만 .pdf)으로 저장한다.
-        String docxName = docx.getPath().getFileName().toString();
-        Path pdf = docx.getPath().resolveSibling(replaceExtension(docxName, "pdf"));
-        pdfConverter.convertIfAbsent(docx.getPath(), pdf);
+        // PDF는 원본(한글 .hwpx) 파일과 같은 폴더에 같은 이름(확장자만 .pdf)으로 저장한다.
+        String sourceName = source.getPath().getFileName().toString();
+        Path pdf = source.getPath().resolveSibling(replaceExtension(sourceName, "pdf"));
+        pdfConverter.convertIfAbsent(source.getPath(), pdf);
 
-        return new ReportDownload(replaceExtension(docx.getFileName(), "pdf"), pdf, Files.size(pdf));
+        return new ReportDownload(replaceExtension(source.getFileName(), "pdf"), pdf, Files.size(pdf));
     }
 
     /** 파일명의 확장자를 바꾼다. 확장자가 없으면 뒤에 붙인다. */
@@ -324,9 +353,11 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             }
             Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
             size = Files.size(target);
+            writePdfSourceWord(data, target);
         } catch (IOException | RuntimeException e) {
             deleteQuietly(tmp);
             deleteQuietly(target);
+            deleteQuietly(wordSibling(target));
             throw e;
         }
 
@@ -344,11 +375,41 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             reportDAO.insertReport(row);
         } catch (RuntimeException e) {
             deleteQuietly(target);
+            deleteQuietly(wordSibling(target));
             throw e;
         }
         log.info("리포트 생성 완료: id={}, type={}, name={}, size={}B, user={}",
                 row.getReportId(), generateType, reportName, size, userId == null ? "SYSTEM" : userId);
         return reportDAO.selectReportById(row.getReportId());
+    }
+
+    /** 한글 파일과 같은 폴더·같은 이름(확장자만 .docx)의 Word 파일 경로 */
+    private static Path wordSibling(Path hwpx) {
+        return hwpx.resolveSibling(replaceExtension(hwpx.getFileName().toString(), "docx"));
+    }
+
+    /**
+     * PDF 변환용 Word 파일을 한글 파일 옆에 함께 저장한다. (report.pdf-engine=libreoffice 일 때만)
+     * 실패해도 리포트 생성은 계속한다. 이 경우 해당 리포트의 PDF 만 만들 수 없다.
+     */
+    private void writePdfSourceWord(ReportData data, Path hwpx) {
+        if (!"libreoffice".equalsIgnoreCase(props.getPdfEngine())) {
+            return;
+        }
+        Path docx = wordSibling(hwpx);
+        Path tmp = null;
+        try {
+            tmp = Files.createTempFile(docx.getParent(), "report_", ".tmp");
+            try (OutputStream out = Files.newOutputStream(tmp)) {
+                wordGenerator.generate(data, out);
+            }
+            Files.move(tmp, docx, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException | RuntimeException e) {
+            log.warn("PDF 변환용 Word 파일 생성 실패: {}", docx, e);
+            if (tmp != null) {
+                deleteQuietly(tmp);
+            }
+        }
     }
 
     /** LIKE 검색어의 특수문자(\\, %, _)를 일반 문자로 취급하도록 이스케이프한다. 공백만 있으면 null. */

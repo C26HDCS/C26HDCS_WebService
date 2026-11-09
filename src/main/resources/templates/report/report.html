@@ -215,17 +215,17 @@
                 </td>
                 <td>{{item.regDt.substring(0, 16)}}</td>
                 <td ng-click="$event.stopPropagation()">
-                    <button class="btn-report-download btn-dl-word" ng-class="{'is-busy': item.dl.wordSlow}"
-                            ng-click="downloadFile(item, 'word')" ng-disabled="item.dl.word || item.fileExists === false" title="{{item.fileExists === false ? '서버에 파일이 없습니다' : 'Word 다운로드'}}">
-                        <span class="dl-spinner" ng-show="item.dl.wordSlow"></span>
-                        <svg ng-hide="item.dl.wordSlow" xmlns="http://www.w3.org/2000/svg" width="11" height="11"
+                    <button class="btn-report-download btn-dl-word" ng-class="{'is-busy': item.dl.hwpxSlow}"
+                            ng-click="downloadFile(item, 'hwpx')" ng-disabled="item.dl.hwpx || item.fileExists === false" title="{{item.fileExists === false ? '서버에 파일이 없습니다' : '한글 다운로드'}}">
+                        <span class="dl-spinner" ng-show="item.dl.hwpxSlow"></span>
+                        <svg ng-hide="item.dl.hwpxSlow" xmlns="http://www.w3.org/2000/svg" width="11" height="11"
                              viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
-                        Word
+                        한글
                     </button>
                     <button class="btn-report-download btn-dl-pdf" ng-class="{'is-busy': item.dl.pdfSlow}"
                             ng-click="downloadFile(item, 'pdf')" ng-disabled="item.dl.pdf || item.fileExists === false" title="{{item.fileExists === false ? '서버에 파일이 없습니다' : 'PDF 다운로드'}}">
@@ -373,17 +373,17 @@
     </div>
 
     <div class="log-modal-footer">
-        <button class="btn-report-download btn-dl-word btn-modal-download" ng-class="{'is-busy': detailReport.dl.wordSlow}"
-                ng-click="downloadFile(detailReport, 'word')" ng-disabled="detailReport.dl.word || detailReport.fileExists === false">
-            <span class="dl-spinner" ng-show="detailReport.dl.wordSlow"></span>
-            <svg ng-hide="detailReport.dl.wordSlow" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+        <button class="btn-report-download btn-dl-word btn-modal-download" ng-class="{'is-busy': detailReport.dl.hwpxSlow}"
+                ng-click="downloadFile(detailReport, 'hwpx')" ng-disabled="detailReport.dl.hwpx || detailReport.fileExists === false">
+            <span class="dl-spinner" ng-show="detailReport.dl.hwpxSlow"></span>
+            <svg ng-hide="detailReport.dl.hwpxSlow" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Word 다운로드
+            한글 다운로드
         </button>
         <button class="btn-report-download btn-dl-pdf btn-modal-download" ng-class="{'is-busy': detailReport.dl.pdfSlow}"
                 ng-click="downloadFile(detailReport, 'pdf')" ng-disabled="detailReport.dl.pdf || detailReport.fileExists === false">

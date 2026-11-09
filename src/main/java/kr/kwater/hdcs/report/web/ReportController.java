@@ -83,23 +83,25 @@ public class ReportController {
         }
     }
 
-    /** 리포트 Word(.docx) 파일 다운로드 */
-    @GetMapping("/{reportId}/download/word")
-    public ResponseEntity<?> downloadWord(@PathVariable Long reportId) {
+    /** 리포트 한글(.hwpx) 파일 다운로드. (한글 형식으로 바꾸기 전에 만든 예전 리포트는 한글 파일로 변환해서 내려간다) */
+    @GetMapping("/{reportId}/download/hwpx")
+    public ResponseEntity<?> downloadHwpx(@PathVariable Long reportId) {
         ResponseEntity<?> denied = denyIfManual(reportId);
         if (denied != null) return denied;
         try {
-            return fileResponse(reportService.getReportDownload(reportId),
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            return fileResponse(reportService.getReportHwpxDownload(reportId), "application/vnd.hancom.hwpx");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404).body(Map.of("message", e.getMessage()));
+        } catch (IllegalStateException e) {
+            // 예전 리포트를 한글 형식으로 변환하지 못한 경우: 화면에 보여줄 메시지를 담아 던진다.
+            return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             log.error("리포트 다운로드 실패: id={}", reportId, e);
             return ResponseEntity.status(500).body(Map.of("message", "리포트 다운로드 중 오류가 발생했습니다."));
         }
     }
 
-    /** 리포트 PDF 파일 다운로드 (최초 요청 시 Word 파일을 변환해서 저장한다) */
+    /** 리포트 PDF 파일 다운로드 (최초 요청 시 한글 파일을 RHWP로 변환해서 저장한다) */
     @GetMapping("/{reportId}/download/pdf")
     public ResponseEntity<?> downloadPdf(@PathVariable Long reportId) {
         ResponseEntity<?> denied = denyIfManual(reportId);

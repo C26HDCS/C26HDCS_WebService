@@ -26,6 +26,15 @@ public interface ReportService {
     ReportDownload getReportDownload(Long reportId) throws Exception;
 
     /**
+     * 리포트 한글(.hwpx) 다운로드 정보 조회. 한글 형식으로 바꾸기 전에 만든 예전 리포트(Word)는
+     * 처음 요청할 때 한글 파일로 변환해서 같은 폴더에 저장해 두고 그 파일을 돌려준다.
+     *
+     * @throws IllegalArgumentException 리포트 이력이 없거나 파일이 존재하지 않는 경우
+     * @throws IllegalStateException    예전 리포트를 한글 형식으로 변환하지 못한 경우
+     */
+    ReportDownload getReportHwpxDownload(Long reportId) throws Exception;
+
+    /**
      * 리포트 PDF 다운로드 정보 조회. 저장된 Word 파일을 PDF로 변환해 두고(최초 1회) 그 파일을 돌려준다.
      *
      * @throws IllegalArgumentException 리포트 이력이 없거나 원본 Word 파일이 존재하지 않는 경우

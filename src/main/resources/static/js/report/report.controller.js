@@ -353,14 +353,14 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
             });
     };
 
-    // ── Word / PDF 다운로드 ──
+    // ── 한글(hwpx) / PDF 다운로드 ──
     // 인증 토큰이 요청 헤더로만 전달되므로(링크 이동 불가) $http 로 받아서 Blob으로 저장한다.
     // PDF는 처음 받을 때 서버에서 변환하므로 시간이 걸릴 수 있다.
     // 진행 중에는 같은 버튼을 다시 누르지 못하게 하고, 0.6초가 지나도 끝나지 않으면 버튼의 아이콘을 스피너로 바꿔 보여준다.
     // (이미 변환된 파일은 바로 받아져서 깜빡이지 않도록 약간 늦게 보여준다)
     var SLOW_MS = 600;
     var DOWNLOADS = {
-        word: { path: 'word', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ext: 'docx' },
+        hwpx: { path: 'hwpx', mime: 'application/vnd.hancom.hwpx', ext: 'hwpx' },
         pdf:  { path: 'pdf',  mime: 'application/pdf', ext: 'pdf' }
     };
 
@@ -373,7 +373,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
         $http.get(ctx + '/api/report/' + item.reportId + '/download/' + d.path, { responseType: 'blob' })
             .then(function (res) {
                 var blob = new Blob([res.data], { type: d.mime });
-                var name = (item.fileName || ('report_' + item.reportId + '.docx'))
+                var name = (item.fileName || ('report_' + item.reportId + '.hwpx'))
                     .replace(/\.[^.]*$/, '') + '.' + d.ext;
                 var url = URL.createObjectURL(blob);
                 var a = document.createElement('a');

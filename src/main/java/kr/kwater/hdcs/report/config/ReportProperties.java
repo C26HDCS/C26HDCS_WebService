@@ -25,7 +25,19 @@ public class ReportProperties {
     /** 유형별 상세 목록 최대 행 수 */
     private int maxDetailRows = 1000;
 
-    /** PDF 변환에 쓰는 LibreOffice 실행 파일(soffice) 경로 */
+    /**
+     * PDF 변환 방식. libreoffice(기본): 리포트를 만들 때 함께 저장해 둔 Word(.docx)를 LibreOffice로 변환한다.
+     * rhwp: 한글(.hwpx) 파일을 RHWP 로 변환한다. (한글 파일과 PDF 모양이 완전히 같다)
+     */
+    private String pdfEngine = "libreoffice";
+
+    /** PDF 변환에 쓰는 RHWP 실행 파일 경로. 'rhwp' 처럼 이름만 쓰면 PATH 에서 찾는다. (한글 .hwpx → PDF) */
+    private String rhwpPath = "rhwp";
+
+    /** PDF 변환 시 글자를 도형(윤곽선)으로 바꿀지 여부. true 면 폰트가 없는 PC에서도 같게 보이지만 글자 검색·복사는 안 된다. */
+    private boolean rhwpTextAsPaths = false;
+
+    /** 예전 Word(.docx) 리포트의 PDF 변환에만 쓰는 LibreOffice 실행 파일(soffice) 경로 */
     private String sofficePath = "C:/Program Files/LibreOffice/program/soffice.exe";
 
     /** PDF 변환 제한 시간(초). 초과하면 변환 프로세스를 강제 종료한다. */

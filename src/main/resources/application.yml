@@ -122,7 +122,9 @@ report:
   max-period-days: 31
   # 데이터 유형별 상세 목록 최대 건수 (초과 시 최신순으로 잘라서 표시)
   max-detail-rows: 1000
-  # PDF 다운로드용 변환 프로그램(LibreOffice) 실행 파일 경로 (서버에 맞게 LIBREOFFICE_PATH 환경변수로 변경 가능)
+  # PDF 다운로드용 변환 프로그램(RHWP) 실행 파일 경로: 한글(.hwpx) 리포트 → PDF (서버에 맞게 RHWP_PATH 환경변수로 변경 가능)
+  rhwp-path: ${RHWP_PATH:C:/Program Files/rhwp/rhwp/rhwp.exe}
+  # 예전 Word(.docx) 리포트의 PDF 변환에만 쓰는 LibreOffice 실행 파일 경로 (LIBREOFFICE_PATH 환경변수로 변경 가능)
   soffice-path: ${LIBREOFFICE_PATH:C:/Program Files/LibreOffice/program/soffice.exe}
   # PDF 변환 제한 시간(초)
   pdf-timeout-seconds: 120
