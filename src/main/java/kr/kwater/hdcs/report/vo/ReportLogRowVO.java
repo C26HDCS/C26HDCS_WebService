@@ -1,5 +1,6 @@
 package kr.kwater.hdcs.report.vo;
 
+import kr.kwater.hdcs.common.LegacyDeviceMessage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,4 +13,8 @@ public class ReportLogRowVO {
     private String deviceName;
     private String level;
     private String message;
+
+    public String getMessage() {
+        return LegacyDeviceMessage.display(message);
+    }
 }
