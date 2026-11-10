@@ -121,7 +121,8 @@
     background: #1c2b40;
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 10px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
@@ -165,8 +166,10 @@
 }
 
 /* ── 테이블 내부 ── */
+/* 화면이 좁아도 표가 잘리지 않도록 가로 스크롤로 넘긴다. */
 .user-table-panel .data-table {
     width: 100%;
+    min-width: 1000px;
 }
 .user-table-panel .data-table thead th {
     background: #19273c;
@@ -314,6 +317,9 @@
     transform: translate(-50%, -50%);
     z-index: 1001;
     width: 460px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
     background: #1c2b40;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px;

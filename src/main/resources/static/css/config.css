@@ -15,6 +15,8 @@
     gap: 12px 20px;
     margin-bottom: 14px;
 }
+@media (max-width: 1180px) { .cfg-search-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 760px)  { .cfg-search-grid { grid-template-columns: 1fr; } }
 
 .cfg-search-field label {
     display: block;
@@ -92,7 +94,9 @@
     border: 1px solid var(--border, rgba(255,255,255,.08));
     border-radius: 8px;
     padding: 16px 20px 20px;
+    overflow-x: auto;   /* 화면이 좁으면 표를 가로 스크롤로 넘긴다 */
 }
+.cfg-table-panel > .cfg-table { min-width: 1000px; }
 
 .cfg-table-toolbar {
     display: flex;
