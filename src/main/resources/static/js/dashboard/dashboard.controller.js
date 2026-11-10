@@ -4,11 +4,15 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
 
     $scope.summary = { totalDevices: 0, normal: 0, fault: 0, warn: 0 };
     $scope.devices       = [];
+    $scope.listDevices = [];
+    $scope.deviceGroups = [];
+    $scope.deviceListFilter = { groupName: '' };
     $scope.deviceHistory = [];
     $scope.currentTime   = '';
     $scope.equipPanelCollapsed = true;
     $scope.diagramCollapsed = false;
     $scope.selectedDevice  = null;
+    $scope.highlightedDeviceId = null;
     $scope.deviceModalOpen = false;
     $scope.statusLoaded = false;
     $scope.statusError = '';
@@ -88,6 +92,13 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
             ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + ' KST';
     }
     updateTime();
+    $scope.filterDeviceList = function () {
+        var groupName = $scope.deviceListFilter.groupName;
+        $scope.listDevices = groupName
+            ? $scope.devices.filter(function (device) { return device.groupName === groupName; })
+            : $scope.devices;
+    };
+
     var clockTimer = $interval(updateTime, 1000);
     var destroyed = false;
     var refreshing = false;
@@ -100,9 +111,17 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
                 if (!res.data || !res.data.summary || !Array.isArray(res.data.devices)) throw new Error('Invalid status response');
                 $scope.summary = res.data.summary;
                 $scope.devices = res.data.devices;
+                $scope.deviceGroups = Array.from(new Set($scope.devices.map(function (device) {
+                    return device.groupName;
+                }).filter(Boolean))).sort(function (a, b) { return a.localeCompare(b, 'ko'); });
+                if (!$scope.deviceGroups.includes($scope.deviceListFilter.groupName)) {
+                    $scope.deviceListFilter.groupName = '';
+                }
+                $scope.filterDeviceList();
                 $scope.statusLoaded = true;
                 $scope.statusError = '';
                 $scope.lastStatusCheckedAt = res.data.checkedAt;
+                syncDeviceMarkers();
                 if ($scope.selectedDevice) {
                     var updated = $scope.devices.find(function (d) { return d.deviceId === $scope.selectedDevice.deviceId; });
                     if (updated) $scope.selectedDevice = updated;
@@ -119,6 +138,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         destroyed = true;
         $interval.cancel(clockTimer);
         $interval.cancel(statusTimer);
+        if (removeSelectionRenderListener) removeSelectionRenderListener();
         if (cesiumViewer && !cesiumViewer.isDestroyed()) cesiumViewer.destroy();
     });
 
@@ -141,24 +161,117 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         });
     }
 
-    // ── 관측소 마커 렌더링 ──
-    function renderStationMarkers(viewer, stations) {
-        stations.forEach(function (station) {
-            if (!station.lat || !station.lng) return;
-            viewer.entities.add({
-                id:       'station_' + station.stationId,
-                name:     station.name,
-                position: Cesium.Cartesian3.fromDegrees(station.lng, station.lat, 0),
+    var cesiumViewer = null;
+    var selectionOverlay = null;
+    var selectedPosition = null;
+    var removeSelectionRenderListener = null;
+    var markerStates = new Map();
+    var statusPriority = { NORMAL: 1, WARNING: 2, ERROR: 3 };
+
+    function hasMapCoordinates(device) {
+        return Number.isFinite(device.lat) && Math.abs(device.lat) <= 90 &&
+               Number.isFinite(device.lng) && Math.abs(device.lng) <= 180;
+    }
+
+    function focusDeviceLocation(device) {
+        if (!cesiumViewer || !hasMapCoordinates(device)) return;
+        var camera = cesiumViewer.camera;
+        camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(
+                device.lng, device.lat, camera.positionCartographic.height),
+            duration: 0.6
+        });
+    }
+
+    $scope.highlightDeviceOnMap = function (device) {
+        $scope.highlightedDeviceId = device.deviceId;
+        syncDeviceMarkers();
+        focusDeviceLocation(device);
+    };
+
+    function positionSelectionOverlay(scene) {
+        if (!selectedPosition) {
+            selectionOverlay.hidden = true;
+            return;
+        }
+        var height = scene.globe.getHeight(selectedPosition) || 0;
+        var position = Cesium.Cartesian3.fromRadians(
+            selectedPosition.longitude, selectedPosition.latitude, height);
+        var pixel = Cesium.SceneTransforms.wgs84ToWindowCoordinates(scene, position);
+        var visible = pixel && pixel.x >= 0 && pixel.y >= 0 &&
+                      pixel.x < scene.canvas.clientWidth && pixel.y < scene.canvas.clientHeight;
+        selectionOverlay.hidden = !visible;
+        if (visible) {
+            selectionOverlay.style.transform =
+                'translate(' + pixel.x + 'px, ' + pixel.y + 'px) translate(-50%, -50%)';
+        }
+    }
+
+    function syncDeviceMarkers() {
+        if (!cesiumViewer) return;
+        var locations = new Map();
+        $scope.devices.forEach(function (device) {
+            if (!hasMapCoordinates(device)) return;
+            var key = device.lat + ',' + device.lng;
+            var location = locations.get(key);
+            var priority = statusPriority[device.deviceStatus] || 0;
+            var highlighted = device.deviceId === $scope.highlightedDeviceId;
+            if (!location) {
+                locations.set(key, { device: device, priority: priority, count: 1, highlighted: highlighted });
+            } else {
+                location.count++;
+                location.highlighted = location.highlighted || highlighted;
+                if (priority > location.priority) {
+                    location.device = device;
+                    location.priority = priority;
+                }
+            }
+        });
+
+        selectedPosition = null;
+        locations.forEach(function (location, key) {
+            var device = location.device;
+            var name = device.stationName || device.deviceName;
+            if (location.count > 1) name += ' 외 ' + (location.count - 1) + '대';
+            var color = $scope.statusColor(device.deviceStatus);
+            if (selectionOverlay && location.highlighted) {
+                selectedPosition = Cesium.Cartographic.fromDegrees(device.lng, device.lat);
+                selectionOverlay.style.setProperty('--station-marker-color', color);
+            }
+            var pixelSize = location.highlighted ? 19 : 10;
+            var outlineWidth = location.highlighted ? 4 : 2;
+            var marker = markerStates.get(key);
+            if (marker) {
+                if (marker.color !== color) {
+                    marker.entity.point.color = Cesium.Color.fromCssColorString(color);
+                    marker.color = color;
+                }
+                if (marker.name !== name) {
+                    marker.entity.name = name;
+                    marker.entity.label.text = name;
+                    marker.name = name;
+                }
+                if (marker.highlighted !== location.highlighted) {
+                    marker.entity.point.pixelSize = pixelSize;
+                    marker.entity.point.outlineWidth = outlineWidth;
+                    marker.highlighted = location.highlighted;
+                }
+                return;
+            }
+            var entity = cesiumViewer.entities.add({
+                id:       'device_location_' + key,
+                name:     name,
+                position: Cesium.Cartesian3.fromDegrees(device.lng, device.lat, 0),
                 point: {
-                    pixelSize:                10,
-                    color:                    Cesium.Color.fromCssColorString('#2ecc71'),
+                    pixelSize:                pixelSize,
+                    color:                    Cesium.Color.fromCssColorString(color),
                     outlineColor:             Cesium.Color.WHITE,
-                    outlineWidth:             2,
+                    outlineWidth:             outlineWidth,
                     heightReference:          Cesium.HeightReference.CLAMP_TO_GROUND,
                     disableDepthTestDistance: Number.POSITIVE_INFINITY
                 },
                 label: {
-                    text:                     station.name,
+                    text:                     name,
                     font:                     '11px Malgun Gothic, sans-serif',
                     fillColor:                Cesium.Color.WHITE,
                     outlineColor:             Cesium.Color.BLACK,
@@ -170,19 +283,13 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
                     distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 300000)
                 }
             });
+            markerStates.set(key, { entity: entity, color: color, name: name, highlighted: location.highlighted });
         });
-    }
-
-    var cesiumViewer = null; // 지도 제어 함수에서 공유
-
-    function loadStationMarkers(viewer) {
-        $http.get(ctx + '/api/dashboard/stations')
-            .then(function (res) {
-                renderStationMarkers(viewer, res.data);
-            })
-            .catch(function (err) {
-                console.warn('[stations API 오류]', err);
-            });
+        markerStates.forEach(function (marker, key) {
+            if (locations.has(key)) return;
+            cesiumViewer.entities.remove(marker.entity);
+            markerStates.delete(key);
+        });
     }
 
     // ── 지도 컨트롤 버튼 핸들러 ──
@@ -220,6 +327,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
     };
 
     function initViewer(terrainProvider) {
+        if (destroyed) return;
         var viewer = new Cesium.Viewer('cesiumContainer', {
             baseLayer:            new Cesium.ImageryLayer(createVWorldProvider('Satellite', 'jpeg')),
             terrainProvider:      terrainProvider,
@@ -244,11 +352,19 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
         });
 
         cesiumViewer = viewer;
-        loadStationMarkers(viewer);
+        selectionOverlay = document.getElementById('dash-selected-marker');
+        if (selectionOverlay) {
+            removeSelectionRenderListener = viewer.scene.postRender.addEventListener(positionSelectionOverlay);
+        }
+        syncDeviceMarkers();
+        var highlighted = $scope.devices.find(function (device) {
+            return device.deviceId === $scope.highlightedDeviceId;
+        });
+        if (highlighted) focusDeviceLocation(highlighted);
     }
 
     // Ion 한국 지형 비동기 로드 → 실패 시 기본 타원체로 폴백
     Cesium.CesiumTerrainProvider.fromIonAssetId(ION_TERRAIN_ID)
-        .then(function (terrain) { initViewer(terrain); })
-        .catch(function ()        { initViewer(new Cesium.EllipsoidTerrainProvider()); });
+        .catch(function () { return new Cesium.EllipsoidTerrainProvider(); })
+        .then(initViewer);
 }]);

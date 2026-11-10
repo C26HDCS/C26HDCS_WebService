@@ -49,7 +49,8 @@ public class DashboardServiceImpl extends EgovAbstractServiceImpl implements Das
     public List<DeviceStatusHistoryVO> getDeviceData(String deviceId, String deviceType) throws Exception {
         log.debug("[getDeviceData] deviceId={}, deviceType={}", deviceId, deviceType);
         if (deviceType == null || deviceType.isBlank()) return Collections.emptyList();
-        if (deviceType.contains("L") && deviceType.contains("대역")) {
+        if ((deviceType.contains("L") && deviceType.contains("대역"))
+                || "강수량".equals(deviceType.trim()) || "수위".equals(deviceType.trim())) {
             log.debug("[getDeviceData] -> selectDcsData");
             List<DeviceStatusHistoryVO> result = dataReceiveDAO.selectDcsData(deviceId);
             log.debug("[getDeviceData] selectDcsData result size={}", result.size());

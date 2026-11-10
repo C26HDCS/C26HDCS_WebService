@@ -97,6 +97,16 @@
     overflow-x: auto;   /* 화면이 좁으면 표를 가로 스크롤로 넘긴다 */
 }
 .cfg-table-panel > .cfg-table { min-width: 1000px; }
+.cfg-table-panel > .cfg-device-table { min-width: 1420px; }
+.cfg-device-table .cfg-device-id {
+    min-width: 190px;
+    white-space: nowrap;
+}
+.cfg-device-table .cfg-device-address {
+    min-width: 180px;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
 
 .cfg-table-toolbar {
     display: flex;

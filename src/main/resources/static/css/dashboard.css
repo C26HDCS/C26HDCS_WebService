@@ -128,6 +128,40 @@
     height: 100%;
 }
 
+.dash-selected-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 21px;
+    height: 21px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: var(--station-marker-color);
+    box-shadow: 0 0 10px 3px var(--station-marker-color);
+    pointer-events: none;
+}
+
+.dash-selected-marker::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--station-marker-color);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dash-selected-marker::after {
+        animation: dash-station-pulse 1.4s ease-out infinite;
+    }
+}
+
+@keyframes dash-station-pulse {
+    from { transform: scale(0.85); opacity: 1; }
+    to { transform: scale(1.65); opacity: 0; }
+}
+
 /* ── Cesium 기본 UI 재정의 ── */
 
 /* 크레딧(저작권) 텍스트 */
@@ -165,7 +199,7 @@
 .dash-equip-panel {
     position: absolute;
     left: 0; top: 0; bottom: 0;
-    width: min(430px, 70%);   /* 지도 영역이 좁아지면 지도를 다 가리지 않도록 비율로 줄인다 */
+    width: min(680px, 48%);
     z-index: 10;
     display: flex;
     flex-direction: row;
@@ -203,10 +237,33 @@
     letter-spacing: 0.3px;
 }
 
+.dash-equip-group {
+    max-width: 55%;
+    padding: 4px 8px;
+    border: 1px solid #36536f;
+    border-radius: 5px;
+    background: #162032;
+    color: #dce8f5;
+    font: inherit;
+}
+
+.dash-latest-data {
+    display: inline-block;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
 .dash-equip-body {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
+}
+
+.dash-equip-body .data-table {
+    min-width: 570px;
 }
 
 .dash-equip-body::-webkit-scrollbar { width: 4px; }
@@ -269,6 +326,55 @@
 }
 .device-row:hover {
     background: rgba(58,123,213,0.12);
+}
+
+.dash-equip-body .data-table tbody .dash-device-group {
+    white-space: nowrap;
+}
+
+.dash-equip-body .data-table tbody .dash-device-address {
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.dash-device-link {
+    display: block;
+    margin: 0 auto;
+    background: transparent;
+    border: 0;
+    color: #a9d5ff;
+    font: inherit;
+    white-space: normal;
+    cursor: pointer;
+}
+
+.dash-device-link.dash-station-name {
+    white-space: nowrap;
+}
+
+.dash-device-link.dash-device-detail-button {
+    margin-top: 4px;
+    padding: 3px 9px;
+    border: 1px solid #5a87bc;
+    border-radius: 5px;
+    background: #24476d;
+    color: #f2f7ff;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dash-device-detail-button:hover {
+    background: #315e8c;
+}
+
+.dash-device-detail-button:focus-visible {
+    outline: 2px solid #a9d5ff;
+    outline-offset: 2px;
+}
+
+.dash-equip-body .data-table tbody .device-row-selected {
+    background: rgba(58,123,213,0.3);
 }
 
 /* ── 장비 상세 모달 ── */
