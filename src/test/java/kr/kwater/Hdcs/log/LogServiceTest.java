@@ -69,6 +69,21 @@ class LogServiceTest {
     }
 
     @Test
+    void translatesHistoricalDeviceMessagesWithoutChangingStoredLogsOrUserEvents() throws Exception {
+        String original = "[Python:KA_MONITOR] camera=cam_test receiver=RUNNING data=RECEIVING pending=NONE";
+        service.saveLog(75L, LogLevel.INFO, original);
+        service.saveEvent("admin", "SETTING_CHANGED", original);
+
+        assertThat(service.getLogList(new LogVO())).hasSize(2).allSatisfy(row -> {
+            String expected = "LOG".equals(row.getCategory())
+                    ? "[KA_MONITOR] 영상 수신기 동작 중 / 영상 수신 중 / 처리 대기 상태: 대기 없음"
+                    : original;
+            assertThat(row.getMessage()).isEqualTo(expected);
+        });
+        assertThat(jdbc.queryForObject("SELECT MESSAGE FROM TB_LOG", String.class)).isEqualTo(original);
+    }
+
+    @Test
     void savesEventAndSupportsExistingFilters() throws Exception {
         long id = service.saveEvent("admin", "SETTING_CHANGED", "Port updated");
         service.saveLog(75L, LogLevel.INFO, "DCS received");
