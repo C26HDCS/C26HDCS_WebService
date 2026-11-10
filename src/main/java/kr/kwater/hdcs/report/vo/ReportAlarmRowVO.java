@@ -1,5 +1,6 @@
 package kr.kwater.hdcs.report.vo;
 
+import kr.kwater.hdcs.common.LegacyDeviceMessage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,4 +14,8 @@ public class ReportAlarmRowVO {
     private String alarmType;
     private String alarmLevel;
     private String alarmMessage;
+
+    public String getAlarmMessage() {
+        return LegacyDeviceMessage.display(alarmMessage);
+    }
 }

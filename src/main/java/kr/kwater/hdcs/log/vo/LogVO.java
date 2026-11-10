@@ -1,6 +1,7 @@
 package kr.kwater.hdcs.log.vo;
 
 import kr.kwater.hdcs.common.vo.BaseVO;
+import kr.kwater.hdcs.common.LegacyDeviceMessage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,4 +33,8 @@ public class LogVO extends BaseVO {
     private String searchLevel;
     private String searchDateFrom;
     private String searchDateTo;
+
+    public String getMessage() {
+        return "LOG".equals(category) ? LegacyDeviceMessage.display(message) : message;
+    }
 }

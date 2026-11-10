@@ -27,6 +27,7 @@ DECLARE
     reason TEXT;
     timed_out BOOLEAN;
     previous_timeout BOOLEAN;
+    operator_message TEXT;
     local_now TIMESTAMP := CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Seoul';
     timeout_key TEXT := md5('WEB_PYTHON_STATUS_TIMEOUT');
 BEGIN
@@ -50,13 +51,15 @@ BEGIN
     SELECT active INTO previous_timeout FROM public.tb_python_alarm_state
     WHERE device_id = p_device AND incident_key = timeout_key FOR UPDATE;
     IF previous_timeout IS DISTINCT FROM timed_out THEN
+        operator_message := CASE WHEN timed_out
+            THEN '[STATUS_TIMEOUT] 장치 상태 정보가 제시간에 갱신되지 않았습니다.'
+            ELSE '[STATUS_RECOVERED] 장치 상태 정보 갱신이 정상화되었습니다.' END;
         IF timed_out THEN
             INSERT INTO public.tb_alarm(device_id, alarm_type, alarm_level, alarm_message, occurred_at)
-            VALUES(p_device, '시스템', 'HIGH', '[Python:STATUS_TIMEOUT] ' || LEFT(reason, 470), local_now);
+            VALUES(p_device, '시스템', 'HIGH', operator_message, local_now);
         END IF;
         INSERT INTO public.tb_log(device_id, level, message, reg_dt)
-        VALUES(p_device, CASE WHEN timed_out THEN 'ERROR' ELSE 'INFO' END,
-               CASE WHEN timed_out THEN '[Python:STATUS_TIMEOUT] ' ELSE '[Python:STATUS_RECOVERED] ' END || reason, local_now);
+        VALUES(p_device, CASE WHEN timed_out THEN 'ERROR' ELSE 'INFO' END, operator_message, local_now);
         UPDATE public.tb_python_alarm_state SET active = timed_out, updated_at = local_now
         WHERE device_id = p_device AND incident_key = timeout_key;
     END IF;
