@@ -111,6 +111,17 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         return '';
     };
 
+    $scope.deviceStatusLabel = function (status) {
+        return { NORMAL: '정상', WARNING: '경고', ERROR: '장애' }[status] || status || '-';
+    };
+
+    $scope.receiveStatusLabel = function (status) {
+        return {
+            NORMAL: '성공', SUCCESS: '성공', WARNING: '경고',
+            ERROR: '오류', FAILED: '오류', FAIL: '오류'
+        }[status] || status || '-';
+    };
+
     /* ── 설정 상태 CSS 클래스 (뷰 config_status 값 직접 사용) ── */
     // 설정 상태 문구는 DB 뷰가 만들어 준다. 화면에서는 '그룹'을 '유역'으로 바꿔 보여 준다.
     $scope.configStatusLabel = function (status) {

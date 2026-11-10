@@ -4,6 +4,23 @@
 
 <mapper namespace="kr.kwater.hdcs.dashboard.dao.DataReceiveDAO">
 
+    <sql id="dcsMeasurements">
+        NULLIF(CONCAT_WS(' / ',
+            '측정값 1 ' || NULLIF(TRIM(detail.quantity_1), ''),
+            '측정값 2 ' || NULLIF(TRIM(detail.quantity_2), ''),
+            '측정값 3 ' || NULLIF(TRIM(detail.quantity_3), ''),
+            '측정값 4 ' || NULLIF(TRIM(detail.quantity_4), '')
+        ), '')
+    </sql>
+
+    <sql id="joinParsedDcsDetail">
+        LEFT JOIN public.tb_dcs_receive_details detail ON detail.id = (
+            SELECT x.id FROM public.tb_dcs_receive_details x
+            WHERE x.dcs_data_id = r.dcs_data_id AND x.parse_status = 'PARSED'
+            ORDER BY x.id DESC LIMIT 1
+        )
+    </sql>
+
     <!-- 장비 유형 조회 (L대역 DCS / Ka대역 분기용) -->
     <select id="selectDeviceType" resultType="String">
         SELECT TRIM(device_type)
@@ -13,12 +30,16 @@
 
     <!-- L대역 DCS 수신 데이터 최신 5건 -->
     <select id="selectDcsData" resultType="kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO">
-        SELECT TO_CHAR(received_at, 'YYYY-MM-DD HH24:MI') AS receivedAt,
-               data_payload                                AS dataPayload,
-               TRIM(received_status)                      AS receivedStatus
-        FROM public.tb_dcs_data
-        WHERE device_id = CAST(#{deviceId} AS BIGINT)
-        ORDER BY received_at DESC
+        SELECT TO_CHAR(r.received_at, 'YYYY-MM-DD HH24:MI') AS receivedAt,
+               NULLIF(CONCAT_WS(' / ',
+                   <include refid="dcsMeasurements"/>,
+                   '전압 ' || NULLIF(TRIM(CAST(detail.voltage AS TEXT)), '')
+               ), '') AS dataPayload,
+               TRIM(r.received_status) AS receivedStatus
+        FROM public.tb_dcs_data r
+        <include refid="joinParsedDcsDetail"/>
+        WHERE r.device_id = CAST(#{deviceId} AS BIGINT)
+        ORDER BY r.received_at DESC NULLS LAST, r.dcs_data_id DESC
         LIMIT 5
     </select>
 

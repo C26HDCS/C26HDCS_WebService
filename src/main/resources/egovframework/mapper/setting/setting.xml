@@ -5,9 +5,28 @@
 <mapper namespace="kr.kwater.hdcs.setting.dao.SettingDAO">
 
     <select id="selectDeviceConfigList" resultType="kr.kwater.hdcs.setting.vo.DeviceConfigVO">
-        SELECT *
-        FROM public.v_device_config
-        ORDER BY device_id
+        SELECT d.device_id,
+               COALESCE(c.equip_id, d.device_name) AS equip_id,
+               COALESCE(c.equip_type, TRIM(d.device_type)) AS equip_type,
+               COALESCE(c.obs_code, s.obs_code) AS obs_code,
+               COALESCE(c.nms_device_name, d.nms_device_name) AS nms_device_name,
+               COALESCE(c.display_name, s.name) AS display_name,
+               COALESCE(c.group_name, g.group_name) AS group_name,
+               c.nms_status,
+               COALESCE(c.config_status, CASE
+                   WHEN NULLIF(TRIM(s.name), '') IS NULL THEN '표시명 미설정'
+                   WHEN g.group_id IS NULL THEN '그룹 미설정'
+                   ELSE '설정완료'
+               END) AS config_status,
+               s.address AS station_address,
+               TRIM(d.device_status) AS device_status,
+               TO_CHAR(d.last_received_at, 'YYYY-MM-DD HH24:MI') AS last_received_at,
+               TRIM(d.last_receive_status) AS last_receive_status
+        FROM public.tb_device d
+        LEFT JOIN public.v_device_config c ON c.device_id = d.device_id
+        LEFT JOIN public.tb_observation_station s ON s.station_id = d.station_id
+        LEFT JOIN public.tb_device_group g ON g.group_id = d.group_id
+        ORDER BY d.device_id
     </select>
 
     <select id="selectGroupNames" resultType="string">
@@ -19,10 +38,10 @@
 
     <!-- 장비 유형 선택지 (뷰에 실제 존재하는 값 기준) -->
     <select id="selectEquipTypes" resultType="string">
-        SELECT DISTINCT equip_type
-        FROM public.v_device_config
-        WHERE equip_type IS NOT NULL
-          AND equip_type &lt;&gt; ''
+        SELECT DISTINCT COALESCE(c.equip_type, TRIM(d.device_type)) AS equip_type
+        FROM public.tb_device d
+        LEFT JOIN public.v_device_config c ON c.device_id = d.device_id
+        WHERE COALESCE(c.equip_type, TRIM(d.device_type)) &lt;&gt; ''
         ORDER BY equip_type
     </select>
 

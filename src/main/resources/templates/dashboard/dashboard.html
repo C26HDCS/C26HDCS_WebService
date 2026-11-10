@@ -28,6 +28,7 @@
             <!-- CesiumJS 지도 -->
             <div class="dash-map-area">
                 <div id="cesiumContainer"></div>
+                <div id="dash-selected-marker" class="dash-selected-marker" aria-hidden="true" hidden></div>
             </div>
 
             <!-- 장비 목록 패널 -->
@@ -36,29 +37,44 @@
                 <div class="dash-equip-content">
                     <div class="dash-equip-header">
                         <span>전체 장비 리스트</span>
+                        <select class="dash-equip-group" aria-label="유역 그룹"
+                                ng-model="deviceListFilter.groupName"
+                                ng-options="group for group in deviceGroups"
+                                ng-change="filterDeviceList()">
+                            <option value="">전체 유역</option>
+                        </select>
                     </div>
                     <div class="dash-equip-body">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>장비 ID</th>
-                                    <th>장비명</th>
-                                    <th>위치</th>
+                                    <th>관측소명</th>
+                                    <th>유역</th>
+                                    <th>주소</th>
                                     <th>상태</th>
                                     <th>최근 수신<br>일시</th>
-                                    <th>수신 상태</th>
+                                    <th>최신 데이터</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-if="devices.length === 0">
-                                    <td colspan="6" class="no-data">{{statusError || (statusLoaded ? '전체 장비 리스트가 없습니다.' : '상태 조회 중')}}</td>
+                                <tr ng-if="listDevices.length === 0">
+                                    <td colspan="6" class="no-data">{{statusError || (statusLoaded ? '표시할 장비가 없습니다.' : '상태 조회 중')}}</td>
                                 </tr>
-                                <tr ng-repeat="d in devices track by d.deviceId"
+                                <tr ng-repeat="d in listDevices track by d.deviceId"
                                     class="device-row"
-                                    ng-click="openDeviceDetail(d)">
-                                    <td>{{d.deviceId}}</td>
-                                    <td>{{d.deviceName}}</td>
-                                    <td>{{d.ipAddress}}</td>
+                                    ng-class="{'device-row-selected': highlightedDeviceId === d.deviceId}"
+                                    ng-click="highlightDeviceOnMap(d)">
+                                    <td>
+                                        <button type="button" class="dash-device-link dash-station-name"
+                                                ng-attr-aria-pressed="{{highlightedDeviceId === d.deviceId}}"
+                                                ng-click="$event.stopPropagation(); highlightDeviceOnMap(d)">
+                                            {{d.stationName || d.deviceName || '-'}}
+                                        </button>
+                                        <button type="button" class="dash-device-link dash-device-detail-button"
+                                                ng-click="$event.stopPropagation(); openDeviceDetail(d)">상세</button>
+                                    </td>
+                                    <td class="dash-device-group">{{d.groupName || '-'}}</td>
+                                    <td class="dash-device-address">{{d.stationAddress || '-'}}</td>
                                     <td>
                                         <span ng-class="{
                                             'status-normal':  d.deviceStatus === 'NORMAL',
@@ -67,16 +83,7 @@
                                         }">{{statusLabel(d.deviceStatus)}}</span>
                                     </td>
                                     <td class="recv-time">{{d.latestReceivedAt || '-'}}</td>
-                                    <td>
-                                        <span ng-if="d.latestReceivedStatus"
-                                              class="recv-badge"
-                                              ng-class="{
-                                                  'recv-success': d.latestReceivedStatus === 'NORMAL'  || d.latestReceivedStatus === 'SUCCESS',
-                                                  'recv-warn':    d.latestReceivedStatus === 'WARNING',
-                                                  'recv-error':   d.latestReceivedStatus === 'ERROR'   || d.latestReceivedStatus === 'FAILED' || d.latestReceivedStatus === 'FAIL'
-                                              }">{{historyStatusLabel(d.latestReceivedStatus)}}</span>
-                                        <span ng-if="!d.latestReceivedStatus">-</span>
-                                    </td>
+                                    <td><span class="dash-latest-data" ng-attr-title="{{d.latestData || undefined}}">{{d.latestData || '-'}}</span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -302,7 +309,7 @@
                 <thead>
                     <tr>
                         <th>수신 시간</th>
-                        <th>데이터 내용 (Payload)</th>
+                        <th>수신 데이터</th>
                         <th>상태</th>
                     </tr>
                 </thead>

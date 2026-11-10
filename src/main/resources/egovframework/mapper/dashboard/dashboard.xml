@@ -21,16 +21,44 @@
     </select>
 
     <select id="selectAllDevices" resultType="kr.kwater.hdcs.dashboard.vo.DeviceVO">
-        SELECT device_id                                          AS deviceId,
-               device_name                                       AS deviceName,
-               TRIM(device_type)                                 AS deviceType,
-               ip_address                                        AS ipAddress,
-               TRIM(device_status)                               AS deviceStatus,
-               TO_CHAR(created_at,      'YYYY-MM-DD HH24:MI')   AS createdAt,
-               TO_CHAR(last_received_at, 'YYYY-MM-DD HH24:MI')  AS latestReceivedAt,
-               TRIM(last_receive_status)                         AS latestReceivedStatus
-        FROM public.tb_device
-        ORDER BY device_id
+        SELECT d.device_id AS deviceId,
+               d.device_name AS deviceName,
+               TRIM(d.device_type) AS deviceType,
+               d.ip_address AS ipAddress,
+               TRIM(d.device_status) AS deviceStatus,
+               s.name AS stationName,
+               g.group_name AS groupName,
+               s.address AS stationAddress,
+               s.lat,
+               s.lng,
+               TO_CHAR(d.created_at, 'YYYY-MM-DD HH24:MI') AS createdAt,
+               TO_CHAR(d.last_received_at, 'YYYY-MM-DD HH24:MI') AS latestReceivedAt,
+               TRIM(d.last_receive_status) AS latestReceivedStatus,
+               CASE
+                   WHEN k.received_at IS NOT NULL
+                        AND (r.received_at IS NULL OR k.received_at > r.received_at)
+                       THEN k.file_name
+                   ELSE <include refid="kr.kwater.hdcs.dashboard.dao.DataReceiveDAO.dcsMeasurements"/>
+               END AS latestData
+        FROM public.tb_device d
+        LEFT JOIN public.tb_observation_station s ON s.station_id = d.station_id
+        LEFT JOIN public.tb_device_group g ON g.group_id = d.group_id
+        LEFT JOIN public.tb_dcs_data r ON r.dcs_data_id = (
+            SELECT x.dcs_data_id FROM public.tb_dcs_data x
+            WHERE x.device_id = d.device_id AND x.received_at IS NOT NULL
+              AND EXISTS (
+                  SELECT 1 FROM public.tb_dcs_receive_details parsed
+                  WHERE parsed.dcs_data_id = x.dcs_data_id AND parsed.parse_status = 'PARSED'
+              )
+            ORDER BY x.received_at DESC, x.dcs_data_id DESC LIMIT 1
+        )
+        <include refid="kr.kwater.hdcs.dashboard.dao.DataReceiveDAO.joinParsedDcsDetail"/>
+        LEFT JOIN public.tb_ka_data k ON k.ka_data_id = (
+            SELECT x.ka_data_id FROM public.tb_ka_data x
+            WHERE x.device_id = d.device_id AND x.received_at IS NOT NULL
+            ORDER BY x.received_at DESC, x.ka_data_id DESC LIMIT 1
+        )
+        ORDER BY d.device_id
     </select>
 
     <select id="selectDeviceHistory" resultType="kr.kwater.hdcs.dashboard.vo.DeviceStatusHistoryVO">

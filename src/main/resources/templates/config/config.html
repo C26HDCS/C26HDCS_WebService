@@ -91,32 +91,34 @@
         </button>
     </div>
 
-    <table class="cfg-table">
+    <table class="cfg-table cfg-device-table">
         <thead>
             <tr>
-                <th style="width:50px;">번호</th>
-                <th style="width:110px;">장비 ID</th>
+                <th class="cfg-device-id">장비 ID</th>
                 <th style="width:100px;">장비 유형</th>
                 <th style="width:140px;">관측소 고유코드</th>
                 <th style="width:160px;">NMS 장비명</th>
                 <th>관측소 표시명</th>
                 <th style="width:120px;">유역</th>
+                <th>주소</th>
+                <th>장비 상태</th>
+                <th>최근 수신 일시</th>
+                <th>수신 상태</th>
                 <th style="width:90px;">NMS 상태</th>
                 <th style="width:110px;">설정 상태</th>
             </tr>
         </thead>
         <tbody>
             <tr ng-if="filteredList.length === 0">
-                <td colspan="9" class="cfg-no-data">데이터가 없습니다.</td>
+                <td colspan="12" class="cfg-no-data">데이터가 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"
                 class="cfg-row-clickable"
                 ng-click="openDetailModal(item)">
-                <td>{{(currentPage - 1) * pageSize + $index + 1}}</td>
-                <td>{{item.equipId}}</td>
+                <td class="cfg-device-id">{{item.equipDisplayId || item.equipId || '-'}}</td>
                 <td>{{item.equipType}}</td>
                 <td class="cfg-code-cell">{{item.obsCode || '-'}}</td>
-                <td>{{item.nmsDeviceName}}</td>
+                <td>{{item.nmsDeviceName || '-'}}</td>
                 <td>
                     <div class="cfg-name-cell">
                         <input class="cfg-name-input"
@@ -145,8 +147,18 @@
                         <option ng-repeat="g in groupOptions" value="{{g}}">{{g}}</option>
                     </select>
                 </td>
+                <td class="cfg-device-address">{{item.stationAddress || '-'}}</td>
                 <td>
-                    <span ng-class="getNmsStatusClass(item.nmsStatus)">{{item.nmsStatus}}</span>
+                    <span ng-class="{'cfg-nms-normal': item.deviceStatus === 'NORMAL',
+                                     'cfg-nms-warn': item.deviceStatus === 'WARNING',
+                                     'cfg-nms-error': item.deviceStatus === 'ERROR'}">
+                        {{deviceStatusLabel(item.deviceStatus)}}
+                    </span>
+                </td>
+                <td>{{item.lastReceivedAt || '-'}}</td>
+                <td>{{receiveStatusLabel(item.lastReceiveStatus)}}</td>
+                <td>
+                    <span ng-class="getNmsStatusClass(item.nmsStatus)">{{item.nmsStatus || '-'}}</span>
                 </td>
                 <td>
                     <span ng-class="getConfigStatusClass(item.configStatus)">{{configStatusLabel(item.configStatus)}}</span>
@@ -594,7 +606,7 @@
         <!-- 상태 배지 영역 -->
         <div class="cfg-detail-badges">
             <span class="cfg-detail-badge-nms" ng-class="getNmsStatusClass(detailItem.nmsStatus)">
-                NMS {{ detailItem.nmsStatus }}
+                NMS {{ detailItem.nmsStatus || '-' }}
             </span>
             <span class="cfg-detail-badge-cfg" ng-class="getConfigStatusClass(detailItem.configStatus)">
                 {{ configStatusLabel(detailItem.configStatus) }}
@@ -628,12 +640,20 @@
                 <span class="user-detail-value">{{detailItem.groupName || '미설정'}}</span>
             </div>
             <div class="user-detail-row">
+                <span class="user-detail-label">주소</span>
+                <span class="user-detail-value">{{detailItem.stationAddress || '-'}}</span>
+            </div>
+            <div class="user-detail-row">
+                <span class="user-detail-label">장비 상태</span>
+                <span class="user-detail-value">{{deviceStatusLabel(detailItem.deviceStatus)}}</span>
+            </div>
+            <div class="user-detail-row">
                 <span class="user-detail-label">마지막 수신</span>
                 <span class="user-detail-value">{{detailItem.lastReceivedAt || '-'}}</span>
             </div>
             <div class="user-detail-row">
                 <span class="user-detail-label">수신 상태</span>
-                <span class="user-detail-value">{{detailItem.lastReceiveStatus || '-'}}</span>
+                <span class="user-detail-value">{{receiveStatusLabel(detailItem.lastReceiveStatus)}}</span>
             </div>
         </div>
 
