@@ -25,6 +25,17 @@ const data = { summary: {totalDevices: 2, normal: 0, warn: 1, fault: 1}, checked
     {deviceId:'86', pipelineComponents:[{dataKind:'KA',status:'ERROR'}]}
 ] };
 
+test('the diagram tab closes and reopens only the system diagram', () => {
+    const { scope } = harness(() => Promise.resolve({data}));
+    assert.equal(scope.diagramCollapsed, false);
+    scope.toggleEquipPanel();
+    scope.toggleDiagram();
+    assert.equal(scope.diagramCollapsed, true);
+    assert.equal(scope.equipPanelCollapsed, false);
+    scope.toggleDiagram();
+    assert.equal(scope.diagramCollapsed, false);
+});
+
 test('polls live snapshot and retains last real state on failure, then recovers', async () => {
     let fail = false;
     const h = harness(url => { assert.equal(url, '/hdcs/api/dashboard/live'); return fail ? Promise.reject(new Error('offline')) : Promise.resolve({data}); });

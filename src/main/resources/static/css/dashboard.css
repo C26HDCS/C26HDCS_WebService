@@ -4,7 +4,6 @@
 
 .dash-root {
     display: flex;
-    flex-direction: column;
     gap: 12px;
 }
 
@@ -12,31 +11,16 @@
 .dash-status-bar {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
     background: #1c2b40;
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 10px;
-    padding: 0;
+    padding: 12px 20px;
+    min-height: 54px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     flex-shrink: 0;
-}
-
-.dash-status-left,
-.dash-status-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 20px;
-    height: 52px;
-}
-
-.dash-status-left {
-    flex: 2.95;
-    flex-wrap: wrap;
-    height: auto;
-    min-height: 52px;
-    min-width: 0;
-    border-right: 1px solid rgba(255,255,255,0.08);
 }
 
 .pipeline-status-table {
@@ -49,10 +33,6 @@
 }
 .pipeline-status-table th:nth-child(1) { width: 35%; }
 .pipeline-status-table th:nth-child(2) { width: 15%; }
-
-.dash-status-right {
-    flex: 1;
-}
 
 .dash-section-label {
     font-size: 13px;
@@ -112,14 +92,15 @@
 /* ── 메인 영역 ── */
 .dash-main {
     display: flex;
+    flex: 2.8 1 0;
+    flex-direction: column;
     gap: 12px;
-    height: 685px;
-    min-height: 0;
+    min-width: 0;
 }
 
 /* ── 왼쪽: 지도 영역 ── */
 .dash-left {
-    flex: 2.8;
+    height: 685px;
     position: relative;
     border-radius: 10px;
     overflow: hidden;
@@ -557,7 +538,9 @@
 
 /* ── 오른쪽: 시스템 구성도 ── */
 .dash-right {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 32px;
+    position: relative;
     background: #1c2b40;
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 10px;
@@ -567,13 +550,67 @@
     flex-direction: column;
 }
 
+.dash-right.dash-right-collapsed {
+    flex-grow: 0;
+}
+
+.dash-diagram-heading {
+    display: flex;
+    align-items: center;
+    height: 53px;
+    flex-shrink: 0;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.09);
+    color: #dce8f5;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dash-diagram-tab {
+    position: absolute;
+    inset: 53px auto 0 0;
+    width: 30px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-right: 1px solid rgba(58,123,213,0.25);
+    background: rgba(22,37,58,0.96);
+    color: #5a9ef5;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.dash-right-collapsed .dash-diagram-tab {
+    top: 0;
+}
+
+.dash-diagram-tab:hover {
+    background: #243b59;
+}
+
+.dash-diagram-tab:focus-visible {
+    outline: 2px solid #70b3ff;
+    outline-offset: -3px;
+}
+
+.dash-right-collapsed .dash-diagram-tab svg {
+    transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dash-right {
+        transition: flex-grow 0.2s ease;
+    }
+}
+
 .dash-diagram-wrap {
     flex: 1;
     overflow: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 16px 16px 16px 46px;
 }
 
 .dash-diagram-wrap::-webkit-scrollbar { width: 4px; height: 4px; }

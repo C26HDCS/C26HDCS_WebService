@@ -7,6 +7,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
     $scope.deviceHistory = [];
     $scope.currentTime   = '';
     $scope.equipPanelCollapsed = true;
+    $scope.diagramCollapsed = false;
     $scope.selectedDevice  = null;
     $scope.deviceModalOpen = false;
     $scope.statusLoaded = false;
@@ -41,6 +42,10 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
 
     $scope.toggleEquipPanel = function () {
         $scope.equipPanelCollapsed = !$scope.equipPanelCollapsed;
+    };
+
+    $scope.toggleDiagram = function () {
+        $scope.diagramCollapsed = !$scope.diagramCollapsed;
     };
 
     $scope.statusLabel = function (status) {
