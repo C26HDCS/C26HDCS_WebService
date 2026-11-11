@@ -14,7 +14,7 @@
                TO_CHAR(R.PERIOD_FROM, 'YYYY-MM-DD')          AS PERIOD_FROM,
                TO_CHAR(R.PERIOD_TO,   'YYYY-MM-DD')          AS PERIOD_TO,
                R.DATA_TYPES,
-               R.FILE_NAME,
+               REGEXP_REPLACE(R.FILE_NAME, '\.docx$', '.hwpx', 'i') AS FILE_NAME,
                R.FILE_PATH,
                R.FILE_SIZE,
                TO_CHAR(R.REG_DT, 'YYYY-MM-DD HH24:MI:SS')    AS REG_DT
@@ -72,7 +72,7 @@
                TO_CHAR(R.PERIOD_FROM, 'YYYY-MM-DD')          AS PERIOD_FROM,
                TO_CHAR(R.PERIOD_TO,   'YYYY-MM-DD')          AS PERIOD_TO,
                R.DATA_TYPES,
-               R.FILE_NAME,
+               REGEXP_REPLACE(R.FILE_NAME, '\.docx$', '.hwpx', 'i') AS FILE_NAME,
                R.FILE_PATH,
                R.FILE_SIZE,
                TO_CHAR(R.REG_DT, 'YYYY-MM-DD HH24:MI:SS')    AS REG_DT
