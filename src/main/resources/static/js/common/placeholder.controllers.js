@@ -13,8 +13,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     };
 
     /* ── 유역(그룹) 선택지 ── */
-    // CSV 등록에서 사용할 수 있는 유역
-    $scope.watershedOptions = ['영산강', '영산강서해', '영산강남해', '탐진강'];
+    // 검색 조건, CSV 등록 안내와 확인에 쓰는 유역 목록. DB에 등록된 유역을 불러온다.
     $scope.groupOptions = [];
 
     $http.get(ctx + '/api/config/groups')
@@ -366,8 +365,9 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
             if (groupIdx >= 0) {
                 // 유역 컬럼이 있으면 빈칸은 '미설정'. 목록에 없는 유역은 여기서 알려 준다.
                 row.groupName = (cols[groupIdx] || '').trim();
-                if (row.groupName && $scope.watershedOptions.indexOf(row.groupName) === -1) {
-                    return { error: (i + 1) + '행: 등록되지 않은 유역입니다. (' + row.groupName + ')\n사용 가능: ' + $scope.watershedOptions.join(', ') };
+                // 목록을 불러오지 못한 경우에는 여기서 막지 않고 서버 검증에 맡긴다.
+                if (row.groupName && $scope.groupOptions.length && $scope.groupOptions.indexOf(row.groupName) === -1) {
+                    return { error: (i + 1) + '행: 등록되지 않은 유역입니다. (' + row.groupName + ')\n사용 가능: ' + $scope.groupOptions.join(', ') };
                 }
             }
             rows.push(row);
