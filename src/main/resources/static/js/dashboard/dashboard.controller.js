@@ -272,10 +272,10 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
                 },
                 label: {
                     text:                     name,
-                    font:                     '11px Malgun Gothic, sans-serif',
+                    font:                     'bold 14px Malgun Gothic, sans-serif',
                     fillColor:                Cesium.Color.WHITE,
                     outlineColor:             Cesium.Color.BLACK,
-                    outlineWidth:             2,
+                    outlineWidth:             3,
                     style:                    Cesium.LabelStyle.FILL_AND_OUTLINE,
                     pixelOffset:              new Cesium.Cartesian2(0, -18),
                     heightReference:          Cesium.HeightReference.CLAMP_TO_GROUND,

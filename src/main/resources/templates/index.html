@@ -6,7 +6,7 @@
     <title>한강홍수통제소 - 수자원통신위성 수문자료 수집 시스템</title>
     <base th:href="@{/}">
     <link rel="stylesheet" th:href="@{/static/css/common.css}">
-    <link rel="stylesheet" th:href="@{/static/css/dashboard.css(v='group-single-line')}">
+    <link rel="stylesheet" th:href="@{/static/css/dashboard.css(v='equipment-overview')}">
     <link rel="stylesheet" th:href="@{/static/css/user.css}">
     <link rel="stylesheet" th:href="@{/static/css/alarm.css}">
     <link rel="stylesheet" th:href="@{/static/css/log.css}">
@@ -25,7 +25,7 @@
             <img src="/hdcs/static/images/logo.png" alt="기후에너지환경부 한강홍수통제소" class="header-logo">
             <span class="system-name">수자원통신위성 수문자료 수집 시스템</span>
         </div>
-        <div class="header-right">          
+        <div class="header-right">
             <button type="button" class="icon-btn sound-toggle"
                     ng-class="{'sound-off': !soundEnabled, 'sound-blocked': soundEnabled && soundBlocked}"
                     ng-click="toggleAlarmSound()"
@@ -79,8 +79,8 @@
                     <polyline points="16 17 21 12 16 7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
-            </button>               
-        </div>     
+            </button>
+        </div>
     </header>
 
     <div class="page-body">
@@ -195,7 +195,7 @@
 <script th:src="@{/static/js/common/a11y.js}"></script>
 <script th:src="@{/static/js/common/placeholder.controllers.js(v='device-list-status')}"></script>
 
-<script th:src="@{/static/js/dashboard/dashboard.controller.js(v='group-latest-data')}"></script>
+<script th:src="@{/static/js/dashboard/dashboard.controller.js(v='bold-map-labels')}"></script>
 <script th:src="@{/static/js/output/output.controller.js}"></script>
 <script th:src="@{/static/js/distribution/distribution.controller.js}"></script>
 <script th:src="@{/static/js/ftp/ftp.controller.js}"></script>

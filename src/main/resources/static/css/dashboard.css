@@ -3,29 +3,122 @@
    ============================================================ */
 
 .dash-root {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 2.8fr) minmax(32px, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
-    /* 화면(브라우저) 높이에 맞춰 상태바·지도·구성도가 한 화면에 딱 맞도록 한다.
+    /* 화면(브라우저) 높이에 맞춰 운영 현황·지도·구성도가 한 화면에 딱 맞도록 한다.
        159px = 상단바 56 + 콘텐츠 위아래 여백 56 + 푸터 47
        화면이 너무 낮으면 최소 높이를 지키고 페이지가 스크롤된다. */
     height: calc(100vh - 159px);
     min-height: 560px;
 }
 
-/* ── 상태 바 ── */
-.dash-status-bar {
+.dash-root:has(> .dash-right-collapsed) {
+    grid-template-columns: minmax(0, 2.8fr) minmax(32px, 0fr);
+}
+
+.dash-summary {
+    grid-column: 1 / -1;
+    min-width: 0;
+    padding: 14px 16px 16px;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    background: #1c2b40;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.dash-summary-header,
+.dash-summary-meta {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px 16px;
-    background: #1c2b40;
-    border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 10px;
-    padding: 12px 20px;
-    min-height: 54px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    flex-shrink: 0;
+    gap: 4px 16px;
+}
+
+.dash-summary-header {
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.dash-summary-header h2 {
+    color: #eef5ff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.dash-summary-meta { font-size: 12px; }
+
+.dash-summary-error {
+    color: #ff9c9c;
+    font-weight: 600;
+}
+
+.dash-timestamp {
+    color: #a6bbd3;
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+}
+
+.dash-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.dash-summary-card {
+    padding: 10px 14px;
+    border: 1px solid #354960;
+    border-left: 4px solid var(--metric-color);
+    border-radius: 8px;
+    background: #142135;
+}
+
+.dash-summary-total {
+    --metric-color: #8bc1ff;
+    background: #203752;
+}
+
+.dash-summary-normal { --metric-color: #6ee7ad; }
+.dash-summary-fault { --metric-color: #ff929b; }
+.dash-summary-warn { --metric-color: #ffd173; }
+
+.dash-summary-card dt {
+    color: #dce8f5;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.dash-summary-card dd {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 6px;
+    margin-top: 4px;
+    color: var(--metric-color);
+}
+
+.dash-summary-card strong {
+    font-size: clamp(30px, 3vw, 46px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.dash-summary-card dd span {
+    color: #c0cfe2;
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .dash-root {
+        min-height: 620px;
+    }
+
+    .dash-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .pipeline-status-table {
@@ -39,73 +132,14 @@
 .pipeline-status-table th:nth-child(1) { width: 35%; }
 .pipeline-status-table th:nth-child(2) { width: 15%; }
 
-.dash-section-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: #dce8f5;
-    white-space: nowrap;
-    padding-right: 4px;
-    border-right: 1px solid rgba(255,255,255,0.1);
-    margin-right: 4px;
-}
-
-.dash-total-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 28px;
-    padding: 0 14px;
-    background: #3a7bd5;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-}
-
-.dash-status-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
-    color: #ccd8ec;
-}
-
-.dash-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-.dot-normal { background: #2ecc71; box-shadow: 0 0 6px rgba(46,204,113,0.6); }
-.dot-fault  { background: #e74c3c; box-shadow: 0 0 6px rgba(231,76,60,0.6); }
-.dot-warn   { background: #f39c12; box-shadow: 0 0 6px rgba(243,156,18,0.6); }
-
-.dash-timestamp {
-    font-size: 12px;
-    color: #6a8aaa;
-    margin-left: auto;
-    white-space: nowrap;
-    font-family: 'Courier New', monospace;
-}
-
 /* ── 메인 영역 ── */
 .dash-main {
-    display: flex;
-    flex: 2.8 1 0;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
     min-width: 0;
 }
 
 /* ── 왼쪽: 지도 영역 ── */
 .dash-left {
-    flex: 1;          /* 상태바를 뺀 나머지 높이를 모두 사용 */
     min-height: 0;
     position: relative;
     border-radius: 10px;
@@ -651,7 +685,6 @@
 
 /* ── 오른쪽: 시스템 구성도 ── */
 .dash-right {
-    flex: 1 1 0;
     min-width: 32px;
     position: relative;
     background: #1c2b40;
@@ -661,10 +694,6 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
-}
-
-.dash-right.dash-right-collapsed {
-    flex-grow: 0;
 }
 
 .dash-diagram-heading {
@@ -712,8 +741,8 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .dash-right {
-        transition: flex-grow 0.2s ease;
+    .dash-root {
+        transition: grid-template-columns 0.2s ease;
     }
 }
 

@@ -1,27 +1,34 @@
 <div class="dash-root">
 
-    <div class="dash-main">
-        <div class="dash-status-bar">
-            <span class="dash-section-label">시스템 상태 모니터링</span>
-            <button class="dash-total-btn">
-                전체 장비&nbsp;<strong>{{statusLoaded ? summary.totalDevices : '-'}}</strong>
-            </button>
-            <span class="dash-status-item">
-                <span class="dash-dot dot-normal"></span>
-                정상&nbsp;<strong>{{statusLoaded ? summary.normal : '-'}}</strong>
-            </span>
-            <span class="dash-status-item">
-                <span class="dash-dot dot-fault"></span>
-                장애&nbsp;<strong>{{statusLoaded ? summary.fault : '-'}}</strong>
-            </span>
-            <span class="dash-status-item">
-                <span class="dash-dot dot-warn"></span>
-                경고&nbsp;<strong>{{statusLoaded ? summary.warn : '-'}}</strong>
-            </span>
-            <span class="dash-timestamp">{{currentTime}}</span>
-            <span class="status-fault" role="status" ng-if="statusError">{{statusError}}</span>
+    <section class="dash-summary" aria-labelledby="dash-summary-heading">
+        <div class="dash-summary-header">
+            <h2 id="dash-summary-heading">전체 장비 운영 현황</h2>
+            <div class="dash-summary-meta">
+                <span class="dash-summary-error" role="status">{{statusError}}</span>
+                <span class="dash-timestamp">{{currentTime}}</span>
+            </div>
         </div>
+        <dl class="dash-summary-grid">
+            <div class="dash-summary-card dash-summary-total">
+                <dt>전체 장비</dt>
+                <dd><strong>{{statusLoaded ? (summary.totalDevices | number) : '-'}}</strong><span ng-if="statusLoaded">대</span></dd>
+            </div>
+            <div class="dash-summary-card dash-summary-normal">
+                <dt>정상</dt>
+                <dd><strong>{{statusLoaded ? (summary.normal | number) : '-'}}</strong><span ng-if="statusLoaded">대</span></dd>
+            </div>
+            <div class="dash-summary-card dash-summary-fault">
+                <dt>장애</dt>
+                <dd><strong>{{statusLoaded ? (summary.fault | number) : '-'}}</strong><span ng-if="statusLoaded">대</span></dd>
+            </div>
+            <div class="dash-summary-card dash-summary-warn">
+                <dt>경고</dt>
+                <dd><strong>{{statusLoaded ? (summary.warn | number) : '-'}}</strong><span ng-if="statusLoaded">대</span></dd>
+            </div>
+        </dl>
+    </section>
 
+    <div class="dash-main">
         <!-- 왼쪽: 지도 + 장비 목록 -->
         <div class="dash-left">
 
