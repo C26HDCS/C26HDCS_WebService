@@ -6,7 +6,7 @@
     <title>한강홍수통제소 - 수자원통신위성 수문자료 수집 시스템</title>
     <base th:href="@{/}">
     <link rel="stylesheet" th:href="@{/static/css/common.css}">
-    <link rel="stylesheet" th:href="@{/static/css/dashboard.css(v='group-single-line')}">
+    <link rel="stylesheet" th:href="@{/static/css/dashboard.css(v='equipment-overview')}">
     <link rel="stylesheet" th:href="@{/static/css/user.css}">
     <link rel="stylesheet" th:href="@{/static/css/alarm.css}">
     <link rel="stylesheet" th:href="@{/static/css/log.css}">
@@ -25,7 +25,7 @@
             <img src="/hdcs/static/images/logo.png" alt="기후에너지환경부 한강홍수통제소" class="header-logo">
             <span class="system-name">수자원통신위성 수문자료 수집 시스템</span>
         </div>
-        <div class="header-right">          
+        <div class="header-right">
             <button type="button" class="icon-btn sound-toggle"
                     ng-class="{'sound-off': !soundEnabled, 'sound-blocked': soundEnabled && soundBlocked}"
                     ng-click="toggleAlarmSound()"
@@ -79,8 +79,8 @@
                     <polyline points="16 17 21 12 16 7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
-            </button>               
-        </div>     
+            </button>
+        </div>
     </header>
 
     <div class="page-body">
@@ -195,7 +195,7 @@
 <script th:src="@{/static/js/common/a11y.js}"></script>
 <script th:src="@{/static/js/common/placeholder.controllers.js(v='device-list-status')}"></script>
 
-<script th:src="@{/static/js/dashboard/dashboard.controller.js(v='group-latest-data')}"></script>
+<script th:src="@{/static/js/dashboard/dashboard.controller.js(v='bold-map-labels')}"></script>
 <script th:src="@{/static/js/output/output.controller.js}"></script>
 <script th:src="@{/static/js/distribution/distribution.controller.js}"></script>
 <script th:src="@{/static/js/ftp/ftp.controller.js}"></script>
@@ -350,6 +350,27 @@
                 <span class="alarm-detail-label">조치일시</span>
                 <span class="alarm-detail-value">{{formatOccurredAt(detailAlarm.actionAt)}}</span>
             </div>
+            <div class="alarm-detail-row" ng-if="detailAlarm.actionYn === 'Y'" ng-class="{'alarm-memo-row-view': !memoEditing}">
+                <span class="alarm-detail-label">조치 메모</span>
+                <span class="alarm-detail-value">
+                    <!-- 보기: 일반 사용자·관리자 모두 볼 수 있다 -->
+                    <span ng-if="!memoEditing" class="alarm-memo-view">
+                        <span class="alarm-memo-text" ng-class="{'alarm-memo-empty': !detailAlarm.actionMemo}">{{detailAlarm.actionMemo || '메모 없음'}}</span>
+                        <button type="button" class="alarm-memo-edit-btn" ng-if="isActionOwner()" ng-click="startMemoEdit()">수정</button>
+                    </span>
+                    <!-- 수정: 조치완료한 본인만 -->
+                    <span ng-if="memoEditing" class="alarm-memo-editor">
+                        <textarea class="alarm-memo-input" ng-model="memoForm.draft" maxlength="200" rows="3"
+                                  placeholder="조치 내용을 입력하세요. (선택, 최대 200자)" aria-label="조치 메모"></textarea>
+                        <span class="alarm-memo-count">{{(memoForm.draft || '').length}} / {{ACTION_MEMO_MAX}}</span>
+                        <span class="form-error" ng-if="memoError">{{memoError}}</span>
+                        <span class="alarm-memo-actions">
+                            <button type="button" class="alarm-memo-edit-btn" ng-disabled="memoSaving" ng-click="cancelMemoEdit()">취소</button>
+                            <button type="button" class="alarm-memo-save-btn" ng-disabled="memoSaving" ng-click="saveMemo()">저장</button>
+                        </span>
+                    </span>
+                </span>
+            </div>
             <div class="form-error" ng-if="detailAlarm.actionError">{{detailAlarm.actionError}}</div>
         </div>
 
@@ -379,7 +400,13 @@
     </div>
     <div class="alarm-confirm-body">
         이 알람을 <strong>조치완료</strong>로 처리할까요?<br>
-        <span class="alarm-confirm-sub">처리자와 일시가 기록되고, 모든 사용자에게 조치완료로 표시됩니다.</span>
+        <span class="alarm-confirm-sub">조치완료는 되돌릴 수 없습니다.</span>
+        <div class="alarm-memo-field">
+            <label for="actionMemoInput">조치 메모 <span class="alarm-memo-optional">(선택)</span></label>
+            <textarea id="actionMemoInput" class="alarm-memo-input" ng-model="memoForm.action" maxlength="200" rows="3"
+                      placeholder="조치 내용을 남길 수 있습니다. (최대 200자)"></textarea>
+            <span class="alarm-memo-count">{{(memoForm.action || '').length}} / {{ACTION_MEMO_MAX}}</span>
+        </div>
     </div>
     <div class="alarm-modal-footer">
         <button class="btn-modal-cancel" ng-click="cancelActionConfirm()">취소</button>
