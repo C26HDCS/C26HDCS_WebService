@@ -471,3 +471,100 @@
     font-size: 12.5px;
     color: #8aa8c4;
 }
+
+/* ── 조치 메모 (조치완료 확인 모달 / 알람 상세 팝업) ── */
+.alarm-memo-field {
+    margin-top: 16px;
+    text-align: left;
+}
+.alarm-memo-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8aa8c4;
+}
+.alarm-memo-optional {
+    font-weight: 400;
+    color: #6a8aaa;
+}
+.alarm-memo-input {
+    display: block;
+    width: 100%;
+    min-height: 72px;
+    padding: 8px 12px;
+    background: #111e30;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 7px;
+    color: #dce8f5;
+    font-size: 13px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.alarm-memo-input:focus {
+    border-color: rgba(90,158,245,0.65);
+    box-shadow: 0 0 0 3px rgba(58,123,213,0.15);
+}
+.alarm-memo-count {
+    display: block;
+    margin-top: 4px;
+    text-align: right;
+    font-size: 11.5px;
+    color: #6a8aaa;
+}
+.alarm-memo-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+.alarm-memo-empty { color: #6a8aaa; }
+/* 보기 상태: 조치 메모 글자는 왼쪽, 수정 버튼은 오른쪽 끝에 한 줄로 맞춘다. */
+.alarm-detail-row.alarm-memo-row-view { align-items: center; }
+.alarm-detail-row.alarm-memo-row-view .alarm-detail-label { padding-top: 0; }
+.alarm-memo-view {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.alarm-memo-view .alarm-memo-text {
+    flex: 1;
+    min-width: 0;
+}
+.alarm-memo-view .alarm-memo-edit-btn {
+    margin: 0 0 0 auto;
+    flex-shrink: 0;
+}
+.alarm-memo-editor { display: block; }
+.alarm-memo-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+.alarm-memo-edit-btn,
+.alarm-memo-save-btn {
+    height: 26px;
+    margin-top: 6px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+}
+.alarm-memo-edit-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #9ab8d4;
+}
+.alarm-memo-edit-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.alarm-memo-save-btn {
+    background: #3a7bd5;
+    border: 1px solid #3a7bd5;
+    color: #fff;
+}
+.alarm-memo-save-btn:hover { background: #4a8be5; }
+.alarm-memo-edit-btn:disabled,
+.alarm-memo-save-btn:disabled { opacity: 0.5; cursor: default; }

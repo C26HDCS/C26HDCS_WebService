@@ -16,6 +16,8 @@
         <result column="ACTION_YN"      property="actionYn"/>
         <result column="ACTION_USER_ID" property="actionUserId"/>
         <result column="ACTION_AT"      property="actionAt"/>
+        <result column="ACTION_MEMO"    property="actionMemo"/>
+        <result column="ACTION_MEMO_AT" property="actionMemoAt"/>
     </resultMap>
 
     <!--
@@ -71,7 +73,8 @@
             resultMap="alarmResultMap">
         SELECT A.ALARM_ID, A.DEVICE_ID, D.DEVICE_NAME, A.ALARM_TYPE, A.ALARM_LEVEL, A.ALARM_MESSAGE, A.OCCURRED_AT,
                CASE WHEN C.ALARM_ID IS NULL THEN false ELSE true END AS IS_CHECKED,
-               COALESCE(A.ACTION_YN, 'N') AS ACTION_YN, A.ACTION_USER_ID, A.ACTION_AT
+               COALESCE(A.ACTION_YN, 'N') AS ACTION_YN, A.ACTION_USER_ID, A.ACTION_AT,
+               A.ACTION_MEMO, A.ACTION_MEMO_AT
         FROM TB_ALARM A
         LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
         LEFT JOIN TB_ALARM_CHECK C ON C.ALARM_ID = A.ALARM_ID AND C.USER_ID = #{currentUserId}
@@ -124,18 +127,39 @@
     <select id="selectAlarmById" resultMap="alarmResultMap">
         SELECT A.ALARM_ID, A.DEVICE_ID, D.DEVICE_NAME, A.ALARM_TYPE, A.ALARM_LEVEL, A.ALARM_MESSAGE, A.OCCURRED_AT,
                false AS IS_CHECKED,
-               COALESCE(A.ACTION_YN, 'N') AS ACTION_YN, A.ACTION_USER_ID, A.ACTION_AT
+               COALESCE(A.ACTION_YN, 'N') AS ACTION_YN, A.ACTION_USER_ID, A.ACTION_AT,
+               A.ACTION_MEMO, A.ACTION_MEMO_AT
         FROM TB_ALARM A
         LEFT JOIN TB_DEVICE D ON D.DEVICE_ID = A.DEVICE_ID
         WHERE A.ALARM_ID = #{alarmId}
     </select>
 
-    <!-- 조치완료: 아직 조치되지 않은 알람만 바꾼다. 이미 조치된 알람은 0행이라 처리자·일시가 덮어써지지 않는다. -->
+    <!--
+        조치완료: 아직 조치되지 않은 알람만 바꾼다. 이미 조치된 알람은 0행이라 처리자·일시가 덮어써지지 않는다.
+        메모(선택)는 조치완료와 함께 한 번에 저장한다. 메모가 없으면(null) 메모 컬럼은 비워 둔다.
+    -->
     <update id="updateAlarmAction">
         UPDATE TB_ALARM
-        SET ACTION_YN = 'Y', ACTION_USER_ID = #{userId}, ACTION_AT = CURRENT_TIMESTAMP
+        SET ACTION_YN = 'Y', ACTION_USER_ID = #{userId}, ACTION_AT = CURRENT_TIMESTAMP,
+            ACTION_MEMO    = CAST(#{memo,jdbcType=VARCHAR} AS VARCHAR),
+            ACTION_MEMO_AT = CASE WHEN CAST(#{memo,jdbcType=VARCHAR} AS VARCHAR) IS NULL
+                                  THEN NULL ELSE CURRENT_TIMESTAMP END
         WHERE ALARM_ID = #{alarmId}
           AND COALESCE(ACTION_YN, 'N') &lt;&gt; 'Y'
+    </update>
+
+    <!--
+        조치 메모 수정: 이미 조치완료된 알람이고, 조치완료한 사람 본인일 때만 바뀐다.
+        조건에 맞지 않으면 0행이다. 메모를 비우면(null) 메모 없음으로 돌아간다.
+    -->
+    <update id="updateAlarmActionMemo">
+        UPDATE TB_ALARM
+        SET ACTION_MEMO    = CAST(#{memo,jdbcType=VARCHAR} AS VARCHAR),
+            ACTION_MEMO_AT = CASE WHEN CAST(#{memo,jdbcType=VARCHAR} AS VARCHAR) IS NULL
+                                  THEN NULL ELSE CURRENT_TIMESTAMP END
+        WHERE ALARM_ID = #{alarmId}
+          AND ACTION_YN = 'Y'
+          AND ACTION_USER_ID = #{userId}
     </update>
 
     <select id="selectAlarmExists" resultType="int">

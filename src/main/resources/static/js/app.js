@@ -121,6 +121,22 @@ qosApp.factory('AuthSession', ['$window', function ($window) {
         return cachedAdmin;
     }
 
+    // 화면 표시용 로그인 사용자 ID (토큰의 sub). 본인이 한 일인지 구분하는 표시에만 쓰고, 실제 권한은 서버가 확인한다.
+    var cachedIdToken = null, cachedUserId = '';
+    function userId() {
+        var t = token();
+        if (t !== cachedIdToken) {
+            cachedIdToken = t;
+            cachedUserId = '';
+            try {
+                var payload = (t || '').split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                while (payload.length % 4) payload += '=';
+                cachedUserId = String(JSON.parse($window.atob(payload)).sub || '');
+            } catch (error) {}
+        }
+        return cachedUserId;
+    }
+
     function expire() {
         if (redirecting) return;
         redirecting = true;
@@ -139,7 +155,7 @@ qosApp.factory('AuthSession', ['$window', function ($window) {
         if (status === 401 || (status === 403 && !valid())) expire();
     }
 
-    return { token: token, check: check, rejected: rejected, isAdmin: isAdmin };
+    return { token: token, check: check, rejected: rejected, isAdmin: isAdmin, userId: userId };
 }]);
 
 qosApp.run(['AuthSession', '$interval', '$window', function (session, $interval, $window) {
@@ -443,6 +459,8 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     $scope.openDetailModal = function (item) {
         $scope.showNotifDropdown = false;
         $scope.detailAlarm = angular.copy(item);
+        $scope.memoEditing = false;
+        $scope.memoError = '';
         $scope.showDetailModal = true;
 
         if (!item.checked) {
@@ -468,6 +486,8 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
         $scope.showActionConfirm = false;
         $scope.showDetailModal = false;
         $scope.detailAlarm = {};
+        $scope.memoEditing = false;
+        $scope.memoError = '';
     };
 
     // 상세 팝업의 '조치완료' 버튼. 알람당 1건이라 누가 눌러도 되고, 이미 처리된 알람이면 처리자·일시만 보여 준다.
@@ -478,6 +498,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     $scope.openActionConfirm = function () {
         var alarm = $scope.detailAlarm;
         if (!alarm || !alarm.id || $scope.actioning || alarm.actionYn === 'Y') return;
+        $scope.memoForm.action = '';
         $scope.showActionConfirm = true;
     };
 
@@ -492,12 +513,14 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
 
         $scope.actioning = true;
         alarm.actionError = '';
-        $http.post(ctx + '/api/alarm/' + alarm.id + '/action').then(function (res) {
+        $http.post(ctx + '/api/alarm/' + alarm.id + '/action', { memo: $scope.memoForm.action || '' }).then(function (res) {
             var info = res.data;
             alarm.checked = true;
             alarm.actionYn = info.actionYn;
             alarm.actionUserId = info.actionUserId;
             alarm.actionAt = info.actionAt;
+            alarm.actionMemo = info.actionMemo;
+            alarm.actionMemoAt = info.actionMemoAt;
             $scope.notifList = $scope.notifList.filter(function (n) { return n.id !== alarm.id; });
             setUnread(info.unreadCount);
             $scope.$broadcast('alarmActioned', alarm.id, info);
@@ -507,11 +530,67 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
                 alarm.actionError = '이미 삭제된 알람입니다.';
                 $scope.loadUnreadCount();
                 $scope.$broadcast('alarmDataChanged');
+            } else if (err && err.status === 400 && err.data && err.data.message) {
+                alarm.actionError = err.data.message;   // 예: 메모 글자 수 초과
             } else {
                 alarm.actionError = '조치완료 처리 중 오류가 발생했습니다. 다시 시도해 주세요.';
             }
         }).finally(function () {
             $scope.actioning = false;
+        });
+    };
+
+    /* ── 조치 메모 (선택, 최대 200자, 알람당 1건) ──
+       조치완료 확인 모달에서 함께 남기고, 조치완료 후에는 조치완료한 본인만 상세 팝업에서 수정한다.
+       메모 열람은 일반 사용자·관리자 모두 가능하다. */
+    $scope.ACTION_MEMO_MAX = 200;
+    // 입력칸이 ng-if 안(자식 스코프)에도 있으므로 값은 객체 하나로 묶어 둔다.
+    $scope.memoForm    = { action: '', draft: '' };
+    $scope.memoEditing = false;
+    $scope.memoSaving  = false;
+    $scope.memoError   = '';
+
+    // 이 알람을 조치완료한 사람이 지금 로그인한 본인인지 (수정 버튼 표시용. 실제 권한은 서버가 확인)
+    $scope.isActionOwner = function () {
+        var alarm = $scope.detailAlarm;
+        return !!alarm && alarm.actionYn === 'Y' && !!alarm.actionUserId && alarm.actionUserId === session.userId();
+    };
+
+    $scope.startMemoEdit = function () {
+        if (!$scope.isActionOwner() || $scope.memoSaving) return;
+        $scope.memoForm.draft = $scope.detailAlarm.actionMemo || '';
+        $scope.memoError   = '';
+        $scope.memoEditing = true;
+    };
+
+    $scope.cancelMemoEdit = function () {
+        $scope.memoEditing = false;
+        $scope.memoError   = '';
+    };
+
+    $scope.saveMemo = function () {
+        var alarm = $scope.detailAlarm;
+        if (!$scope.memoEditing || $scope.memoSaving || !alarm || !alarm.id) return;
+
+        $scope.memoSaving = true;
+        $scope.memoError  = '';
+        $http.put(ctx + '/api/alarm/' + alarm.id + '/memo', { memo: $scope.memoForm.draft || '' }).then(function (res) {
+            var info = res.data;
+            alarm.actionMemo   = info.actionMemo;
+            alarm.actionMemoAt = info.actionMemoAt;
+            $scope.memoEditing = false;
+            // 알람 관리 목록에도 반영 (페이지 유지, 재조회 없음)
+            $scope.$broadcast('alarmMemoUpdated', alarm.id, info);
+        }).catch(function (err) {
+            var msg = err && err.data && err.data.message;
+            if (err && err.status === 404) {
+                $scope.memoError = '이미 삭제된 알람입니다.';
+                $scope.$broadcast('alarmDataChanged');
+            } else {
+                $scope.memoError = msg || '메모 저장 중 오류가 발생했습니다. 다시 시도해 주세요.';
+            }
+        }).finally(function () {
+            $scope.memoSaving = false;
         });
     };
 }]);

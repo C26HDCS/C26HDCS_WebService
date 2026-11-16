@@ -27,8 +27,19 @@ public interface AlarmDAO {
     /** 알람 한 건 조회 (조치 상태 포함) */
     AlarmVO selectAlarmById(@Param("alarmId") Long alarmId);
 
-    /** 아직 조치되지 않은 알람을 조치완료로 바꾼다. 바뀐 행 수(이미 조치된 알람이면 0)를 돌려준다. */
-    int updateAlarmAction(@Param("alarmId") Long alarmId, @Param("userId") String userId);
+    /**
+     * 아직 조치되지 않은 알람을 조치완료로 바꾸고, 메모(선택, 없으면 null)를 함께 저장한다.
+     * 바뀐 행 수(이미 조치된 알람이면 0)를 돌려준다.
+     */
+    int updateAlarmAction(@Param("alarmId") Long alarmId, @Param("userId") String userId,
+                          @Param("memo") String memo);
+
+    /**
+     * 조치 메모를 수정한다. 조치완료된 알람이고 조치완료한 사람 본인일 때만 바뀐다.
+     * 바뀐 행 수(조건에 맞지 않으면 0)를 돌려준다. memo 가 null 이면 메모를 비운다.
+     */
+    int updateAlarmActionMemo(@Param("alarmId") Long alarmId, @Param("userId") String userId,
+                              @Param("memo") String memo);
 
     /** 해당 번호의 알람이 있으면 1, 없으면 0 */
     int selectAlarmExists(@Param("alarmId") Long alarmId);

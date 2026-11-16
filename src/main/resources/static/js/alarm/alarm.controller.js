@@ -16,6 +16,17 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
             found.actionYn = 'Y';
             found.actionUserId = info.actionUserId;
             found.actionAt = info.actionAt;
+            found.actionMemo = info.actionMemo;
+            found.actionMemoAt = info.actionMemoAt;
+        }
+    });
+
+    // 상세 팝업에서 수정한 조치 메모를 이 목록에도 반영 (페이지 유지, 재조회 없음)
+    $scope.$on('alarmMemoUpdated', function (event, alarmId, info) {
+        var found = $scope.alarmList.filter(function (a) { return a.id === alarmId; })[0];
+        if (found) {
+            found.actionMemo = info.actionMemo;
+            found.actionMemoAt = info.actionMemoAt;
         }
     });
 

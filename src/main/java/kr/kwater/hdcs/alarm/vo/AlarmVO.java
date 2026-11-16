@@ -26,6 +26,8 @@ public class AlarmVO extends BaseVO {
     private String actionYn;        // 조치완료 여부 'Y' / 'N' (알람당 1건, 누가 처리했든 공용)
     private String actionUserId;    // 조치완료 처리자
     private String actionAt;        // 조치완료 일시
+    private String actionMemo;      // 조치 메모 (선택, 최대 200자, 알람당 1건)
+    private String actionMemoAt;    // 조치 메모 저장·수정 일시
     private String searchActionYn;  // 'Y' 조치완료만, 'N' 미조치만
 
     private boolean checked;

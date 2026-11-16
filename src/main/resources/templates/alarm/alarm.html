@@ -132,7 +132,7 @@
                 <td>{{formatOccurredAt(item.occurredAt)}}</td>
                 <td>
                     <span class="status-badge" ng-class="item.actionYn === 'Y' ? 'status-done' : 'status-wait'"
-                          title="{{item.actionYn === 'Y' ? item.actionUserId + ' · ' + formatOccurredAt(item.actionAt) : ''}}">{{item.actionYn === 'Y' ? '조치완료' : '미조치'}}</span>
+                          title="{{item.actionYn === 'Y' ? item.actionUserId + ' · ' + formatOccurredAt(item.actionAt) + (item.actionMemo ? ' · 메모: ' + item.actionMemo : '') : ''}}">{{item.actionYn === 'Y' ? '조치완료' : '미조치'}}</span>
                 </td>
             </tr>
         </tbody>
