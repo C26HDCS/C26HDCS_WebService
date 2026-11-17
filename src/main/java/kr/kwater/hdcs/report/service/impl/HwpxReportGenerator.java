@@ -80,6 +80,12 @@ public class HwpxReportGenerator implements ReportGenerator {
         writeTitle(doc, data);
         writeInfo(doc, data);
 
+        if (data.getSummary() != null) {
+            writeSummary(doc, data);
+            doc.pack(out, clean(data.getReportName()));
+            return;
+        }
+
         int no = 1;
         writeOverview(doc, data, no++);
         if (data.getLog() != null) {
@@ -591,6 +597,33 @@ public class HwpxReportGenerator implements ReportGenerator {
         int bodyTw = BODY_W / 5;
         doc.table(new int[]{2000, bodyTw - 2000}, null, kv, new String[]{L, L}, true);
         doc.spacer();
+    }
+
+    /** 수신 요약 리포트 본문: 대역별(L/Ka/전체) 수신건수, 장애건수, 장애율, 가동률을 한 표로 표시한다. */
+    private void writeSummary(Doc doc, ReportData d) {
+        ReportData.SummarySection s = d.getSummary();
+        doc.heading(1, "수신 요약");
+        if (s.getTotal() == 0) {
+            doc.note("해당 기간에 수신된 데이터가 없습니다.");
+        }
+        List<String[]> rows = new ArrayList<>();
+        rows.add(summaryRow("L대역(DCS)", s.getDcs()));
+        rows.add(summaryRow("Ka대역", s.getKa()));
+        rows.add(summaryRow("전체", s));
+        int bodyTw = BODY_W / 5;
+        doc.table(new int[]{bodyTw - 4 * 1500, 1500, 1500, 1500, 1500},
+                new String[]{"구분", "건수", "장애건수", "장애율", "가동률"},
+                rows, new String[]{L, R, R, R, R}, false);
+        doc.spacer();
+    }
+
+    private static String[] summaryRow(String label, ReportData.SummarySection v) {
+        boolean none = v == null || v.getTotal() == 0;
+        return new String[]{label,
+                num(v == null ? 0 : v.getTotal()),
+                none ? "-" : num(v.getFailCount()) + "건",
+                none || v.getFailRate() == null ? "-" : String.format("%.2f%%", v.getFailRate()),
+                none || v.getUptimeRate() == null ? "-" : String.format("%.2f%%", v.getUptimeRate())};
     }
 
     private void writeOverview(Doc doc, ReportData d, int no) {

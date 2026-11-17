@@ -3,12 +3,15 @@ package kr.kwater.hdcs.report.service.impl;
 import kr.kwater.hdcs.report.dao.ReportDataDAO;
 import kr.kwater.hdcs.report.vo.ReportCountVO;
 import kr.kwater.hdcs.report.vo.ReportData;
+import kr.kwater.hdcs.report.vo.ReportSummaryVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /** 선택된 데이터 유형별로 리포트 원천 데이터를 조회해 {@link ReportData}에 채운다. */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ReportDataCollector {
@@ -55,6 +58,42 @@ public class ReportDataCollector {
         s.setDailyCounts(dao.selectReceiveDailyCounts(from, to));
         s.setDeviceCounts(dao.selectReceiveDeviceCounts(from, to));
         s.setDetails(dao.selectReceiveDetails(from, to, limit));
+        return s;
+    }
+
+    /** 수신 요약 (건수 기준): 장애율 = 장애/전체, 가동률 = 정상/전체. 소수점 둘째 자리까지 반올림. 전체와 대역별(L/Ka)을 함께 구한다. */
+    public ReportData.SummarySection collectSummary(String from, String to) {
+        long dcsTotal = 0, dcsOk = 0, kaTotal = 0, kaOk = 0;
+        List<ReportSummaryVO> rows = dao.selectReceiveSummary(from, to);
+        log.info("수신 요약 집계 조회: {} ~ {}, 결과 {}행", from, to, rows == null ? 0 : rows.size());
+        if (rows != null) {
+            for (ReportSummaryVO v : rows) {
+                log.info("  band={}, total={}, ok={}", v.getBand(), v.getTotal(), v.getOkCount());
+                String band = v.getBand() == null ? "" : v.getBand().trim().toUpperCase();
+                if ("DCS".equals(band)) {
+                    dcsTotal = v.getTotal();
+                    dcsOk = v.getOkCount();
+                } else if ("KA".equals(band)) {
+                    kaTotal = v.getTotal();
+                    kaOk = v.getOkCount();
+                }
+            }
+        }
+        ReportData.SummarySection all = summarize(dcsTotal + kaTotal, dcsOk + kaOk);
+        all.setDcs(summarize(dcsTotal, dcsOk));
+        all.setKa(summarize(kaTotal, kaOk));
+        return all;
+    }
+
+    private static ReportData.SummarySection summarize(long total, long okRaw) {
+        long ok = Math.min(okRaw, total);
+        ReportData.SummarySection s = new ReportData.SummarySection();
+        s.setTotal(total);
+        s.setFailCount(total - ok);
+        if (total > 0) {
+            s.setFailRate(Math.round((total - ok) * 10000.0 / total) / 100.0);
+            s.setUptimeRate(Math.round(ok * 10000.0 / total) / 100.0);
+        }
         return s;
     }
 }

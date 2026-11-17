@@ -77,6 +77,12 @@ public class WordReportGenerator implements ReportGenerator {
             writeTitle(doc, data);
             writeInfo(doc, data);
 
+            if (data.getSummary() != null) {
+                writeSummary(doc, data);
+                doc.write(out);
+                return;
+            }
+
             int no = 1;
             writeOverview(doc, data, no++);
             if (data.getLog() != null) {
@@ -369,6 +375,32 @@ public class WordReportGenerator implements ReportGenerator {
             fill(t.getRow(i).getCell(1), kv[i][1], false, L, widths[1], null);
         }
         spacer(doc);
+    }
+
+    /** 수신 요약 리포트 본문: 대역별(L/Ka/전체) 수신건수, 장애건수, 장애율, 가동률을 한 표로 표시한다. */
+    private void writeSummary(XWPFDocument doc, ReportData d) {
+        ReportData.SummarySection s = d.getSummary();
+        heading(doc, 1, "수신 요약");
+        if (s.getTotal() == 0) {
+            note(doc, "해당 기간에 수신된 데이터가 없습니다.");
+        }
+        List<String[]> rows = new ArrayList<>();
+        rows.add(summaryRow("L대역(DCS)", s.getDcs()));
+        rows.add(summaryRow("Ka대역", s.getKa()));
+        rows.add(summaryRow("전체", s));
+        table(doc, new int[]{BODY_W - 4 * 1500, 1500, 1500, 1500, 1500},
+                new String[]{"구분", "건수", "장애건수", "장애율", "가동률"}, rows,
+                new ParagraphAlignment[]{L, R, R, R, R});
+        spacer(doc);
+    }
+
+    private static String[] summaryRow(String label, ReportData.SummarySection v) {
+        boolean none = v == null || v.getTotal() == 0;
+        return new String[]{label,
+                num(v == null ? 0 : v.getTotal()),
+                none ? "-" : num(v.getFailCount()) + "건",
+                none || v.getFailRate() == null ? "-" : String.format("%.2f%%", v.getFailRate()),
+                none || v.getUptimeRate() == null ? "-" : String.format("%.2f%%", v.getUptimeRate())};
     }
 
     private void writeOverview(XWPFDocument doc, ReportData d, int no) {

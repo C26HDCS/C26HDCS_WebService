@@ -10,6 +10,7 @@ import kr.kwater.hdcs.report.vo.ReportDeviceReceiveVO;
 import kr.kwater.hdcs.report.vo.ReportEventRowVO;
 import kr.kwater.hdcs.report.vo.ReportLogRowVO;
 import kr.kwater.hdcs.report.vo.ReportReceiveRowVO;
+import kr.kwater.hdcs.report.vo.ReportSummaryVO;
 
 import java.util.List;
 
@@ -84,4 +85,8 @@ public interface ReportDataDAO {
     List<ReportReceiveRowVO> selectReceiveDetails(@Param("periodFrom") String periodFrom,
                                                   @Param("periodTo") String periodTo,
                                                   @Param("limit") int limit);
+
+    /** 수신 요약: 기간 내 전체 수신 건수와 정상(NORMAL/SUCCESS) 수신 건수를 대역(DCS/KA)별로 */
+    List<ReportSummaryVO> selectReceiveSummary(@Param("periodFrom") String periodFrom,
+                                         @Param("periodTo") String periodTo);
 }

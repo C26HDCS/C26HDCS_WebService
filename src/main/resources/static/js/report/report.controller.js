@@ -52,7 +52,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
     };
 
     function emptyGen() {
-        return { dateFrom: null, dateTo: null, typeLog: false, typeEvent: false, typeAlarm: false, typeData: false };
+        return { dateFrom: null, dateTo: null, typeLog: false, typeEvent: false, typeAlarm: false, typeData: false, typeSummary: false };
     }
 
     $scope.gen = emptyGen();
@@ -115,7 +115,14 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
         return g.typeLog && g.typeEvent && g.typeAlarm && g.typeData;
     };
 
+    // 수신 요약을 뺀 일반 유형이 하나라도 선택돼 있는지 (수신 요약은 다른 유형과 함께 선택할 수 없다)
+    $scope.hasBasicType = function () {
+        var g = $scope.gen;
+        return !!(g.typeLog || g.typeEvent || g.typeAlarm || g.typeData);
+    };
+
     $scope.toggleAllTypes = function () {
+        if ($scope.gen.typeSummary) return;
         var on = !$scope.isAllTypes();
         $scope.gen.typeLog = $scope.gen.typeEvent = $scope.gen.typeAlarm = $scope.gen.typeData = on;
     };
@@ -153,6 +160,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
         }
 
         var dataTypes = [];
+        if ($scope.gen.typeSummary) dataTypes.push('SUMMARY');
         if ($scope.gen.typeLog)   dataTypes.push('LOG');
         if ($scope.gen.typeEvent) dataTypes.push('EVENT');
         if ($scope.gen.typeAlarm) dataTypes.push('ALARM');
@@ -314,7 +322,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
     };
 
     // ── 상세 정보 모달 ──
-    var TYPE_LABELS = { LOG: '로그', EVENT: '이벤트', ALARM: '알람', DATA: '수신데이터' };
+    var TYPE_LABELS = { LOG: '로그', EVENT: '이벤트', ALARM: '알람', DATA: '수신데이터', SUMMARY: '수신 요약' };
 
     $scope.showDetailModal = false;
     $scope.detailReport    = {};

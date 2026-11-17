@@ -33,6 +33,8 @@ public class ReportData {
     private EventSection event;
     private AlarmSection alarm;
     private ReceiveSection receive;
+    /** 수신 요약 리포트일 때만 채운다. 이 경우 다른 섹션은 모두 null 이다. */
+    private SummarySection summary;
 
     @Getter
     @Setter
@@ -58,6 +60,21 @@ public class ReportData {
         private List<ReportCountVO> typeCounts;
         private List<ReportCountVO> levelCounts;
         private List<ReportAlarmRowVO> details;
+    }
+
+    /** 수신데이터 요약: 장애건수, 장애율, 가동률 (건수 기준) */
+    @Getter
+    @Setter
+    public static class SummarySection {
+        private long total;
+        private long failCount;
+        /** 장애율(%) = 장애건수 / 전체 수신건수 × 100. 수신이 없으면 null */
+        private Double failRate;
+        /** 가동률(%) = 정상 수신건수 / 전체 수신건수 × 100. 수신이 없으면 null */
+        private Double uptimeRate;
+        /** 대역별 값 (L대역 DCS / Ka대역). 전체 값은 이 객체 자체 */
+        private SummarySection dcs;
+        private SummarySection ka;
     }
 
     @Getter

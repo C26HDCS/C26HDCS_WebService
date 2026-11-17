@@ -38,8 +38,10 @@ import java.util.UUID;
 public class ReportServiceImpl extends EgovAbstractServiceImpl implements ReportService {
 
     /** 데이터 유형 코드 (화면 표시 순서이자 리포트명/본문 순서) */
-    private static final String[] TYPE_CODES = {"LOG", "EVENT", "ALARM", "DATA"};
-    private static final String[] TYPE_LABELS = {"로그", "이벤트", "알람", "수신데이터"};
+    private static final String[] TYPE_CODES = {"LOG", "EVENT", "ALARM", "DATA", "SUMMARY"};
+    private static final String[] TYPE_LABELS = {"로그", "이벤트", "알람", "수신데이터", "수신 요약"};
+    /** 수신 요약(SUMMARY) 위치. 다른 유형과 함께 선택할 수 없다. */
+    private static final int SUMMARY_IDX = 4;
 
     /** 리포트 생성 이벤트 유형 (TB_EVENT.EVENT_TYPE). 수동 생성은 사용자 ID, 자동 생성은 대상 SYSTEM 으로 같은 유형을 쓴다. */
     static final String EVENT_REPORT_CREATE_SUCCESS = "REPORT_CREATE_SUCCESS";
@@ -296,9 +298,14 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
         if (codes.isEmpty()) {
             throw new IllegalArgumentException("데이터 유형을 1개 이상 선택해 주세요.");
         }
+        boolean summaryOnly = selected[SUMMARY_IDX];
+        if (summaryOnly && codes.size() > 1) {
+            throw new IllegalArgumentException("수신 요약은 다른 데이터 유형과 함께 선택할 수 없습니다.");
+        }
 
         // 2) 리포트명: 데이터유형_리포트_시작일_종료일 (전부 선택하면 '전체')
-        String typePart = codes.size() == TYPE_CODES.length ? "전체" : String.join("_", labels);
+        String typePart = summaryOnly ? "수신데이터_요약"
+                : codes.size() == TYPE_CODES.length - 1 ? "전체" : String.join("_", labels);
         String reportName = typePart + "_리포트_" + from.format(COMPACT) + "_" + to.format(COMPACT);
 
         // 3) 데이터 조회
@@ -332,6 +339,9 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
         }
         if (selected[3]) {
             data.setReceive(collector.collectReceive(f, t, limit));
+        }
+        if (summaryOnly) {
+            data.setSummary(collector.collectSummary(f, t));
         }
 
         // 4) 파일 생성 (임시 파일에 쓴 뒤 이동해서 반쯤 쓰인 파일이 남지 않게 한다)

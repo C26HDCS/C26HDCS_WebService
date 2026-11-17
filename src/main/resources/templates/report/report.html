@@ -46,21 +46,26 @@
 
         <div class="report-gen-group">
             <span class="report-gen-label">데이터 유형</span>
-            <div class="report-check-group">
-                <label class="report-check-item">
-                    <input type="checkbox" class="report-chk" ng-checked="isAllTypes()" ng-click="toggleAllTypes()"> 전체
+            <div class="report-tag-group">
+                <label class="report-tag" ng-class="{'on': isAllTypes(), 'disabled': gen.typeSummary}">
+                    <input type="checkbox" ng-checked="isAllTypes()" ng-click="toggleAllTypes()" ng-disabled="gen.typeSummary"> 전체
                 </label>
-                <label class="report-check-item">
-                    <input type="checkbox" ng-model="gen.typeLog" class="report-chk"> 로그
+                <label class="report-tag" ng-class="{'on': gen.typeLog, 'disabled': gen.typeSummary}">
+                    <input type="checkbox" ng-model="gen.typeLog" ng-disabled="gen.typeSummary"> 로그
                 </label>
-                <label class="report-check-item">
-                    <input type="checkbox" ng-model="gen.typeEvent" class="report-chk"> 이벤트
+                <label class="report-tag" ng-class="{'on': gen.typeEvent, 'disabled': gen.typeSummary}">
+                    <input type="checkbox" ng-model="gen.typeEvent" ng-disabled="gen.typeSummary"> 이벤트
                 </label>
-                <label class="report-check-item">
-                    <input type="checkbox" ng-model="gen.typeAlarm" class="report-chk"> 알람
+                <label class="report-tag" ng-class="{'on': gen.typeAlarm, 'disabled': gen.typeSummary}">
+                    <input type="checkbox" ng-model="gen.typeAlarm" ng-disabled="gen.typeSummary"> 알람
                 </label>
-                <label class="report-check-item">
-                    <input type="checkbox" ng-model="gen.typeData" class="report-chk"> 수신데이터
+                <label class="report-tag" ng-class="{'on': gen.typeData, 'disabled': gen.typeSummary}">
+                    <input type="checkbox" ng-model="gen.typeData" ng-disabled="gen.typeSummary"> 수신데이터
+                </label>
+                <span class="report-tag-sep"></span>
+                <label class="report-tag report-tag-summary" ng-class="{'on': gen.typeSummary, 'disabled': hasBasicType()}"
+                       title="수신데이터의 장애건수·장애율·가동률만 담은 요약 리포트입니다. 다른 데이터 유형과 함께 선택할 수 없습니다.">
+                    <input type="checkbox" ng-model="gen.typeSummary" ng-disabled="hasBasicType()"> 수신 요약
                 </label>
             </div>
         </div>
@@ -120,6 +125,7 @@
                 <option value="EVENT">이벤트</option>
                 <option value="ALARM">알람</option>
                 <option value="DATA">수신데이터</option>
+                <option value="SUMMARY">수신 요약</option>
             </select>
         </div>
 

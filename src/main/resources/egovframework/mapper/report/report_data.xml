@@ -238,4 +238,25 @@
         LIMIT #{limit}
     </select>
 
+    <!--
+        수신 요약: 기간 내 전체 수신 건수와 정상 수신 건수.
+        정상 상태값: NORMAL, SUCCESS (대시보드 화면의 성공 판정과 같은 기준). 그 외 상태(ERROR/FAILED/FAIL/WARNING/미지정 등)는 장애로 본다.
+        tb_dcs_data 는 received_status, tb_ka_data 는 receive_status 컬럼을 쓴다.
+    -->
+    <select id="selectReceiveSummary" resultType="kr.kwater.hdcs.report.vo.ReportSummaryVO">
+        SELECT U.BAND AS BAND,
+               COUNT(*) AS TOTAL,
+               COUNT(*) FILTER (WHERE UPPER(TRIM(U.STATUS)) IN ('NORMAL', 'SUCCESS')) AS OK_COUNT
+        FROM (
+            SELECT 'DCS' AS BAND, X.received_status AS STATUS
+            FROM public.tb_dcs_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            UNION ALL
+            SELECT 'KA', X.receive_status
+            FROM public.tb_ka_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        ) U
+        GROUP BY U.BAND
+    </select>
+
 </mapper>
