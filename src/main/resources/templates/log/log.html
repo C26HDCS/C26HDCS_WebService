@@ -11,6 +11,8 @@
             </svg>
         </span>
         <h2>로그 및 이벤트 관리</h2>
+        <a class="log-help-icon" href="help" title="오류 코드별 의미와 확인 방법을 볼 수 있습니다."
+           aria-label="오류 코드 도움말">?</a>
     </div>
 </div>
 
@@ -36,8 +38,8 @@
         </div>
 
         <div class="log-search-field">
-            <label>대상·내용</label>
-            <input type="text" ng-model="searchKeyword" placeholder="사용자 ID, 장비명, 내용 입력"
+            <label for="log-keyword">대상·내용·오류 코드</label>
+            <input type="text" id="log-keyword" ng-model="searchKeyword" placeholder="장비명, 내용, 오류 코드 등"
                    ng-keydown="$event.which === 13 && load()">
         </div>
 
@@ -88,19 +90,20 @@
                 <th style="width:80px;">구분</th>
                 <th style="width:80px;">유형</th>
                 <th style="width:120px;">대상</th>
+                <th style="width:120px;">오류 코드</th>
                 <th style="width:240px;">내용</th>
                 <th style="width:160px;">발생일시</th>
             </tr>
         </thead>
         <tbody>
             <tr ng-if="loadError">
-                <td colspan="6" class="no-data">{{loadError}}</td>
+                <td colspan="7" class="no-data">{{loadError}}</td>
             </tr>
             <tr ng-if="loading && !loadError && pagedList.length === 0">
-                <td colspan="6" class="no-data list-loading"><span class="list-spinner"></span>불러오는 중...</td>
+                <td colspan="7" class="no-data list-loading"><span class="list-spinner"></span>불러오는 중...</td>
             </tr>
             <tr ng-if="!loading && !loadError && pagedList.length === 0">
-                <td colspan="6" class="no-data">이력이 없습니다.</td>
+                <td colspan="7" class="no-data">이력이 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"
                 class="log-row-clickable"
@@ -112,6 +115,10 @@
                     <span class="status-badge" ng-class="getLevelClass(item.level)">{{getLevelLabel(item.level)}}</span>
                 </td>
                 <td title="{{getTarget(item)}}">{{getTarget(item)}}</td>
+                <td>
+                    <span ng-if="!item.errorCode" class="log-code-empty">–</span>
+                    <error-code-badge entry="item.errorCode"></error-code-badge>
+                </td>
                 <td class="log-message-cell" title="{{item.message}}">{{item.message}}</td>
                 <td>{{formatRegDt(item.regDt)}}</td>
             </tr> 
@@ -228,6 +235,15 @@
             <div class="log-detail-row">
                 <span class="log-detail-label">내용</span>
                 <span class="log-detail-value">{{detailLog.message}}</span>
+            </div>
+            <div class="log-detail-row" ng-if="detailLog.errorCode">
+                <span class="log-detail-label">오류 코드</span>
+                <span class="log-detail-value">
+                    <code class="log-code">{{detailLog.errorCode.code}}</code>
+                    {{detailLog.errorCode.title}}<br>
+                    {{detailLog.errorCode.description}}<br>
+                    {{detailLog.errorCode.check}}
+                </span>
             </div>
             <div class="log-detail-row">
                 <span class="log-detail-label">발생일시</span>

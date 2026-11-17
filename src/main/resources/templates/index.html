@@ -8,8 +8,8 @@
     <link rel="stylesheet" th:href="@{/static/css/common.css}">
     <link rel="stylesheet" th:href="@{/static/css/dashboard.css(v='equipment-overview')}">
     <link rel="stylesheet" th:href="@{/static/css/user.css}">
-    <link rel="stylesheet" th:href="@{/static/css/alarm.css}">
-    <link rel="stylesheet" th:href="@{/static/css/log.css}">
+    <link rel="stylesheet" th:href="@{/static/css/alarm.css(v='alarm-error-code')}">
+    <link rel="stylesheet" th:href="@{/static/css/log.css(v='help-fluid-width')}">
     <link rel="stylesheet" th:href="@{/static/css/storage.css}">
     <link rel="stylesheet" th:href="@{/static/css/mypage.css}">
     <link rel="stylesheet" th:href="@{/static/css/report.css}">
@@ -53,7 +53,10 @@
                         <div class="notif-empty" ng-if="notifList.length === 0">새 알림이 없습니다.</div>
                         <div class="notif-item" ng-class="{'notif-item-unread': !item.checked, 'notif-item-read': item.checked}"
                              ng-repeat="item in notifList" ng-click="openDetailModal(item)">
-                            <div class="notif-item-title">{{item.alarmType}}</div>
+                            <div class="notif-item-title">
+                                <span>{{item.alarmType}}</span>
+                                <error-code-badge entry="item.errorCode" on-open="closeNotifications()"></error-code-badge>
+                            </div>
                             <div class="notif-item-message">{{item.alarmMessage || '-'}}</div>
                             <div class="notif-item-time">{{formatNotifTime(item.occurredAt)}}</div>
                         </div>
@@ -158,6 +161,17 @@
                     <span class="menu-text">리포트관리</span>
                 </a>
             </li>
+            <li ng-class="{active: isActive('/help')}">
+                <a href="help">
+                    <span class="menu-icon-wrap">
+                        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5 2.2c-1.3 1-2.1 1.4-2.1 2.8"/><path d="M12 17h.01"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">도움말</span>
+                </a>
+            </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -187,10 +201,11 @@
     var ctx = /*[[${#request.getContextPath()}]]*/ '';
 </script>
 
-<script th:src="@{/static/js/app.js}"></script>
+<script th:src="@{/static/js/app.js(v='alarm-error-code')}"></script>
 
 <script th:src="@{/static/js/common/http.factory.js}"></script>
 <script th:src="@{/static/js/common/alarm-sound.js}"></script>
+<script th:src="@{/static/js/common/error-code-badge.js}"></script>
 <script th:src="@{/static/js/common/toast.js}"></script>
 <script th:src="@{/static/js/common/a11y.js}"></script>
 <script th:src="@{/static/js/common/placeholder.controllers.js(v='device-list-status')}"></script>
@@ -201,7 +216,8 @@
 <script th:src="@{/static/js/ftp/ftp.controller.js}"></script>
 <script th:src="@{/static/js/user/user.controller.js}"></script>
 <script th:src="@{/static/js/mypage/mypage.controller.js}"></script>
-<script th:src="@{/static/js/log/log.controller.js}"></script>
+<script th:src="@{/static/js/log/log.controller.js(v='alarm-error-code')}"></script>
+<script th:src="@{/static/js/help/help.controller.js(v='help-topics')}"></script>
 <script th:src="@{/static/js/report/report.controller.js}"></script>
 <script th:src="@{/static/js/alarm/alarm.controller.js}"></script>
 <script th:src="@{/static/js/storage/storage.controller.js}"></script>
@@ -331,6 +347,15 @@
             <div class="alarm-detail-row">
                 <span class="alarm-detail-label">발생원인</span>
                 <span class="alarm-detail-value">{{detailAlarm.alarmMessage || '-'}}</span>
+            </div>
+            <div class="alarm-detail-row" ng-if="detailAlarm.errorCode">
+                <span class="alarm-detail-label">오류 코드</span>
+                <div class="alarm-detail-value">
+                    <error-code-badge entry="detailAlarm.errorCode" on-open="closeDetailModal()"></error-code-badge>
+                    {{detailAlarm.errorCode.title}}
+                    <p>{{detailAlarm.errorCode.description}}</p>
+                    <p>{{detailAlarm.errorCode.check}}</p>
+                </div>
             </div>
             <div class="alarm-detail-row">
                 <span class="alarm-detail-label">발생일시</span>

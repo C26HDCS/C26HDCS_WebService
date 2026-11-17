@@ -1,9 +1,11 @@
 package kr.kwater.hdcs.log.vo;
 
 import kr.kwater.hdcs.common.vo.BaseVO;
-import kr.kwater.hdcs.common.LegacyDeviceMessage;
+import kr.kwater.hdcs.log.service.ErrorCodeCatalog;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,6 +37,25 @@ public class LogVO extends BaseVO {
     private String searchDateTo;
 
     public String getMessage() {
-        return "LOG".equals(category) ? LegacyDeviceMessage.display(message) : message;
+        if (!"LOG".equals(category)) {
+            return message;
+        }
+        return ErrorCodeCatalog.displayDeviceMessage(message, getErrorCode());
+    }
+
+    public ErrorCodeCatalog.Entry getErrorCode() {
+        return ErrorCodeCatalog.forRecord(category, level, message);
+    }
+
+    public List<String> searchLogPrefixes() {
+        return ErrorCodeCatalog.logSearchPrefixes(getSearchKeyword());
+    }
+
+    public boolean searchOtherLogErrors() {
+        return ErrorCodeCatalog.otherLogSearch(getSearchKeyword());
+    }
+
+    public String searchEventType() {
+        return ErrorCodeCatalog.eventSearchType(getSearchKeyword());
     }
 }

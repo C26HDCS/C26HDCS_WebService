@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import kr.kwater.hdcs.log.service.LogService;
+import kr.kwater.hdcs.log.service.ErrorCodeCatalog;
 import kr.kwater.hdcs.log.vo.LogVO;
 
 import java.util.List;
@@ -21,5 +22,10 @@ public class LogController {
     @GetMapping("/list")
     public ResponseEntity<List<LogVO>> getList(LogVO vo) throws Exception {
         return ResponseEntity.ok(logService.getLogList(vo));
+    }
+
+    @GetMapping("/error-codes")
+    public List<ErrorCodeCatalog.Entry> getErrorCodes() {
+        return ErrorCodeCatalog.entries();
     }
 }
