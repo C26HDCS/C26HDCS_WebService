@@ -4,7 +4,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
 
     /* ── 검색 조건 ── */
     $scope.search = {
-        deviceId:     '',
+        deviceName:   '',
         stationCode:  '',
         stationName:  '',
         deviceType:   '',
@@ -77,7 +77,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.applySearch = function () {
         var s = $scope.search;
         $scope.filteredList = allData.filter(function (item) {
-            if (s.deviceId    && String(item.equipId || '').indexOf(s.deviceId) === -1)       return false;
+            if (s.deviceName  && String(item.equipId || '').indexOf(s.deviceName) === -1)     return false;
             if (s.stationCode && String(item.obsCode || '').indexOf(s.stationCode) === -1)    return false;
             if (s.stationName && (item.displayName || '').indexOf(s.stationName) === -1)      return false;
             if (s.deviceType  && item.equipType !== s.deviceType)                             return false;
@@ -345,13 +345,13 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
         var headers = lines[0].split(delim).map(function (h) { return h.trim(); });
         var equipIdx = -1, obsIdx = -1, nameIdx = -1, groupIdx = -1;
         headers.forEach(function (h, i) {
-            if (h === '장비ID' || h === 'device_name' || h === 'equipId') equipIdx = i;
+            if (h === '장비명' || h === '장비ID' || h === 'device_name' || h === 'equipId') equipIdx = i;   // 장비ID: 예전 양식 호환
             if (h === '관측소코드' || h === 'obs_code'   || h === 'obsCode')   obsIdx   = i;
             if (h === '관측소표시명' || h === 'display_name' || h === 'displayName') nameIdx = i;
             if (h === '유역') groupIdx = i;   // 선택 컬럼
         });
         if (equipIdx === -1 || nameIdx === -1) {
-            return { error: '헤더 형식 오류. 장비ID, 관측소표시명 컬럼이 필요합니다.' };
+            return { error: '헤더 형식 오류. 장비명, 관측소표시명 컬럼이 필요합니다.' };
         }
 
         var rows = [];
@@ -377,7 +377,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
     }
 
     $scope.downloadTemplate = function () {
-        var csv  = '﻿장비ID,관측소코드,관측소표시명,유역\n';
+        var csv  = '﻿장비명,관측소코드,관측소표시명,유역\n';
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         var url  = URL.createObjectURL(blob);
         var a    = document.createElement('a');

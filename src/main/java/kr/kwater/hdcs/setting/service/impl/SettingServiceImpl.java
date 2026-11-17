@@ -122,7 +122,7 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public Map<String, Object> checkCsvDuplicates(List<Map<String, String>> rows) throws Exception {
-        // 같은 장비ID가 여러 번 있으면 마지막 행이 등록되므로, 장비ID마다 마지막 행 기준으로 한 건으로 센다.
+        // 같은 장비명이 여러 번 있으면 마지막 행이 등록되므로, 장비ID마다 마지막 행 기준으로 한 건으로 센다.
         Map<String, Map<String, Object>> found = new LinkedHashMap<>();   // 중복
         Set<String> newIds      = new HashSet<>();                        // 신규
         Set<String> notFoundIds = new HashSet<>();                        // 일치하는 장비 없음
