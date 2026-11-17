@@ -1,7 +1,7 @@
 package kr.kwater.hdcs.alarm.vo;
 
 import kr.kwater.hdcs.common.vo.BaseVO;
-import kr.kwater.hdcs.common.LegacyDeviceMessage;
+import kr.kwater.hdcs.log.service.ErrorCodeCatalog;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,6 +35,10 @@ public class AlarmVO extends BaseVO {
     private Integer limit;         // 헤더 알림 미리보기용 최대 건수 (없으면 전체 조회)
 
     public String getAlarmMessage() {
-        return LegacyDeviceMessage.display(alarmMessage);
+        return ErrorCodeCatalog.displayDeviceMessage(alarmMessage, getErrorCode());
+    }
+
+    public ErrorCodeCatalog.Entry getErrorCode() {
+        return ErrorCodeCatalog.forDeviceMessage(alarmMessage);
     }
 }

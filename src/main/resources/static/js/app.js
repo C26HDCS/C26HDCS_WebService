@@ -44,6 +44,11 @@ qosApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, 
             controller:  'LogCtrl',
             title:       '로그 및 이벤트 관리'
         })
+        .when('/help', {
+            templateUrl: ctx + '/help',
+            controller:  'HelpCtrl',
+            title:       '도움말'
+        })
         .when('/alarm', {
             templateUrl: ctx + '/alarm',
             controller:  'AlarmCtrl',
@@ -289,8 +294,12 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
         if ($scope.showNotifDropdown) $scope.loadRecentNotifications();
     };
 
-    $scope.goToAlarmList = function () {
+    $scope.closeNotifications = function () {
         $scope.showNotifDropdown = false;
+    };
+
+    $scope.goToAlarmList = function () {
+        $scope.closeNotifications();
         $location.path('/alarm');
     };
 
@@ -457,7 +466,7 @@ qosApp.controller('AppCtrl', ['$scope', '$route', '$location', '$http', '$interv
     };
 
     $scope.openDetailModal = function (item) {
-        $scope.showNotifDropdown = false;
+        $scope.closeNotifications();
         $scope.detailAlarm = angular.copy(item);
         $scope.memoEditing = false;
         $scope.memoError = '';

@@ -57,6 +57,26 @@
         REPLACE(REPLACE(REPLACE(#{searchKeyword}, '\', '\\'), '%', '\%'), '_', '\_')
     </sql>
 
+    <sql id="keywordFilter">
+        <if test="searchKeyword != null and searchKeyword != ''">
+            <bind name="codePrefixes" value="_parameter.searchLogPrefixes()"/>
+            <bind name="codeEventType" value="_parameter.searchEventType()"/>
+            AND (MESSAGE     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+              OR USER_ID     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+              OR DEVICE_NAME LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
+              <if test="codePrefixes.size > 0">
+                  OR (CATEGORY = 'LOG' AND LEVEL = 'ERROR' AND
+                      <if test="_parameter.searchOtherLogErrors()">NOT</if>
+                      <foreach collection="codePrefixes" item="prefix" open="(" separator=" OR " close=")">
+                          LEFT(MESSAGE, LENGTH(#{prefix})) = #{prefix}
+                      </foreach>)
+              </if>
+              <if test="codeEventType != null">
+                  OR (CATEGORY = 'EVENT' AND LEVEL = #{codeEventType})
+              </if>)
+        </if>
+    </sql>
+
     <select id="selectLogList" parameterType="kr.kwater.hdcs.log.vo.LogVO"
             resultMap="logResultMap">
         SELECT ID, CATEGORY, DEVICE_ID, DEVICE_NAME, USER_ID, LEVEL, MESSAGE, REG_DT
@@ -70,11 +90,7 @@
             <if test="searchLevel != null and searchLevel != ''">
                 AND LEVEL = #{searchLevel}
             </if>
-            <if test="searchKeyword != null and searchKeyword != ''">
-                AND (MESSAGE     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
-                  OR USER_ID     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
-                  OR DEVICE_NAME LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\')
-            </if>
+            <include refid="keywordFilter"/>
             <if test="searchDateFrom != null and searchDateFrom != ''">
                 AND REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
             </if>
@@ -98,11 +114,7 @@
             <if test="searchLevel != null and searchLevel != ''">
                 AND LEVEL = #{searchLevel}
             </if>
-            <if test="searchKeyword != null and searchKeyword != ''">
-                AND (MESSAGE     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
-                  OR USER_ID     LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\'
-                  OR DEVICE_NAME LIKE '%' || <include refid="keywordPattern"/> || '%' ESCAPE '\')
-            </if>
+            <include refid="keywordFilter"/>
             <if test="searchDateFrom != null and searchDateFrom != ''">
                 AND REG_DT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
             </if>

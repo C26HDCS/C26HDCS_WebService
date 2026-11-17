@@ -67,7 +67,7 @@ public class SecurityConfig {
                     
                     // 화면(View) 이동을 위한 URL 라우팅 허용
                     "/dashboard", "/output", "/distribution", "/ftp", "/user", "/report",
-                    "/mypage", "/log", "/alarm", "/config", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
+                    "/mypage", "/log", "/help", "/alarm", "/config", "/storage", "/history", "/statistics", "/intro", "/collectionSetting"
                 ).permitAll()
                 
                 // 2. 관리자(ADMIN) 전용 API: 환경설정/저장장치/사용자 관리, 리포트 수동 생성

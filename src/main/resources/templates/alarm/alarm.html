@@ -102,6 +102,7 @@
                 <th style="width:80px;">유형</th>
                 <th style="width:80px;">등급</th>
                 <th style="width:120px;">장비</th>
+                <th style="width:120px;">오류 코드</th>
                 <th style="width:240px;">알람 메시지</th>
                 <th style="width:160px;">발생일시</th>
                 <th style="width:100px;">조치</th>
@@ -109,13 +110,13 @@
         </thead>
         <tbody>
             <tr ng-if="loadError">
-                <td colspan="7" class="no-data">{{loadError}}</td>
+                <td colspan="8" class="no-data">{{loadError}}</td>
             </tr>
             <tr ng-if="loading && !loadError && pagedList.length === 0">
-                <td colspan="7" class="no-data list-loading"><span class="list-spinner"></span>불러오는 중...</td>
+                <td colspan="8" class="no-data list-loading"><span class="list-spinner"></span>불러오는 중...</td>
             </tr>
             <tr ng-if="!loading && !loadError && pagedList.length === 0">
-                <td colspan="7" class="no-data">알람이 없습니다.</td>
+                <td colspan="8" class="no-data">알람이 없습니다.</td>
             </tr>
             <tr ng-repeat="item in pagedList"
                 class="alarm-row-clickable"
@@ -128,6 +129,10 @@
                     <span class="status-badge" ng-class="getLevelClass(item.alarmLevel)">{{item.alarmLevel}}</span>
                 </td>
                 <td title="{{item.deviceName || item.deviceId || '-'}}">{{item.deviceName || item.deviceId || '-'}}</td>
+                <td>
+                    <span ng-if="!item.errorCode" class="log-code-empty">–</span>
+                    <error-code-badge entry="item.errorCode"></error-code-badge>
+                </td>
                 <td class="alarm-message-cell" title="{{item.alarmMessage || '-'}}">{{item.alarmMessage || '-'}}</td>
                 <td>{{formatOccurredAt(item.occurredAt)}}</td>
                 <td>

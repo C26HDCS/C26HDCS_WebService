@@ -4,6 +4,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import kr.kwater.hdcs.log.dao.LogDAO;
+import kr.kwater.hdcs.log.service.ErrorCodeCatalog.Entry;
 import kr.kwater.hdcs.log.service.LogLevel;
 import kr.kwater.hdcs.log.service.LogService;
 import kr.kwater.hdcs.log.service.impl.LogServiceImpl;
@@ -81,6 +82,43 @@ class LogServiceTest {
             assertThat(row.getMessage()).isEqualTo(expected);
         });
         assertThat(jdbc.queryForObject("SELECT MESSAGE FROM TB_LOG", String.class)).isEqualTo(original);
+    }
+
+    @Test
+    void resolvesAndSearchesCodesForCurrentAndHistoricalErrors() throws Exception {
+        String source = "[DCS_DATA_STATUS]";
+        String stored = "[DDS404] " + source + " 최근 수신 없음";
+        long latest = service.saveLog(75L, LogLevel.ERROR, stored);
+        long previous = service.saveLog(75L, LogLevel.ERROR, source + " 최근 수신 없음");
+        long legacy = service.saveLog(75L, LogLevel.ERROR, "[Python:DCS_DATA_STATUS] FAULT: status=STALE");
+        service.saveLog(75L, LogLevel.INFO, source + " 수신 중");
+        service.saveLog(75L, LogLevel.INFO, "[DCS_MONITOR] 최근 수신 없음");
+        long other = service.saveLog(75L, LogLevel.ERROR, "Unclassified failure");
+        service.saveEvent("admin", "LOGIN_SUCCESS", "Signed in");
+        long event = service.saveEvent("admin", "LOGIN_FAIL", "Incorrect credentials");
+
+        LogVO filter = new LogVO();
+        filter.setSearchKeyword("dds404");
+        assertThat(service.getLogList(filter))
+                .extracting(LogVO::getId).containsExactlyInAnyOrder(latest, previous, legacy);
+        assertThat(service.getLogList(filter))
+                .extracting(LogVO::getErrorCode).extracting(Entry::code).containsOnly("DDS404");
+        assertThat(service.getLogCount(filter)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("SELECT MESSAGE FROM TB_LOG WHERE ID = ?", String.class, latest))
+                .isEqualTo(stored);
+
+        filter.setSearchKeyword("AUT401");
+        assertThat(service.getLogList(filter)).singleElement().satisfies(row -> {
+            assertThat(row.getId()).isEqualTo(event);
+            assertThat(row.getErrorCode().code()).isEqualTo("AUT401");
+        });
+        filter.setSearchKeyword("DEV500");
+        assertThat(service.getLogList(filter)).singleElement().satisfies(row -> {
+            assertThat(row.getId()).isEqualTo(other);
+            assertThat(row.getErrorCode().code()).isEqualTo("DEV500");
+        });
+        assertThat(service.getLogList(new LogVO()).stream().filter(row -> "INFO".equals(row.getLevel())))
+                .allSatisfy(row -> assertThat(row.getErrorCode()).isNull());
     }
 
     @Test

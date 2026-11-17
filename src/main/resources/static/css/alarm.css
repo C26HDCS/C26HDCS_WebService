@@ -97,6 +97,12 @@
     box-shadow: 0 4px 14px rgba(58,123,213,0.45);
 }
 
+.notif-item-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* ── 테이블 패널 ── */
 .alarm-table-panel {
     background: #1c2b40;

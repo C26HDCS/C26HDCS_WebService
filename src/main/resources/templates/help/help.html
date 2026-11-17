@@ -1,0 +1,101 @@
+<div class="page-header">
+    <div class="page-header-title">
+        <span class="page-title-icon">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5 2.2c-1.3 1-2.1 1.4-2.1 2.8"/><path d="M12 17h.01"/>
+            </svg>
+        </span>
+        <h2>도움말</h2>
+    </div>
+</div>
+
+<nav class="help-topics" aria-label="도움말 주제">
+    <a href="help" ng-attr-aria-current="{{activeGuide === 'codes' ? 'page' : undefined}}">오류 코드</a>
+    <a href="help?guide=dashboard" ng-attr-aria-current="{{activeGuide === 'dashboard' ? 'page' : undefined}}">대시보드 읽는 법</a>
+    <a href="help?guide=alarms" ng-attr-aria-current="{{activeGuide === 'alarms' ? 'page' : undefined}}">알람 확인 및 조치</a>
+</nav>
+
+<section class="help-guide log-table-panel" ng-if="activeGuide === 'dashboard'" aria-labelledby="help-dashboard-heading">
+    <div class="log-table-toolbar">
+        <h3 id="help-dashboard-heading">대시보드 읽는 법</h3>
+        <a class="help-guide-link" href="dashboard">대시보드 열기</a>
+    </div>
+    <ol class="help-guide-steps">
+        <li>
+            <h4>전체 장비 운영 현황 확인</h4>
+            <p><strong>전체 장비</strong>에는 대시보드에서 조회된 모든 장비가 포함됩니다. <strong>정상</strong>, <strong>장애</strong>, <strong>경고</strong>는 장비의 현재 상태별 건수입니다. 상태 정보가 없는 장비도 전체에 포함되므로 상태별 합계와 전체 수가 다를 수 있습니다.</p>
+        </li>
+        <li>
+            <h4>지도에서 장비 위치 찾기</h4>
+            <p>지도의 왼쪽 탭으로 <strong>전체 장비 리스트</strong>를 펼칩니다. 유역을 선택해 목록을 좁힌 뒤 <strong>관측소명</strong>을 누르면 지도가 해당 위치로 이동합니다. 지도를 확대하면 마커 위에 관측소명이나 장비명이 표시됩니다.</p>
+        </li>
+        <li>
+            <h4>최근 수신 자료와 상세 상태 확인</h4>
+            <p>장비 목록의 <strong>최근 수신 일시</strong>로 마지막 수신 시점을 확인합니다. <strong>최신 데이터</strong>에는 최근 수문 관측값 또는 영상 파일명이 표시됩니다. <strong>상세</strong>를 열면 수신 이력과 자료 처리 모듈의 상태를 볼 수 있습니다.</p>
+        </li>
+    </ol>
+</section>
+
+<section class="help-guide log-table-panel" ng-if="activeGuide === 'alarms'" aria-labelledby="help-alarms-heading">
+    <div class="log-table-toolbar">
+        <h3 id="help-alarms-heading">알람 확인 및 조치</h3>
+        <a class="help-guide-link" href="alarm">알람 관리 열기</a>
+    </div>
+    <ol class="help-guide-steps">
+        <li>
+            <h4>알람 상세 열기</h4>
+            <p>상단 종 아이콘에서 안 읽은 알람을 선택하거나 <strong>알람 관리</strong>에서 목록의 행을 누릅니다. 상세에서 장비, 발생원인, 발생일시를 확인합니다. 오류 코드 옆 <strong>?</strong>에 마우스를 올리면 설명과 확인 항목이 표시됩니다.</p>
+        </li>
+        <li>
+            <h4>읽음 상태와 조치 상태 확인</h4>
+            <p><strong>읽음</strong>은 내가 알람을 확인했다는 기록입니다. 상세를 열거나 <strong>모두 읽음 처리</strong>를 사용하면 내 읽음 상태가 갱신됩니다. <strong>조치완료</strong>는 다른 사용자도 볼 수 있는 처리 기록입니다. 아직 처리할 알람을 찾으려면 <strong>조치 상태</strong>에서 <strong>미조치</strong>를 선택하고 조회합니다.</p>
+        </li>
+        <li>
+            <h4>조치완료 처리 및 메모 남기기</h4>
+            <p>조치 후 상세에서 <strong>조치완료</strong>를 누르고, 확인 창에서 필요한 경우 조치 메모를 입력한 뒤 다시 <strong>조치완료</strong>를 누릅니다. 메모는 최대 200자이며, 완료 처리는 되돌릴 수 없습니다. 이후 상세의 <strong>조치자</strong>, <strong>조치일시</strong>, <strong>조치 메모</strong>에서 처리 내용을 확인합니다. 메모는 조치한 사용자가 수정할 수 있습니다.</p>
+        </li>
+    </ol>
+</section>
+
+<section class="log-table-panel log-code-guide" ng-if="activeGuide === 'codes'" aria-labelledby="log-code-guide-heading">
+    <div class="log-table-toolbar">
+        <h3 id="log-code-guide-heading">로그 및 이벤트 오류 코드</h3>
+        <div class="log-search-field">
+            <label for="error-code-search">오류 코드 검색</label>
+            <input type="text" id="error-code-search" ng-model="codeSearch" placeholder="코드, 식별자, 오류명 검색">
+        </div>
+    </div>
+
+    <p class="log-guide-message" role="status" ng-if="loading">오류 코드를 불러오는 중입니다.</p>
+    <div class="log-guide-message" role="status" ng-if="loadError">
+        오류 코드 목록을 불러오지 못했습니다.
+        <button type="button" class="btn-refresh-log" ng-click="loadErrorCodes()">다시 시도</button>
+    </div>
+    <table class="data-table" ng-if="!loading && !loadError">
+        <thead>
+            <tr>
+                <th scope="col">코드</th>
+                <th scope="col">구분</th>
+                <th scope="col">오류명과 식별자</th>
+                <th scope="col">의미</th>
+                <th scope="col">확인할 항목</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="entry in errorCodes | filter:codeSearch as matches track by entry.code">
+                <td><code class="log-code">{{entry.code}}</code></td>
+                <td>{{entry.group}}</td>
+                <td>
+                    <strong>{{entry.title}}</strong>
+                    <small class="log-code-source" ng-repeat="source in entry.sources">{{source}}</small>
+                </td>
+                <td>{{entry.description}}</td>
+                <td>{{entry.check}}</td>
+            </tr>
+            <tr ng-if="!matches.length">
+                <td colspan="5" class="no-data">검색 조건에 맞는 오류 코드가 없습니다.</td>
+            </tr>
+        </tbody>
+    </table>
+</section>

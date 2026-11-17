@@ -18,7 +18,7 @@ public class MainController {
 
     // HTML5 Mode: 브라우저 직접 접근 → index, AngularJS $http 요청 → partial view
     @GetMapping({"/dashboard", "/output", "/distribution", "/ftp", "/user", "/mypage",
-                 "/alarm", "/log", "/config", "/storage", "/report", "/history", "/statistics", "/intro"})
+                 "/alarm", "/log", "/help", "/config", "/storage", "/report", "/history", "/statistics", "/intro"})
     public String spa(HttpServletRequest request) {
         if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
             String menu = request.getServletPath().substring(1);
