@@ -433,7 +433,7 @@ qosApp.controller('ConfigCtrl', ['$scope', '$http', function ($scope, $http) {
                     $scope.showRegisterSuccessModal = true;
                     $scope.load();
                 } else {
-                    $scope.registerError = '일치하는 장비를 찾을 수 없습니다. 장비ID가 목록의 장비 ID와 정확히 일치하는지 확인해주세요.';
+                    $scope.registerError = '일치하는 장비를 찾을 수 없습니다. 장비명이 목록의 장비명과 정확히 일치하는지 확인해주세요.';
                 }
             })
             .catch(function (res) {

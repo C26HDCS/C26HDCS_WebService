@@ -17,8 +17,8 @@
 <div class="cfg-search-panel">
     <div class="cfg-search-grid">
         <div class="cfg-search-field">
-            <label>장비 ID</label>
-            <input type="text" ng-model="search.deviceId" placeholder="장비 ID 입력">
+            <label>장비명</label>
+            <input type="text" ng-model="search.deviceId" placeholder="장비명 입력">
         </div>
         <div class="cfg-search-field">
             <label>관측소 고유코드</label>
@@ -94,7 +94,7 @@
     <table class="cfg-table cfg-device-table">
         <thead>
             <tr>
-                <th class="cfg-device-id">장비 ID</th>
+                <th class="cfg-device-id">장비명</th>
                 <th style="width:100px;">장비 유형</th>
                 <th style="width:140px;">관측소 고유코드</th>
                 <th style="width:160px;">NMS 장비명</th>
@@ -387,9 +387,9 @@
     <div class="cfg-register-body">
         <p class="cfg-register-desc">
             CSV 파일을 업로드하여 관측소 표시명을 일괄 등록합니다.<br>
-            파일 형식: <code>장비ID, 관측소코드, 관측소표시명, 유역</code> (첫 행은 헤더)<br>
+            파일 형식: <code>장비명, 관측소코드, 관측소표시명, 유역</code> (첫 행은 헤더)<br>
             유역: <strong style="color:#dce8f5;">{{groupOptions.join(', ')}}</strong> (유역은 선택, 칸을 비우면 미설정)<br>
-            장비ID는 목록의 <strong style="color:#dce8f5;">장비 ID</strong> 컬럼 값과 일치해야 합니다.
+            장비명은 목록의 <strong style="color:#dce8f5;">장비명</strong> 컬럼 값과 일치해야 합니다.
         </p>
 
         <div class="cfg-register-actions">
@@ -616,7 +616,7 @@
         <!-- 상세 항목 -->
         <div class="user-detail-rows">
             <div class="user-detail-row">
-                <span class="user-detail-label">장비 ID</span>
+                <span class="user-detail-label">장비명</span>
                 <span class="user-detail-value">{{detailItem.equipId || '-'}}</span>
             </div>
             <div class="user-detail-row">

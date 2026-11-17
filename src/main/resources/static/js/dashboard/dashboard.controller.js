@@ -6,7 +6,8 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
     $scope.devices       = [];
     $scope.listDevices = [];
     $scope.deviceGroups = [];
-    $scope.deviceListFilter = { groupName: '' };
+    // 빈 선택(전체 유역)은 '' 가 아니라 null 이어야 ng-options 의 빈 옵션(전체 유역)이 선택된다.
+    $scope.deviceListFilter = { groupName: null };
     $scope.deviceHistory = [];
     $scope.currentTime   = '';
     $scope.equipPanelCollapsed = true;
@@ -115,7 +116,7 @@ qosApp.controller('DashboardCtrl', ['$scope', '$http', '$interval', function ($s
                     return device.groupName;
                 }).filter(Boolean))).sort(function (a, b) { return a.localeCompare(b, 'ko'); });
                 if (!$scope.deviceGroups.includes($scope.deviceListFilter.groupName)) {
-                    $scope.deviceListFilter.groupName = '';
+                    $scope.deviceListFilter.groupName = null;
                 }
                 $scope.filterDeviceList();
                 $scope.statusLoaded = true;
