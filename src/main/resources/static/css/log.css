@@ -208,6 +208,11 @@
     cursor: pointer;
 }
 
+/* 페이지 제목 옆 도움말 버튼: 제목과 간격을 둔다 (표 안의 오류 코드 ? 버튼에는 적용하지 않음) */
+.page-header-title .log-help-icon {
+    margin-left: 10px;
+}
+
 .log-help-icon:hover,
 .log-help-icon:focus-visible {
     background: #284b73;
