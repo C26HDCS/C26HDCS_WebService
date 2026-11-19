@@ -538,6 +538,8 @@
 .alarm-memo-view .alarm-memo-text {
     flex: 1;
     min-width: 0;
+    max-height: 80px;
+    overflow-y: auto;
 }
 .alarm-memo-view .alarm-memo-edit-btn {
     margin: 0 0 0 auto;
