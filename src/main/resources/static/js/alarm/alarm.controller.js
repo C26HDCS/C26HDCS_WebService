@@ -51,16 +51,15 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
     $scope.pageSize    = PAGE_SIZE;
     $scope.pagedList   = [];
     $scope.currentPage = 1;
-    $scope.totalPages  = 0;
-    $scope.pageNums    = [];
+    $scope.totalPages  = 1;
+    $scope.pageNums    = [1];
 
     function updatePaging() {
         var total = $scope.alarmList.length;
-        $scope.totalPages = Math.ceil(total / PAGE_SIZE);
+        // 빈 목록이어도 최소 1페이지로 보여 "1 / 1"을 표시한다.
+        $scope.totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
         if ($scope.currentPage < 1) $scope.currentPage = 1;
-        if ($scope.totalPages > 0 && $scope.currentPage > $scope.totalPages) {
-            $scope.currentPage = $scope.totalPages;
-        }
+        if ($scope.currentPage > $scope.totalPages) $scope.currentPage = $scope.totalPages;
         var start = ($scope.currentPage - 1) * PAGE_SIZE;
         $scope.pagedList = $scope.alarmList.slice(start, start + PAGE_SIZE);
 
