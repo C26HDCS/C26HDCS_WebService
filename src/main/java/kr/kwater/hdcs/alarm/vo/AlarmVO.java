@@ -22,6 +22,7 @@ public class AlarmVO extends BaseVO {
     private String searchDateFrom;
     private String searchDateTo;
     private Boolean searchUnreadOnly;   // true 면 현재 사용자가 아직 확인하지 않은 알람만 조회
+    private Boolean searchReadOnly;     // true 면 현재 사용자가 이미 확인한 알람만 조회
 
     private String actionYn;        // 조치완료 여부 'Y' / 'N' (알람당 1건, 누가 처리했든 공용)
     private String actionUserId;    // 조치완료 처리자

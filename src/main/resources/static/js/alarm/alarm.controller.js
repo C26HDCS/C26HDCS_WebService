@@ -34,7 +34,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
     $scope.searchAlarmType  = '';
     $scope.searchAlarmLevel = '';
     $scope.searchKeyword    = '';   // 장비명 또는 메시지
-    $scope.searchReadStatus = '';   // '' (전체) / 'UNREAD' (안 읽은 알람)
+    $scope.searchReadStatus = '';   // '' (전체) / 'UNREAD' (안읽음) / 'READ' (읽음)
     $scope.searchActionYn   = '';   // '' (전체) / 'N' (미조치) / 'Y' (조치완료)
     $scope.searchDateFrom   = '';
     $scope.searchDateTo     = '';
@@ -111,6 +111,7 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
             searchDateTo:     toStr
         };
         if ($scope.searchReadStatus === 'UNREAD') params.searchUnreadOnly = true;
+        if ($scope.searchReadStatus === 'READ')   params.searchReadOnly   = true;
 
         // 15초 폴링·SSE 로 인한 백그라운드 갱신(keepPage)에는 로딩 표시를 하지 않는다.
         if (!keepPage) $scope.loading = true;
@@ -153,8 +154,8 @@ qosApp.controller('AlarmCtrl', ['$scope', '$http', 'toast', function ($scope, $h
             .then(function (res) {
                 // 헤더의 안 읽은 개수는 부모(AppCtrl)가 갖고 있으므로 이벤트로 알린다.
                 $scope.$emit('alarmAllChecked', res.data.unreadCount);
-                if ($scope.searchReadStatus === 'UNREAD') {
-                    $scope.load();                       // 안 읽은 알람만 보는 중이면 목록이 비어야 한다.
+                if ($scope.searchReadStatus === 'UNREAD' || $scope.searchReadStatus === 'READ') {
+                    $scope.load();                       // 읽음 상태로 걸러 보는 중이면 목록이 달라지므로 다시 조회한다.
                 } else {
                     $scope.alarmList.forEach(function (a) { a.checked = true; });   // 페이지·검색 상태 유지
                 }

@@ -60,6 +60,9 @@
             <if test="searchUnreadOnly != null and searchUnreadOnly">
                 AND <include refid="unreadCondition"/>
             </if>
+            <if test="searchReadOnly != null and searchReadOnly">
+                AND C.ALARM_ID IS NOT NULL
+            </if>
             <if test="searchDateFrom != null and searchDateFrom != ''">
                 AND A.OCCURRED_AT &gt;= CAST(#{searchDateFrom} AS TIMESTAMP)
             </if>
