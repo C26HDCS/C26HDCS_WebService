@@ -118,8 +118,8 @@ report:
   # 생성된 리포트 파일 저장 기준 디렉터리 (DB에는 이 경로 기준 상대경로만 저장)
   # 환경별로 REPORT_STORAGE_PATH 환경변수로 변경 가능
   storage-path: ${REPORT_STORAGE_PATH:./upload/reports}
-  # 조회 가능한 최대 기간 (시작일~종료일 포함)
-  max-period-days: 31
+  # 조회 가능한 최대 기간 (시작일~종료일 포함). 3년. 화면(report.controller.js)의 MAX_PERIOD_DAYS 와 같은 값으로 맞출 것
+  max-period-days: 1095
   # 데이터 유형별 상세 목록 최대 건수 (초과 시 최신순으로 잘라서 표시)
   max-detail-rows: 1000
   # PDF 다운로드용 변환 프로그램(RHWP) 실행 파일 경로: 한글(.hwpx) 리포트 → PDF (서버에 맞게 RHWP_PATH 환경변수로 변경 가능)

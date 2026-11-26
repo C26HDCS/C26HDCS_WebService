@@ -6,6 +6,8 @@ import kr.kwater.hdcs.report.vo.ReportCountVO;
 import kr.kwater.hdcs.report.vo.ReportData;
 import kr.kwater.hdcs.report.vo.ReportDailyReceiveVO;
 import kr.kwater.hdcs.report.vo.ReportDeviceReceiveVO;
+import kr.kwater.hdcs.report.vo.ReportPeriodReceiveVO;
+import kr.kwater.hdcs.report.vo.ReportStationReceiveVO;
 import kr.kwater.hdcs.report.vo.ReportEventRowVO;
 import kr.kwater.hdcs.report.vo.ReportLogRowVO;
 import kr.kwater.hdcs.report.vo.ReportReceiveRowVO;
@@ -484,46 +486,97 @@ public class WordReportGenerator implements ReportGenerator {
                 new ParagraphAlignment[]{C, L, L, C, L});
     }
 
+    /** 월별/연도별 수신 건수 표 (기간 / L대역 / Ka대역 / 합계) */
+    private void periodTable(XWPFDocument doc, String title, String periodHeader, List<ReportPeriodReceiveVO> list) {
+        subHeading(doc, title);
+        if (list == null || list.isEmpty()) {
+            note(doc, "해당 기간에 데이터가 없습니다.");
+            return;
+        }
+        List<String[]> rows = new ArrayList<>();
+        for (ReportPeriodReceiveVO r : list) {
+            rows.add(new String[]{r.getPeriod(), num(r.getDcsCount()), num(r.getKaCount()),
+                    num(r.getDcsCount() + r.getKaCount())});
+        }
+        table(doc, new int[]{BODY_W - 3 * 1800, 1800, 1800, 1800},
+                new String[]{periodHeader, "L대역(DCS)", "Ka대역", "합계"}, rows, new ParagraphAlignment[]{C, R, R, R});
+        spacer(doc);
+    }
+
     private void writeReceive(XWPFDocument doc, ReportData d, int no) {
         ReportData.ReceiveSection s = d.getReceive();
         heading(doc, no, "수신데이터");
         if (s.getTotal() == 0) {
             note(doc, "해당 기간에 수신된 데이터가 없습니다.");
         }
-        countTable(doc, "대역별 수신 건수", "대역", s.getBandCounts());
-        countTable(doc, "L대역(DCS) 상태별 건수", "상태", s.getDcsStatusCounts());
-        countTable(doc, "Ka대역 상태별 건수", "상태", s.getKaStatusCounts());
 
-        subHeading(doc, "일자별 수신 건수");
-        if (s.getDailyCounts() == null || s.getDailyCounts().isEmpty()) {
-            note(doc, "해당 기간에 데이터가 없습니다.");
-        } else {
-            List<String[]> rows = new ArrayList<>();
-            for (ReportDailyReceiveVO r : s.getDailyCounts()) {
-                rows.add(new String[]{r.getDay(), num(r.getDcsCount()), num(r.getKaCount()),
-                        num(r.getDcsCount() + r.getKaCount())});
-            }
-            table(doc, new int[]{BODY_W - 3 * 1800, 1800, 1800, 1800},
-                    new String[]{"일자", "L대역(DCS)", "Ka대역", "합계"}, rows, new ParagraphAlignment[]{C, R, R, R});
-            spacer(doc);
+        // 집계 기준이 없으면 기본(대역별·상태별 건수 + 상세 목록). 일자별·장비별 표는 해당 기준을 골랐을 때만 나온다.
+        // 집계 기준을 골랐으면 그 기준의 표만 출력한다. (개요의 건수 표는 그대로)
+        String agg = s.getAggregation();
+
+        if (agg == null) {
+            countTable(doc, "대역별 수신 건수", "대역", s.getBandCounts());
+            countTable(doc, "L대역(DCS) 상태별 건수", "상태", s.getDcsStatusCounts());
+            countTable(doc, "Ka대역 상태별 건수", "상태", s.getKaStatusCounts());
         }
 
-        subHeading(doc, "장비별 수신 현황");
-        if (s.getDeviceCounts() == null || s.getDeviceCounts().isEmpty()) {
-            note(doc, "해당 기간에 데이터가 없습니다.");
-        } else {
-            List<String[]> rows = new ArrayList<>();
-            for (ReportDeviceReceiveVO r : s.getDeviceCounts()) {
-                rows.add(new String[]{r.getDeviceName(), r.getDeviceType(), num(r.getReceiveCount()),
-                        r.getLastReceivedAt() == null ? "-" : r.getLastReceivedAt()});
+        if ("DAILY".equals(agg)) {
+            subHeading(doc, "일자별 수신 건수");
+            if (s.getDailyCounts() == null || s.getDailyCounts().isEmpty()) {
+                note(doc, "해당 기간에 데이터가 없습니다.");
+            } else {
+                List<String[]> rows = new ArrayList<>();
+                for (ReportDailyReceiveVO r : s.getDailyCounts()) {
+                    rows.add(new String[]{r.getDay(), num(r.getDcsCount()), num(r.getKaCount()),
+                            num(r.getDcsCount() + r.getKaCount())});
+                }
+                table(doc, new int[]{BODY_W - 3 * 1800, 1800, 1800, 1800},
+                        new String[]{"일자", "L대역(DCS)", "Ka대역", "합계"}, rows, new ParagraphAlignment[]{C, R, R, R});
+                spacer(doc);
             }
-            table(doc, new int[]{BODY_W - 1500 - 1500 - 2400, 1500, 1500, 2400},
-                    new String[]{"장비", "유형", "수신 건수", "마지막 수신"}, rows,
-                    new ParagraphAlignment[]{L, C, R, C});
-            spacer(doc);
         }
 
-        if (s.getTotal() > 0) {
+        if ("DEVICE".equals(agg)) {
+            subHeading(doc, "장비별 수신 현황");
+            if (s.getDeviceCounts() == null || s.getDeviceCounts().isEmpty()) {
+                note(doc, "해당 기간에 데이터가 없습니다.");
+            } else {
+                List<String[]> rows = new ArrayList<>();
+                for (ReportDeviceReceiveVO r : s.getDeviceCounts()) {
+                    rows.add(new String[]{r.getDeviceName(), r.getDeviceType(), num(r.getReceiveCount()),
+                            r.getLastReceivedAt() == null ? "-" : r.getLastReceivedAt()});
+                }
+                table(doc, new int[]{BODY_W - 1500 - 1500 - 2400, 1500, 1500, 2400},
+                        new String[]{"장비", "유형", "수신 건수", "마지막 수신"}, rows,
+                        new ParagraphAlignment[]{L, C, R, C});
+                spacer(doc);
+            }
+        }
+
+        if ("MONTH".equals(agg)) {
+            periodTable(doc, "월별 수신 건수", "월", s.getMonthlyCounts());
+        }
+        if ("YEAR".equals(agg)) {
+            periodTable(doc, "연도별 수신 건수", "연도", s.getYearlyCounts());
+        }
+        if ("STATION".equals(agg)) {
+            subHeading(doc, "관측소별 수신 현황");
+            if (s.getStationCounts() == null || s.getStationCounts().isEmpty()) {
+                note(doc, "해당 기간에 데이터가 없습니다.");
+            } else {
+                List<String[]> rows = new ArrayList<>();
+                for (ReportStationReceiveVO r : s.getStationCounts()) {
+                    rows.add(new String[]{r.getStationName(), num(r.getDeviceCount()), num(r.getDcsCount()),
+                            num(r.getKaCount()), num(r.getDcsCount() + r.getKaCount())});
+                }
+                table(doc, new int[]{BODY_W - 5300, 1100, 1400, 1400, 1400},
+                        new String[]{"관측소", "수신 장비", "L대역(DCS)", "Ka대역", "합계"}, rows,
+                        new ParagraphAlignment[]{L, R, R, R, R});
+                spacer(doc);
+            }
+        }
+
+        if (agg == null && s.getTotal() > 0) {
             subHeading(doc, "상세 목록");
             detailNote(doc, d, s.getTotal(), s.getDetails().size());
             List<String[]> rows = new ArrayList<>();

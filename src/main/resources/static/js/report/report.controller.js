@@ -52,15 +52,16 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
     };
 
     function emptyGen() {
-        return { dateFrom: null, dateTo: null, typeLog: false, typeEvent: false, typeAlarm: false, typeData: false, typeSummary: false };
+        return { dateFrom: null, dateTo: null, typeLog: false, typeEvent: false, typeAlarm: false, typeData: false, typeSummary: false, aggregation: '' };
     }
 
     $scope.gen = emptyGen();
 
     // ── 기간 제한 (서버 report.max-period-days 와 같은 값으로 맞출 것) ──
     // 종료일은 오늘까지, 전체 기간은 최대 MAX_PERIOD_DAYS일. 서버에서도 같은 검사를 하므로 여기는 안내용이다.
-    var MAX_PERIOD_DAYS = 31;
+    var MAX_PERIOD_DAYS = 1095;
     $scope.maxPeriodDays = MAX_PERIOD_DAYS;
+    $scope.maxPeriodLabel = '3년';
 
     function pad2(n) { return String(n).padStart(2, '0'); }
 
@@ -155,7 +156,7 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
             return;
         }
         if (daysBetween(from, to) > MAX_PERIOD_DAYS) {
-            $scope.genError = '조회 기간은 최대 ' + MAX_PERIOD_DAYS + '일까지 선택할 수 있습니다.';
+            $scope.genError = '조회 기간은 최대 ' + $scope.maxPeriodLabel + '까지 선택할 수 있습니다.';
             return;
         }
 
@@ -171,6 +172,10 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
         }
 
         var payload = { periodFrom: from, periodTo: to, dataTypes: dataTypes };
+        // 집계 기준은 수신데이터를 고른 경우에만 보낸다. (비어 있으면 서버가 기본 구성으로 만든다)
+        if ($scope.gen.typeData && !$scope.gen.typeSummary && $scope.gen.aggregation) {
+            payload.aggregation = $scope.gen.aggregation;
+        }
 
         // 같은 기간·유형의 리포트가 이미 있으면 바로 만들지 않고 확인 모달을 띄운다.
         // 확인 요청 자체가 실패해도 생성을 막지는 않는다. (중복 확인은 안내용)
@@ -184,7 +189,8 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
                 }
                 $scope.generating = false;
                 $scope.dupMatches   = dups;
-                $scope.dupInfo      = { from: from, to: to, types: dataTypes.join(',') };
+                $scope.dupInfo      = { from: from, to: to, types: dataTypes.join(','),
+                                        aggregation: aggregationLabel(payload.aggregation) };
                 pendingPayload      = payload;
                 $scope.showDupModal = true;
             })
@@ -199,11 +205,25 @@ qosApp.controller('ReportCtrl', ['$scope', '$http', '$timeout', 'toast', functio
     $scope.dupInfo      = null;
     var pendingPayload  = null;
 
+    // 수신데이터 집계 기준 (서버 AGG_CODES 와 같은 값)
+    var AGG_LABELS = { DAILY: '일별', DEVICE: '장비별', MONTH: '월별', YEAR: '연도별', STATION: '관측소별' };
+    function aggregationLabel(code) { return code ? (AGG_LABELS[code] || '') : ''; }
+
+    // 리포트명에 붙는 집계 기준 표시. 예) 수신데이터(월별)_리포트_20250101_20251231 → '월별'. 없으면 ''.
+    // 집계 기준은 DB에 따로 저장하지 않으므로 리포트명으로 구분한다.
+    function aggregationOfName(name) {
+        var m = /\((일별|장비별|월별|연도별|관측소별)\)_리포트_/.exec(name || '');
+        return m ? m[1] : '';
+    }
+
     // 기간이 같고 데이터 유형 구성이 같은(순서 무관) 기존 리포트를 찾는다. 수동·자동 생성분을 모두 본다.
+    // 수신데이터 집계 기준이 다르면 다른 리포트로 본다.
     function findDuplicates(payload, list) {
         var want = payload.dataTypes.slice().sort().join(',');
+        var wantAgg = aggregationLabel(payload.aggregation);
         return list.filter(function (r) {
             if (r.periodFrom !== payload.periodFrom || r.periodTo !== payload.periodTo) return false;
+            if (aggregationOfName(r.reportName) !== wantAgg) return false;
             var have = (r.dataTypes || '').split(',')
                 .map(function (c) { return c.trim(); })
                 .filter(function (c) { return c; })

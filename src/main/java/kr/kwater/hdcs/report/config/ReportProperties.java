@@ -19,8 +19,8 @@ public class ReportProperties {
     /** 리포트 파일 저장 기준 디렉터리 */
     private String storagePath = "./upload/reports";
 
-    /** 조회 기간 최대 일수 (시작일, 종료일 포함) */
-    private int maxPeriodDays = 31;
+    /** 조회 기간 최대 일수 (시작일, 종료일 포함). 기본 3년 */
+    private int maxPeriodDays = 1095;
 
     /** 유형별 상세 목록 최대 행 수 */
     private int maxDetailRows = 1000;

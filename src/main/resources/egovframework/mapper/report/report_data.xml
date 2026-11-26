@@ -213,6 +213,67 @@
         ORDER BY D.device_id
     </select>
 
+    <!-- 월별 수신 건수 (수신 데이터가 있는 달만 조회한다) -->
+    <select id="selectReceiveMonthlyCounts" resultType="kr.kwater.hdcs.report.vo.ReportPeriodReceiveVO">
+        SELECT TO_CHAR(U.RECEIVED_AT, 'YYYY-MM')                    AS PERIOD,
+               SUM(CASE WHEN U.BAND = 'DCS' THEN 1 ELSE 0 END)      AS DCS_COUNT,
+               SUM(CASE WHEN U.BAND = 'KA'  THEN 1 ELSE 0 END)      AS KA_COUNT
+        FROM (
+            SELECT X.received_at AS RECEIVED_AT, 'DCS' AS BAND
+            FROM public.tb_dcs_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            UNION ALL
+            SELECT X.received_at, 'KA'
+            FROM public.tb_ka_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        ) U
+        GROUP BY TO_CHAR(U.RECEIVED_AT, 'YYYY-MM')
+        ORDER BY 1
+    </select>
+
+    <!-- 연도별 수신 건수 (수신 데이터가 있는 해만 조회한다) -->
+    <select id="selectReceiveYearlyCounts" resultType="kr.kwater.hdcs.report.vo.ReportPeriodReceiveVO">
+        SELECT TO_CHAR(U.RECEIVED_AT, 'YYYY')                       AS PERIOD,
+               SUM(CASE WHEN U.BAND = 'DCS' THEN 1 ELSE 0 END)      AS DCS_COUNT,
+               SUM(CASE WHEN U.BAND = 'KA'  THEN 1 ELSE 0 END)      AS KA_COUNT
+        FROM (
+            SELECT X.received_at AS RECEIVED_AT, 'DCS' AS BAND
+            FROM public.tb_dcs_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            UNION ALL
+            SELECT X.received_at, 'KA'
+            FROM public.tb_ka_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        ) U
+        GROUP BY TO_CHAR(U.RECEIVED_AT, 'YYYY')
+        ORDER BY 1
+    </select>
+
+    <!--
+        관측소별 수신 건수와 수신 장비 수.
+        장비(tb_device.station_id) → 관측소(tb_observation_station) 로 연결한다. 관측소가 없는 장비의 수신은 '미지정' 한 줄로 묶고 맨 아래에 둔다.
+    -->
+    <select id="selectReceiveStationCounts" resultType="kr.kwater.hdcs.report.vo.ReportStationReceiveVO">
+        SELECT S.station_id                                         AS STATION_ID,
+               COALESCE(S.name, '미지정')                            AS STATION_NAME,
+               COUNT(DISTINCT U.DEVICE_ID)                          AS DEVICE_COUNT,
+               SUM(CASE WHEN U.BAND = 'DCS' THEN 1 ELSE 0 END)      AS DCS_COUNT,
+               SUM(CASE WHEN U.BAND = 'KA'  THEN 1 ELSE 0 END)      AS KA_COUNT
+        FROM (
+            SELECT X.device_id AS DEVICE_ID, 'DCS' AS BAND
+            FROM public.tb_dcs_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+            UNION ALL
+            SELECT X.device_id, 'KA'
+            FROM public.tb_ka_data X
+            WHERE <include refid="periodCond"><property name="column" value="X.received_at"/></include>
+        ) U
+        LEFT JOIN public.tb_device D ON D.device_id = U.DEVICE_ID
+        LEFT JOIN public.tb_observation_station S ON S.station_id = D.station_id
+        GROUP BY S.station_id, S.name
+        ORDER BY CASE WHEN S.station_id IS NULL THEN 1 ELSE 0 END, S.station_id
+    </select>
+
     <!-- 수신 상세: DCS는 수신 데이터 앞 200자, Ka는 파일명을 payload로 통일해서 보여준다. -->
     <select id="selectReceiveDetails" resultType="kr.kwater.hdcs.report.vo.ReportReceiveRowVO">
         SELECT TO_CHAR(U.RECEIVED_AT, 'YYYY-MM-DD HH24:MI:SS') AS RECEIVED_AT,

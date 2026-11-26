@@ -7,6 +7,8 @@ import kr.kwater.hdcs.report.vo.ReportAlarmRowVO;
 import kr.kwater.hdcs.report.vo.ReportCountVO;
 import kr.kwater.hdcs.report.vo.ReportDailyReceiveVO;
 import kr.kwater.hdcs.report.vo.ReportDeviceReceiveVO;
+import kr.kwater.hdcs.report.vo.ReportPeriodReceiveVO;
+import kr.kwater.hdcs.report.vo.ReportStationReceiveVO;
 import kr.kwater.hdcs.report.vo.ReportEventRowVO;
 import kr.kwater.hdcs.report.vo.ReportLogRowVO;
 import kr.kwater.hdcs.report.vo.ReportReceiveRowVO;
@@ -81,6 +83,18 @@ public interface ReportDataDAO {
     /** 장비별 수신 건수와 기간 내 마지막 수신 시각 (모든 장비 포함, 수신 없으면 0건) */
     List<ReportDeviceReceiveVO> selectReceiveDeviceCounts(@Param("periodFrom") String periodFrom,
                                                           @Param("periodTo") String periodTo);
+
+    /** 월별 수신 건수 (yyyy-MM, 수신이 있는 달만) */
+    List<ReportPeriodReceiveVO> selectReceiveMonthlyCounts(@Param("periodFrom") String periodFrom,
+                                                           @Param("periodTo") String periodTo);
+
+    /** 연도별 수신 건수 (yyyy, 수신이 있는 해만) */
+    List<ReportPeriodReceiveVO> selectReceiveYearlyCounts(@Param("periodFrom") String periodFrom,
+                                                          @Param("periodTo") String periodTo);
+
+    /** 관측소별 수신 건수와 수신 장비 수 (관측소 미지정 장비는 '미지정'으로 묶는다) */
+    List<ReportStationReceiveVO> selectReceiveStationCounts(@Param("periodFrom") String periodFrom,
+                                                            @Param("periodTo") String periodTo);
 
     List<ReportReceiveRowVO> selectReceiveDetails(@Param("periodFrom") String periodFrom,
                                                   @Param("periodTo") String periodTo,

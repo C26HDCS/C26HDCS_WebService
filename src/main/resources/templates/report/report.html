@@ -70,6 +70,33 @@
             </div>
         </div>
 
+        <!-- 집계 기준: 수신데이터를 선택했을 때만 나타난다. 하나만 고를 수 있고, '기본'은 대역별·상태별 건수 + 상세 목록 -->
+        <div class="report-gen-divider" ng-if="gen.typeData && !gen.typeSummary"></div>
+        <div class="report-gen-group" ng-if="gen.typeData && !gen.typeSummary">
+            <span class="report-gen-label">집계 기준</span>
+            <div class="report-tag-group">
+                <label class="report-tag" ng-class="{'on': gen.aggregation === ''}"
+                       title="대역별·상태별 건수와 상세 목록을 담습니다.">
+                    <input type="radio" name="genAggregation" ng-model="gen.aggregation" ng-value="''"> 기본
+                </label>
+                <label class="report-tag" ng-class="{'on': gen.aggregation === 'DAILY'}">
+                    <input type="radio" name="genAggregation" ng-model="gen.aggregation" ng-value="'DAILY'"> 일별
+                </label>
+                <label class="report-tag" ng-class="{'on': gen.aggregation === 'MONTH'}">
+                    <input type="radio" name="genAggregation" ng-model="gen.aggregation" ng-value="'MONTH'"> 월별
+                </label>
+                <label class="report-tag" ng-class="{'on': gen.aggregation === 'YEAR'}">
+                    <input type="radio" name="genAggregation" ng-model="gen.aggregation" ng-value="'YEAR'"> 연도별
+                </label>
+                <label class="report-tag" ng-class="{'on': gen.aggregation === 'DEVICE'}">
+                    <input type="radio" name="genAggregation" ng-model="gen.aggregation" ng-value="'DEVICE'"> 장비별
+                </label>
+                <label class="report-tag" ng-class="{'on': gen.aggregation === 'STATION'}">
+                    <input type="radio" name="genAggregation" ng-model="gen.aggregation" ng-value="'STATION'"> 관측소별
+                </label>
+            </div>
+        </div>
+
 
         <div class="report-gen-actions">
             <button class="btn-report-reset" ng-click="resetGen()" ng-disabled="generating">
@@ -98,7 +125,7 @@
 
     <div class="report-gen-footer">
         <div class="form-error" ng-if="genError">{{genError}}</div>
-        기간은 최대 {{maxPeriodDays}}일까지 선택할 수 있습니다.
+        기간은 최대 {{maxPeriodLabel}}까지 선택할 수 있습니다.
         <span class="report-gen-footer-days" ng-if="genDays() > 0">(선택 기간 {{genDays()}}일)</span>
     </div>
 </div>
@@ -443,6 +470,10 @@
             <div class="report-dup-cond-row">
                 <span class="report-dup-cond-label">데이터 유형</span>
                 <span class="report-dup-cond-value">{{getDataTypeLabels(dupInfo.types).join(', ')}}</span>
+            </div>
+            <div class="report-dup-cond-row" ng-if="dupInfo.aggregation">
+                <span class="report-dup-cond-label">집계 기준</span>
+                <span class="report-dup-cond-value">{{dupInfo.aggregation}}</span>
             </div>
         </div>
 

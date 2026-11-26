@@ -47,6 +47,10 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
     static final String EVENT_REPORT_CREATE_SUCCESS = "REPORT_CREATE_SUCCESS";
     static final String EVENT_REPORT_CREATE_FAIL = "REPORT_CREATE_FAIL";
 
+    /** 수신데이터 집계 기준 코드와 화면 표시명 (같은 순서) */
+    private static final String[] AGG_CODES = {"DAILY", "DEVICE", "MONTH", "YEAR", "STATION"};
+    private static final String[] AGG_LABELS = {"일별", "장비별", "월별", "연도별", "관측소별"};
+
     private static final DateTimeFormatter COMPACT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
@@ -177,10 +181,11 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
 
         // 사용자 이벤트(TB_EVENT)용 요약. 알 수 없는 유형 코드는 여기서 같은 메시지의 IllegalArgumentException 으로 걸러진다.
         String types = String.join(",", selectedCodes(selectedTypes(req.getDataTypes())));
+        normalizeAggregation(req.getAggregation());
 
         ReportVO created;
         try {
-            created = generateReport(from, to, req.getDataTypes(), "MANUAL", userId);
+            created = generateReport(from, to, req.getDataTypes(), req.getAggregation(), "MANUAL", userId);
         } catch (IllegalArgumentException e) {
             // 입력값 오류는 리포트 생성을 시도한 것이 아니므로 이벤트를 남기지 않는다.
             throw e;
@@ -235,7 +240,7 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
         }
         ReportVO created;
         try {
-            created = generateReport(from, to, dataTypes, "AUTO", null);
+            created = generateReport(from, to, dataTypes, null, "AUTO", null);
         } catch (IllegalArgumentException e) {
             // 입력값 오류는 리포트 생성을 시도한 것이 아니므로 이벤트를 남기지 않는다.
             throw e;
@@ -281,11 +286,12 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
      * 리포트 생성 공통 처리 (수동·자동 공용): 데이터 조회 → 파일 생성·저장 → 이력(TB_REPORT) 등록.
      * 기간 검증은 호출하는 쪽에서 끝낸 상태여야 한다.
      *
+     * @param requestedAggregation 수신데이터 집계 기준(DAILY/DEVICE/MONTH/YEAR/STATION). 비어 있으면 기본(대역·상태별 건수 + 상세 목록). 수신데이터를 고르지 않았으면 무시한다.
      * @param generateType MANUAL 또는 AUTO
      * @param userId       생성자 ID. 자동 생성은 null (화면에는 SYSTEM으로 표시)
      */
     private ReportVO generateReport(LocalDate from, LocalDate to, List<String> requestedTypes,
-                                    String generateType, String userId) throws Exception {
+                                    String requestedAggregation, String generateType, String userId) throws Exception {
         // 1) 데이터 유형
         boolean[] selected = selectedTypes(requestedTypes);
         List<String> codes = selectedCodes(selected);
@@ -303,9 +309,20 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             throw new IllegalArgumentException("수신 요약은 다른 데이터 유형과 함께 선택할 수 없습니다.");
         }
 
-        // 2) 리포트명: 데이터유형_리포트_시작일_종료일 (전부 선택하면 '전체')
+        // 집계 기준은 수신데이터(DATA)를 골랐을 때만 적용한다. 요약이나 다른 유형만 고른 경우는 무시한다.
+        String aggregation = selected[3] ? normalizeAggregation(requestedAggregation) : null;
+        String aggLabel = aggregation == null ? null : AGG_LABELS[aggregationIndex(aggregation)];
+        if (aggLabel != null) {
+            // 개요의 '데이터 유형' 칸에 '수신데이터(월별)' 처럼 표시한다.
+            labels.set(labels.indexOf(TYPE_LABELS[3]), TYPE_LABELS[3] + "(" + aggLabel + ")");
+        }
+
+        // 2) 리포트명: 데이터유형_리포트_시작일_종료일 (전부 선택하면 '전체'). 집계 기준을 골랐으면 유형 뒤에 '(월별)' 을 붙인다.
         String typePart = summaryOnly ? "수신데이터_요약"
                 : codes.size() == TYPE_CODES.length - 1 ? "전체" : String.join("_", labels);
+        if (aggLabel != null && codes.size() == TYPE_CODES.length - 1) {
+            typePart = typePart + "(" + aggLabel + ")";
+        }
         String reportName = typePart + "_리포트_" + from.format(COMPACT) + "_" + to.format(COMPACT);
 
         // 3) 데이터 조회
@@ -338,7 +355,7 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             data.setAlarm(collector.collectAlarm(f, t, limit));
         }
         if (selected[3]) {
-            data.setReceive(collector.collectReceive(f, t, limit));
+            data.setReceive(collector.collectReceive(f, t, limit, aggregation));
         }
         if (summaryOnly) {
             data.setSummary(collector.collectSummary(f, t));
@@ -428,6 +445,29 @@ public class ReportServiceImpl extends EgovAbstractServiceImpl implements Report
             return null;
         }
         return input.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
+    /** 집계 기준 코드를 검증해 대문자 코드로 돌려준다. 비어 있으면 null(기본). 알 수 없는 값은 오류. */
+    private static String normalizeAggregation(String requested) {
+        if (requested == null || requested.trim().isEmpty()) {
+            return null;
+        }
+        String code = requested.trim().toUpperCase();
+        for (String c : AGG_CODES) {
+            if (c.equals(code)) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException("알 수 없는 집계 기준입니다: " + requested);
+    }
+
+    private static int aggregationIndex(String code) {
+        for (int i = 0; i < AGG_CODES.length; i++) {
+            if (AGG_CODES[i].equals(code)) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     private static LocalDate parseDate(String s, String label) {

@@ -44,7 +44,7 @@ public class ReportDataCollector {
         return s;
     }
 
-    public ReportData.ReceiveSection collectReceive(String from, String to, int limit) {
+    public ReportData.ReceiveSection collectReceive(String from, String to, int limit, String aggregation) {
         ReportData.ReceiveSection s = new ReportData.ReceiveSection();
         List<ReportCountVO> bands = dao.selectReceiveBandCounts(from, to);
         long total = 0;
@@ -53,11 +53,31 @@ public class ReportDataCollector {
         }
         s.setTotal((int) Math.min(total, Integer.MAX_VALUE));
         s.setBandCounts(bands);
-        s.setDcsStatusCounts(dao.selectDcsStatusCounts(from, to));
-        s.setKaStatusCounts(dao.selectKaStatusCounts(from, to));
-        s.setDailyCounts(dao.selectReceiveDailyCounts(from, to));
-        s.setDeviceCounts(dao.selectReceiveDeviceCounts(from, to));
-        s.setDetails(dao.selectReceiveDetails(from, to, limit));
+        // 집계 기준을 골랐으면 선택한 기준의 표만 쓰므로 상태별 건수·상세 목록은 조회하지 않는다. (건수는 개요에서 쓴다)
+        if (aggregation == null) {
+            s.setDcsStatusCounts(dao.selectDcsStatusCounts(from, to));
+            s.setKaStatusCounts(dao.selectKaStatusCounts(from, to));
+        }
+        // 집계 기준을 골랐을 때만 해당 기준의 표를 채운다. (기본은 일자별·장비별을 조회하지 않는다)
+        s.setAggregation(aggregation);
+        if ("DAILY".equals(aggregation)) {
+            s.setDailyCounts(dao.selectReceiveDailyCounts(from, to));
+        }
+        if ("DEVICE".equals(aggregation)) {
+            s.setDeviceCounts(dao.selectReceiveDeviceCounts(from, to));
+        }
+        if ("MONTH".equals(aggregation)) {
+            s.setMonthlyCounts(dao.selectReceiveMonthlyCounts(from, to));
+        }
+        if ("YEAR".equals(aggregation)) {
+            s.setYearlyCounts(dao.selectReceiveYearlyCounts(from, to));
+        }
+        if ("STATION".equals(aggregation)) {
+            s.setStationCounts(dao.selectReceiveStationCounts(from, to));
+        }
+        if (aggregation == null) {
+            s.setDetails(dao.selectReceiveDetails(from, to, limit));
+        }
         return s;
     }
 

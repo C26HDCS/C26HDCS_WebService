@@ -87,5 +87,15 @@ public class ReportData {
         private List<ReportDailyReceiveVO> dailyCounts;
         private List<ReportDeviceReceiveVO> deviceCounts;
         private List<ReportReceiveRowVO> details;
+
+        /**
+         * 집계 기준 코드: DAILY, DEVICE, MONTH, YEAR, STATION. null 이면 기본(대역·상태별 건수 + 상세 목록).
+         * 선택한 기준의 목록만 채우고 나머지는 null 이다. (DAILY → dailyCounts, DEVICE → deviceCounts)
+         * 기준이 있으면 상태별 건수(dcs/kaStatusCounts)와 상세 목록(details)도 채우지 않는다.
+         */
+        private String aggregation;
+        private List<ReportPeriodReceiveVO> monthlyCounts;
+        private List<ReportPeriodReceiveVO> yearlyCounts;
+        private List<ReportStationReceiveVO> stationCounts;
     }
 }
