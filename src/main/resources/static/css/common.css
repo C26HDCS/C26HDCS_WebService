@@ -154,11 +154,10 @@ body {
     min-width: 0;
 }
 .header-logo {
-    height: 32px;
-    max-width: 120px;
+    height: 28px;
+    width: auto;
+    max-width: 160px;
     object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.9;
     flex-shrink: 0;
 }
 .system-name {

@@ -135,11 +135,10 @@ body {
 
 .agency-logo {
     display: block;
-    max-height: 50px;
-    max-width: 230px;
+    height: 38px;
+    width: auto;
+    max-width: 190px;
     object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.88;
     margin-bottom: 36px;
 }
 
